@@ -1,0 +1,34 @@
+#ifndef MLPAINTENGINE_H
+#define MLPAINTENGINE_H
+
+#include <QPainterPath>
+#include "mlblendmode.h"
+#include "mlpaintable.h"
+#include "mlimage.h"
+#include "mlsurface.h"
+
+struct MLPaintEngineState
+{
+	MLBlendMode blendMode;
+	MLFastArgbF argb;
+	double opacity;
+};
+
+class MLPaintEngine
+{
+public:
+	MLPaintEngine() {}
+	virtual ~MLPaintEngine() {}
+	
+	virtual bool begin(MLPaintable *paintable) = 0;
+	virtual bool flush() = 0;
+	
+	virtual void drawPath(const QPainterPath &path);
+	virtual void drawEllipse(double x, double y, double rx, double ry);
+	virtual void drawImage(const QPoint &point, const MLImage &image);
+	virtual void drawSurface(const QPoint &point, const MLSurface &surface);
+	
+	virtual void updateState(const MLPaintEngineState &state) = 0;
+};
+
+#endif // MLPAINTENGINE_H
