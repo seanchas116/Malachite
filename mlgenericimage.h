@@ -245,6 +245,7 @@ private:
 	QSharedDataPointer<MLGenericImageData> d;
 };
 
+/*
 // paint the destination image with the source image using the pixel operation function (such as source-over, multiply, etc)
 template <typename ColorDest, typename ColorSrc>
 void mlGenericImageOperation(MLAbstractImage<ColorDest> *dstImage, const QPoint &dstPosition, const MLAbstractImage<ColorSrc> *srcImage, const QPoint &srcPosition, void (*pixelOperation)(int count, ColorDest *d, const ColorSrc *s))
@@ -266,7 +267,7 @@ void mlGenericImageOperation(MLAbstractImage<ColorDest> *dstImage, const QPoint 
 		pixelOperation(targetRect.width(), dp, sp);
 	}
 }
-
+*?
 
 
 

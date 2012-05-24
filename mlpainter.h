@@ -21,6 +21,9 @@ public:
 	void setColor(const MLColor &color) { _state.argb = color.toFastArgbF(); _paintEngine->updateState(_state); }
 	MLColor color() const { return MLColor::fromFastArgbF(_state.argb); }
 	
+	void setArgb(const MLFastArgbF &argb) { _state.argb = argb; }
+	MLFastArgbF argb() const { return _state.argb; }
+	
 	void setOpacity(double opacity) { _state.opacity = opacity; _paintEngine->updateState(_state); }
 	double opacity() const { return _state.opacity; }
 	

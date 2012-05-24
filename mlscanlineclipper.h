@@ -1,8 +1,9 @@
 #ifndef MLSCANLINECLIPPER_H
 #define MLSCANLINECLIPPER_H
 
-#include <QVector>
-#include <QPolygonF>
+#include <QHash>
+#include <cmath>
+#include "mlsegmentpath.h"
 
 template<typename T>
 class QVectorReverseIterator
@@ -27,93 +28,144 @@ private:
 	QVectorIterator<T> i;
 };
 
-typedef QVectorIterator<QPointF> QPolygonFIterator;
-typedef QVectorReverseIterator<QPointF> QPolygonFReverseIterator;
+typedef QVectorIterator<MLPoint> MLPolygonIterator;
+typedef QVectorReverseIterator<MLPoint> MLPolygonReverseIterator;
 
 
-template <Qt::Orientation orientation>
+template <bool transposed>
 class MLScanlineClipper
 {
 public:
-	MLScanlineClipper(const QPolygonF &polygon);
+	MLScanlineClipper(const MLPolygon &polygon);
 	
 	int reset();
-	QList<QPolygonF> cilpNext();
+	QList<QPolygonF> clipNext();
+	
+	int scanlineMin() const { return _slMin; }
+	int scanlineMax() const { return _slMin; }
+	int scanline() const { return _sl; }
+	int scanlineCount() const { return _slMax - _slMin + 1; }
 	
 private:
 	
-	void parsePolygon(const QPolygonF &polygon, QList<QPolygonF> &increasingPolygons, QList<QPolygonF> &decreasingPolygons);
-	template <typename PolygonIterator> bool findIntersection(double &x, double y, PolygonIterator &i);
+	void parsePolygon(const MLPolygon &polygon, QList<MLPolygon> &increasingPolygons, QList<MLPolygon> &decreasingPolygons);
+	template <typename PolygonIterator> bool findIntersection(float &column, float row, PolygonIterator &i);
 	
-	double elemRow(const QPointF &p) { return orientation == Qt::Horizontal ? p.y() : p.x(); }
-	double elemColumn(const QPointF &p) { return orientation == Qt::Horizontal ? p.x() : p.y(); }
+	void findIntersections(int row, QHash<int, float> &ic, QHash<int, float> &dc);
+	void findNextIntersections();
+	
+	float elemY(const MLPoint &p) { return transposed ? p.x() : p.y(); }
+	float elemX(const MLPoint &p) { return transposed ? p.y() : p.x(); }
 	
 	int _slMax, _slMin, _sl;
 	
-	QList<QPolygonF> _increasingPolygons;
-	QList<QPolygonF> _decreasingPolygons;
+	QHash<int, float> _lic, _ic, _ldc, _dc; // current and last scanline intersection point
 	
-	QList<QPolygonFIterator> _increaseIterators;
-	QList<QPolygonFReverseIterator> _decreaseIterators;
+	QList<MLPolygon> _ip;	// polygons which are row-increasing
+	QList<MLPolygon> _dp;	// polygons which are row-decreasing
+	
+	QList<MLPolygonIterator> _ii, _lii; // current iterator and last iterator of ip
+	QList<MLPolygonReverseIterator> _di, _ldi; // current iterator and last iterator of dp
+	
+	int _sc;	// ip, dp's count
 };
 
-template <Qt::Orientation orientation>
-MLScanlineClipper<orientation>::MLScanlineClipper(const QPolygonF &polygon)
+template <bool transposed>
+MLScanlineClipper<transposed>::MLScanlineClipper(const MLPolygon &polygon)
 {
-	parsePolygon(polygon, _increasingPolygons, _decreasingPolygons);
-	
-	int sectionCount = _increasingPolygons.size();
+	// parse and split polygons
+	parsePolygon(polygon, _ip, _dp);
+	_sc = _ip.size();
 	
 	// if polygon is split -decreasing- -increasing- -decreasing- -increasing- ... order
 	// adjust polygon split to -increasing- -decreasing- ... order
-	if (_increasingPolygons.at(0).at(0) != polygon.at(0))
+	if (_ip.at(0).at(0) != polygon.at(0))
 	{
-		QPolygonF p = _decreasingPolygons.at(0);
+		QPolygonF p = _dp.at(0);
 		
-		for (int i = 1; i < _increasingPolygons.size(); ++i)
+		for (int i = 1; i < _ip.size(); ++i)
 		{
-			_decreasingPolygons[i-1] = _decreasingPolygons.at(i);
+			_dp[i-1] = _dp.at(i);
 		}
 		
-		_decreasingPolygons[_decreasingPolygons.size() - 1] = p;
+		_dp[_dp.size() - 1] = p;
 	}
 	
-	QList<double> slMaxCandidate, slMinCandidate;
+	// find y max/min
+	
+	QList<float> slMaxCandidate, slMinCandidate;
 	slMaxCandidate.reserve(sectionCount);
 	slMinCandidate.reserve(sectionCount);
 	
-	_increaseIterators.reserve(sectionCount);
-	_decreaseIterators.reserve(sectionCount);
-	
-	for (int i = 0; i < sectionCount; ++i)
+	for (int i = 0; i < _sc; ++i)
 	{
-		slMaxCandidate << elemColumn(_increasingPolygons.at(i).last());
-		slMinCandidate << elemColumn(_increasingPolygons.at(i).first());
-		increaseIterators << QPolygonFIterator(_increasingPolygons.at(i));
-		decreaseIterators << QPolygonFReverseIterator(_decreasingPolygons.at(i));
+		slMaxCandidate << elemColumn(_ip.at(i).last());
+		slMinCandidate << elemColumn(_ip.at(i).first());
 	}
 	
-	double slMaxDouble = *std::max_element(slMaxCandidate.begin(), slMaxCandidate.end());
-	double slMinDouble = *std::min_element(slMinCandidate.begin(), slMinCandidate.end());
+	float slMaxF = *std::max_element(slMaxCandidate.begin(), slMaxCandidate.end());
+	float slMinF = *std::min_element(slMinCandidate.begin(), slMinCandidate.end());
 	
-	_slMax = ceil(slMaxDouble);
-	_slMin = floor(slMinDouble);
+	_slMax = ceilf(slMaxF);
+	_slMin = floorf(slMinF);
 	
-	for (int row = _slMin; row <= _slMax; ++i)
+	reset();
+}
+
+template <bool transposed>
+void MLScanlineClipper<transposed>::reset()
+{
+	// intializing scanline index
+	
+	_sl = _slMin - 1;
+	
+	// initializing intersections
+	
+	findIntersections(_sl+1, _ic, _dc);
+	
+	// initializing iterators
+	
+	_ii.clear();
+	_di.clear();
+	
+	_ii.reserve(sectionCount);
+	_di.reserve(sectionCount);
+	
+	for (int i = 0; i < _sc; ++i)
 	{
-		
+		_ii << QPolygonFIterator(_ip.at(i));
+		_di << QPolygonFReverseIterator(_dp.at(i));
 	}
 }
 
-// Split the polygon into segments. In each segments, all y values of the points will be increasing or decreasing.
-template <Qt::Orientation orientation>
-void MLScanlineClipper<orientation>::parsePolygon(const QPolygonF &originalPolygon, QList<QPolygonF> &increasingPolygons, QList<QPolygonF> &decreasingPolygons)
+template <bool transposed>
+void MLScanlineClipper<transposed>::findNextIntersections()
 {
-	QPolygonF polygon = originalPolygon;
+	_sl++;
+	_lic = _ic;
+	_ldc = _dc;
+	_lii = _ii;
+	_ldi = _di;
+	findIntersections(_sl+1, _ic, _dc);
+}
+
+template <bool transposed>
+QList<QPolygonF> MLScanlineClipper<transposed>::clipNext()
+{
+	findNextIntersections();
+	
+	
+}
+
+// Split the polygon into segments. In each segments, all y values of the points will be increasing or decreasing.
+template <bool transposed>
+void MLScanlineClipper<transposed>::parsePolygon(const MLPolygon &originalPolygon, QList<MLPolygon> &increasingPolygons, QList<MLPolygon> &decreasingPolygons)
+{
+	MLPolygon polygon = originalPolygon;
 	if (polygon.first() != polygon.last())
 		polygon << polygon.first();
 	
-	bool isIncreasing = elemColumn(polygon.at(1)) >= e_c(polygon.at(0));
+	bool isIncreasing = elemY(polygon.at(1)) >= elemY(polygon.at(0));
 	bool startIncreasing = isIncreasing;
 	int prevIndex = 0;
 	int count = polygon.size() - 1;
@@ -121,7 +173,7 @@ void MLScanlineClipper<orientation>::parsePolygon(const QPolygonF &originalPolyg
 	
 	for (i = 1; i < count; ++i)
 	{
-		if (elemColumn(polygon.at(i+1)) >= elemColumn(polygon.at(i)))
+		if (elemY(polygon.at(i+1)) >= elemY(polygon.at(i)))
 		{
 			if (!isIncreasing)
 			{
@@ -159,27 +211,27 @@ void MLScanlineClipper<orientation>::parsePolygon(const QPolygonF &originalPolyg
 	Q_ASSERT(increasingPolygons.size() == decreasingPolygons.size());
 }
 
-template <Qt::Orientation orientation, typename PolygonIterator>
-bool MLScanlineClipper<orientation>::findIntersection(double &x, double y, PolygonIterator &i)
+template <bool transposed, typename PolygonIterator>
+bool MLScanlineClipper<transposed>::findIntersection(float &x, float y, PolygonIterator &i)
 {
 	PolygonIterator back = i;
 	back.toBack();
 	
-	if (back.peekPrevious().y() < y)
+	if (elemY(back.peekPrevious()) < y)
 	{
 		i = back;
 		return false;
 	}
 	
-	QPointF p1 = i.peekNext();
+	MLPoint p1 = i.peekNext();
 	
-	if (p1.y() > y)
+	if (elemY(p1) > y)
 	{
 		return false;
 	}
-	if (p1.y() == y)
+	if (elemY(p1) == y)
 	{
-		x = p1.x();
+		x = elemX(p1);
 		return true;
 	}
 	
@@ -189,22 +241,38 @@ bool MLScanlineClipper<orientation>::findIntersection(double &x, double y, Polyg
 	{
 		p1 = i.peekNext();
 		
-		if (p1.y() > y)
+		if (elemY(p1) > y)
 		{
-			QPointF p0 = i.peekPrevious();
-			x = ((y - p0.y()) * p1.x() + (p1.y() - y) * p0.x()) / (p1.y() - p0.y());
+			MLPoint p0 = i.peekPrevious();
+			x = ((y - elemY(p0.y())) * elemX(p1) + (elemY(p1) - y) * elemX(p0)) / (elemY(p1) - elemY(p0));
 			i.previous();
 			return true;
 		}
-		if (p1.y() == y)
+		if (elemY(p1) == y)
 		{
-			x = p1.x();
+			x = elemX(p1);
 			return true;
 		}
 	}
 	
 	Q_ASSERT(0);
 	return false;
+}
+
+template <bool transposed>
+void MLScanlineClipper<transposed>::findIntersections(int y, QHash<int, float> &ic, QHash<int, float> &dc)
+{
+	float x;
+	
+	for (int i = 0; i < _sc; ++i)
+	{
+		if (findIntersection(x, y, _ii.at(i)))
+			ic[i] = column;
+		if (findIntersection(x, y, _di.at(i)))
+			dc[i] = column;
+	}
+	
+	return intersections;
 }
 
 #endif // MLSCANLINECLIPPER_H

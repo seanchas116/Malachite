@@ -7,10 +7,12 @@
 #include <QPoint>
 #include <QString>
 #include <QSize>
-#include <QPolygonF>
 #include <cmath>
 #include <cstring>
 #include "mlglobal.h"
+
+class QPolygonF;
+class MLPolygon;
 
 #include <cstdlib>
 #ifdef __MINGW32__
@@ -214,6 +216,7 @@ private:
 };
 
 double mlCalculatePolygonSpace(const QPolygonF &polygon);
+float mlCalculatePolygonSpace(const MLPolygon &polygon);
 
 
 #endif // MLMISC_H

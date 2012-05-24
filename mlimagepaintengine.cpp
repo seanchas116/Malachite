@@ -70,3 +70,11 @@ void MLImagePaintEngine::fillScanline(int x, int y, int count, float *covers)
 	_blendOp->blend(count, pixelPointer(x, y), _state.argb, covers);
 }
 
+void MLImagePaintEngine::fillScanline(int x, int y, int count)
+{
+	if (_opacity == 1.0f)
+		_blendOp->blend(count, pixelPointer(x, y), _state.argb);
+	else
+		_blendOp->blend(count, pixelPointer(x, y), _state.argb, _opacity);
+}
+

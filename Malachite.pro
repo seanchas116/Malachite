@@ -26,7 +26,9 @@ SOURCES += \
     mlsurfacepaintengine.cpp \
     mlsurfacepainter.cpp \
     mlsurfaceselection.cpp \
-    mlmisc.cpp
+    mlmisc.cpp \
+    mlpoint.cpp \
+    mlpolygon.cpp
 
 HEADERS += malachite.h\
     agg_curves.h \
@@ -57,7 +59,9 @@ HEADERS += malachite.h\
     mlsurfacepaintengine.h \
     mlsurfacepainter.h \
     mlsurfaceselection.h \
-    agg_math.h
+    agg_math.h \
+    mlpoint.h \
+    mlpolygon.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
@@ -77,3 +81,6 @@ unix:!symbian {
     }
     INSTALLS += target
 }
+
+OTHER_FILES += \
+    README.md

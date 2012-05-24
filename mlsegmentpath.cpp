@@ -47,6 +47,11 @@ MLSegmentPath::MLSegmentPath(const QPolygonF &polygon)
 	_polygons << polygon;
 }
 
+MLSegmentPath::MLSegmentPath(const MLPolygon &polygon)
+{
+	_polygons << polygon;
+}
+
 void MLSegmentPath::moveTo(const QPointF &point)
 {
 	QPolygonF polygon;

@@ -21,6 +21,7 @@ public:
 	QRect rect() const { return QRect(QPoint(), _size); }
 	
 	void fillScanline(int x, int y, int count, float *covers);
+	void fillScanline(int x, int y, int count);
 	
 	MLFastArgbF *pixelPointer(int x, int y)
 	{

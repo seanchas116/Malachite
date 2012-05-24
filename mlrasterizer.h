@@ -4,6 +4,7 @@
 #include <QPolygonF>
 #include "mlsegmentpath.h"
 #include "mlmisc.h"
+#include "mlscanlineclipper.h"
 
 // simple polygon rasterizer
 // using arithmetic antialiasing method
@@ -14,7 +15,7 @@ public:
 	
 	MLRasterizer(Renderer *renderer) : _renderer(renderer) {}
 	
-	void rasterize(const QPainterPath &path);
+	void rasterize(const MLPolygon &polygon);
 	
 private:
 	
@@ -22,31 +23,26 @@ private:
 };
 
 template <typename Renderer>
-void MLRasterizer<Renderer>::rasterize(const QPainterPath &path)
+void MLRasterizer<Renderer>::rasterize(const MLPolygon &polygon)
 {
-	QRect rect = path.boundingRect().toAlignedRect() & _renderer->rect();
+	MLScanlineClipper<false> _clipperY(polygon);
 	
-	for (int ry = 0; ry < rect.height(); ++ry)
+	for (int ry = 0; ry < _clipperY.scanlineCount(); ++ry)
 	{
-		int y = rect.top() + ry;
+		int y = _clipperY.scanlineMin() + ry;
 		
-		QPainterPath strip;
-		strip.addRect(rect.left(), y, rect.width(), 1);
-		strip &= path;
+		MLPolygon strip = _clipperY.clipNext();
+		MLScanlineClipper<true> _clipperX(strip);
 		
-		QRect stripRect = strip.boundingRect().toAlignedRect();
+		float *covers = new float[_clipperX.scanlineCount()];
 		
-		float *covers = new float[stripRect.width()];
-		
-		for (int rx = 0; rx < stripRect.width(); ++rx)
+		for (int rx = 0; rx < _clipperX.scanlineCount(); ++rx)
 		{
-			int x = stripRect.left() + rx;
-			QPainterPath square;
-			square.addRect(x, y, 1, 1);
-			covers[rx] = mlCalculatePolygonSpace((strip & square).toFillPolygon());
+			MLPolygon frag = _clipperX.clipNext();
+			covers[rx] = mlCalculatePolygonSpace(frag);
 		}
 		
-		_renderer->fillScanline(stripRect.left(), y, stripRect.width(), covers);
+		_renderer->fillScanline(_clipperX.scanlineMin(), _clipperY.scanlineMin() + ry, _clipperX.scanlineCount(), covers);
 		
 		delete [] covers;
 	}
