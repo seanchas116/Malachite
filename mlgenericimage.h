@@ -10,19 +10,27 @@ template <typename Color>
 class MLBitmap
 {
 public:
-	MLBitmap(uint8_t *bits, const QSize &size, int bytesPerLine);
+	MLBitmap() :
+		_bits(0)
+	{}
 	
-	static MLBitmap allocate(const QSize &size, int bytesPerLine) :
-		_bits(reinterpret_cast<uint8_t *>(size.height() * bytesPerLine)),
+	MLBitmap(uint8_t *bits, const QSize &size, int bytesPerLine) :
+		_bits(bits),
 		_size(size),
 		_bytesPerLine(bytesPerLine)
 	{}
+	
+	static MLBitmap allocate(const QSize &size, int bytesPerLine)
+	{
+		return MLBitmap(reinterpret_cast<uint8_t *>(size.height() * bytesPerLine), size, bytesPerLine);
+	}
 	
 	uint8_t *bits() { return _bits; }
 	const uint8_t *constBits() const { return _bits; }
 	QSize size() const { return _size; }
 	int bytesPerLine() const { return _bytesPerLine; }
 	int byteCount() const { return _size.height() * _bytesPerLine; }
+	QRect rect() const { return QRect(QPoint(), _size); }
 	
 	Color *scanline(int y)
 	{
@@ -119,13 +127,13 @@ public:
 	
 	Color *scanline(int y)
 	{
-		Q_ASSERT(0 <= y && y < _size.height());
+		Q_ASSERT(0 <= y && y < _bitmap.size().height());
 		return _bitmap.scanline(y);
 	}
 	
 	const Color *constScanline(int y) const
 	{
-		Q_ASSERT(0 <= y && y < _size.height());
+		Q_ASSERT(0 <= y && y < _bitmap.size().height());
 		return _bitmap.constScanline(y);
 	}
 	
@@ -145,13 +153,13 @@ public:
 	
 	Color *scanline(int y)
 	{
-		Q_ASSERT(0 <= y && y < _size.height());
+		Q_ASSERT(0 <= y && y < _bitmap.size().height());
 		return _bitmap.scanline(size().height() - y - 1);
 	}
 	
 	const Color *constScanline(int y) const
 	{
-		Q_ASSERT(0 <= y && y < _size.height());
+		Q_ASSERT(0 <= y && y < _bitmap.size().height());
 		return _bitmap.constScanline(size().height() - y - 1);
 	}
 	
@@ -168,29 +176,15 @@ public:
 	{}
 	
 	MLGenericImageData(const MLGenericImageData &other) :
-		_bitmap(MLBitmap<Color>::allocate(size, bytesPerLine))
+		QSharedData(other),
+		_bitmap(MLBitmap<Color>::allocate(other.size(), other.bytesPerLine()))
 	{
 		mlCopyArray(_bitmap.bits(), other.constBits(), byteCount());
 	}
 	
-	MLGenericImageData(const QSize &size, int bytesPerLine)
-	    : _size(size),
-		  _bytesPerLine(bytesPerLine)
+	~MLGenericImageData()
 	{
-		_bits = reinterpret_cast<uint8_t *>(mlAllocateAlignedMemory(bytesPerLine * size.height(), 16));
-	}
-	
-	MLGenericImageData(const MLGenericImageData &other)
-	    : QSharedData(other),
-	      _size(other._size),
-		  _bytesPerLine(other._bytesPerLine)
-	{
-		_bits = reinterpret_cast<uint8_t *>(mlAllocateAlignedMemory(_bytesPerLine * _size.height(), 16));
-		mlCopyArray(_bits, other._bits, byteCount());
-	}
-	
-	~MLGenericImageData() {
-		mlFreeAlignedMemory(_bits);
+		mlFreeAlignedMemory(_bitmap.bits());
 	}
 	
 	int byteCount() const { return _bitmap.byteCount(); }
@@ -199,7 +193,6 @@ public:
 	uint8_t *bits() { return _bitmap.bits(); }
 	const uint8_t *constBits() const { return _bitmap.constBits(); }
 	
-private:
 	MLBitmap<Color> _bitmap;
 };
 
@@ -211,22 +204,22 @@ public:
 	
 	MLGenericImage(const QSize &size) {
 		if (!size.isEmpty())
-			d = new MLGenericImageData(size, size.width() * sizeof(Color));
+			d = new MLGenericImageData<Color>(size, size.width() * sizeof(Color));
 	}
 	
 	MLGenericImage(const QSize &size, int bytesPerLine) {
 		if (!size.isEmpty())
-			d = new MLGenericImageData(size, bytesPerLine);
+			d = new MLGenericImageData<Color>(size, bytesPerLine);
 	}
 	
 	MLGenericImage(int width, int height) {
 		if (width > 0 && height > 0)
-			d = new MLGenericImageData(QSize(width, height), width * sizeof(Color));
+			d = new MLGenericImageData<Color>(QSize(width, height), width * sizeof(Color));
 	}
 	
 	MLGenericImage(int width, int height, int bytesPerLine) {
 		if (width > 0 && height > 0)
-			d = new MLGenericImageData(QSize(width, height), bytesPerLine);
+			d = new MLGenericImageData<Color>(QSize(width, height), bytesPerLine);
 	}
 	
 	MLGenericImage(const MLGenericImage<Color> &other) :
@@ -281,10 +274,9 @@ public:
 	}
 	
 private:
-	QSharedDataPointer<MLGenericImageData> d;
+	QSharedDataPointer<MLGenericImageData<Color> > d;
 };
 
-/*
 // paint the destination image with the source image using the pixel operation function (such as source-over, multiply, etc)
 template <typename ColorDest, typename ColorSrc>
 void mlGenericImageOperation(MLAbstractImage<ColorDest> *dstImage, const QPoint &dstPosition, const MLAbstractImage<ColorSrc> *srcImage, const QPoint &srcPosition, void (*pixelOperation)(int count, ColorDest *d, const ColorSrc *s))
@@ -306,7 +298,6 @@ void mlGenericImageOperation(MLAbstractImage<ColorDest> *dstImage, const QPoint 
 		pixelOperation(targetRect.width(), dp, sp);
 	}
 }
-*?
 
 
 

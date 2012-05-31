@@ -23,7 +23,7 @@ public:
 	MLBrush brush() const { return _state.brush; }
 	
 	void setColor(const MLColor &color) { setBrush(MLBrush(color)); }
-	void setArgb(const MLFastArgbF &argb) { setBlendMode(MLBrush(argb)); }
+	void setArgb(const MLFastArgbF &argb) { setBrush(MLBrush(argb)); }
 	
 	void setOpacity(double opacity) { _state.opacity = opacity; _paintEngine->updateState(_state); }
 	double opacity() const { return _state.opacity; }

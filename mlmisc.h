@@ -215,8 +215,5 @@ private:
 	QVectorCountableIterator<T> i;
 };
 
-double mlCalculatePolygonSpace(const QPolygonF &polygon);
-float mlCalculatePolygonSpace(const MLPolygon &polygon);
-
 
 #endif // MLMISC_H

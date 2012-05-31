@@ -21,15 +21,11 @@ SOURCES += \
     mllinegradient.cpp \
     mlpaintengine.cpp \
     mlpainter.cpp \
-    mlsegmentpath.cpp \
     mlsurface.cpp \
     mlsurfacepaintengine.cpp \
     mlsurfacepainter.cpp \
     mlsurfaceselection.cpp \
     mlmisc.cpp \
-    mlpoint.cpp \
-    mlpolygon.cpp \
-    mloutline.cpp \
     mlbrush.cpp
 
 HEADERS += malachite.h\
@@ -53,24 +49,20 @@ HEADERS += malachite.h\
     mlpaintable.h \
     mlpaintengine.h \
     mlpainter.h \
-    mlrasterizer.h \
     mlscanlineclipper.h \
-    mlsegmentpath.h \
     mlssevector.h \
     mlsurface.h \
     mlsurfacepaintengine.h \
     mlsurfacepainter.h \
     mlsurfaceselection.h \
     agg_math.h \
-    mlpoint.h \
-    mlpolygon.h \
-    mloutline.h \
     agg_scanline_p.h \
     agg_rasterizer_sl_clip.h \
     agg_rasterizer_scanline_aa.h \
     agg_rasterizer_cells_aa.h \
     agg_gamma_functions.h \
-    mlbrush.h
+    mlbrush.h \
+    agg_clip_liang_barsky.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

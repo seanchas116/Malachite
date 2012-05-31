@@ -8,7 +8,7 @@
 #include "mlsurface.h"
 #include <QTransform>
 
-class MLBrushData
+class MLBrushData : public QSharedData
 {
 public:
 	MLBrushData() :
@@ -73,9 +73,9 @@ public:
 	}
 	
 	MLGlobal::BrushType type() const { return d->type; }
-	MLFastArgbF argb() const { d->type == Color ? d->data.value<MLFastArgbF>() : MLFastArgbF(); }
-	MLImage image() const { d->type == Image ? d->data.value<MLImage>() : MLImage(); }
-	MLColor color() const { d->type == Surface ? d->data.value<MLSurface>() : MLSurface(); }
+	MLFastArgbF argb() const { return d->type == MLGlobal::BrushTypeColor ? d->data.value<MLFastArgbF>() : MLFastArgbF(); }
+	MLImage image() const { return d->type == MLGlobal::BrushTypeImage ? d->data.value<MLImage>() : MLImage(); }
+	MLSurface surface() const { return d->type == MLGlobal::BrushTypeSurface ? d->data.value<MLSurface>() : MLSurface(); }
 	
 	void setTransform(const QTransform &transform) { d->transform = transform; }
 	QTransform transform() const { return d->transform; }

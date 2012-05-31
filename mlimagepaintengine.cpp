@@ -5,6 +5,71 @@
 
 #include "mlimagepaintengine.h"
 
+class QPainterPath_agg_vertex_source
+{
+public:
+	QPainterPath_agg_vertex_source(const QPainterPath &path) :
+		_path(path),
+		_index(0),
+		_curve4(0)
+	{}
+	
+	void rewind(unsigned index) { _index = 0; }
+	unsigned vertex(double *x, double *y);
+	
+private:
+	const QPainterPath _path;
+	int _index;
+	agg::curve4 *_curve4;
+};
+
+unsigned QPainterPath_agg_vertex_source::vertex(double *x, double *y)
+{
+	forever {
+		
+		unsigned type;
+		if (_curve4) {	// curveの途中
+			type = _curve4->vertex(x, y);
+			if (type == agg::path_cmd_move_to)
+				continue;	// 最初の頂点なので無視
+			if (type != agg::path_cmd_stop)
+				return type;	// line_to
+			
+			// ポリゴン終了
+			delete _curve4;
+			_curve4 = 0;
+		}
+		
+		if (_index == _path.elementCount())	// path終わり
+			return agg::path_cmd_stop;
+		
+		const QPainterPath::Element element = _path.elementAt(_index);
+		
+		if (element.type == QPainterPath::CurveToElement) {
+			_curve4 = new agg::curve4(_path.elementAt(_index - 1).x, _path.elementAt(_index - 1).y,
+									  _path.elementAt(_index).x, _path.elementAt(_index).y,
+									  _path.elementAt(_index + 1).x, _path.elementAt(_index + 1).y,
+									  _path.elementAt(_index + 2).x, _path.elementAt(_index + 2).y);
+			_index += 3;
+			continue;
+		}
+		
+		_index++;
+		*x = element.x;
+		*y = element.y;
+		
+		switch (element.type) {
+		case QPainterPath::MoveToElement:
+			return agg::path_cmd_move_to;
+		case QPainterPath::LineToElement:
+			return agg::path_cmd_line_to;
+		default:
+			return agg::path_cmd_line_to;
+		}
+	}
+}
+
+
 template <class BaseRenderer>
 class MLRenderer
 {
@@ -27,13 +92,11 @@ public:
             if(span->len > 0)
             {
                 _ren->blendRasterizerSpan(x, y, (unsigned)span->len, 
-                                      color, 
                                       span->covers);
             }
             else
             {
                 _ren->blendRasterizerLine(x, y, (unsigned)(x - span->len - 1), 
-                                color, 
                                 *(span->covers));
             }
             if(--num_spans == 0) break;
@@ -52,7 +115,6 @@ void mlRenderScanline(Rasterizer& ras, Scanline& sl, Renderer& ren)
     if(ras.rewind_scanlines())
     {
         sl.reset(ras.min_x(), ras.max_x());
-        ren.prepare();
         while(ras.sweep_scanline(sl))
         {
             ren.render(sl);
@@ -61,21 +123,22 @@ void mlRenderScanline(Rasterizer& ras, Scanline& sl, Renderer& ren)
 }
 
 template <class Filler>
-class MLBaseRenderer
+class MLImageBaseRenderer
 {
 public:
-	MLBaseRenderer(Filler *filler, const QRect &rect) :
-		_filler(filler),
-		_rect(rect)
+	MLImageBaseRenderer(const MLBitmap<MLFastArgbF> &bitmap, MLBlendOp *blendOp, Filler *filler) :
+		_bitmap(bitmap),
+		_blendOp(blendOp),
+		_filler(filler)
 	{}
 	
-	void blendRasterizerSpan(int x, int y, unsigned count, const uint8_t *covers)
+	void blendRasterizerSpan(int x, int y, int count, const uint8_t *covers)
 	{
-		if (y < _rect.top() || _rect.bottom() < y)
+		if (y < _bitmap.rect().top() || _bitmap.rect().bottom() < y)
 			return;
 		
-		int start = qMax(x, _rect.left());
-		int end = qMin(x + count, _rect.left() + _rect.width());
+		int start = qMax(x, _bitmap.rect().left());
+		int end = qMin(x + count, _bitmap.rect().left() + _bitmap.rect().width());
 		unsigned newCount = end - start;
 		
 		float *newCovers = new float[newCount];
@@ -85,51 +148,52 @@ public:
 			newCovers[i] = (float)covers[i + start - x] / 255.0f;
 		}
 		
-		_filler->blend(start, y, newCount, newCovers);
+		_filler->blend(_bitmap, _blendOp, start, y, newCount, newCovers);
 		
 		delete[] newCovers;
 	}
 	
-	void blendRasterizerLine(int x, int y, unsigned count, uint8_t cover)
+	void blendRasterizerLine(int x, int y, int count, uint8_t cover)
 	{
-		if (y < _rect.top() || _rect.bottom() < y)
+		if (y < _bitmap.rect().top() || _bitmap.rect().bottom() < y)
 			return;
 		
-		int start = qMax(x, _rect.left());
-		int end = qMin(x + count, _rect.left() + _rect.width());
+		int start = qMax(x, _bitmap.rect().left());
+		int end = qMin(x + count, _bitmap.rect().left() + _bitmap.rect().width());
 		unsigned newCount = end - start;
 		
-		_filler->blend(start, y, newCount, (float)cover / 255.0f);
+		_filler->blend(_bitmap, _blendOp, start, y, newCount, (float)cover / 255.0f);
 	}
 	
 private:
+	MLBitmap<MLFastArgbF> _bitmap;
+	MLBlendOp *_blendOp;
 	Filler *_filler;
-	QRect _rect;
 };
 
 class MLImageColorFiller
 {
 public:
-	MLImageColorFiller(MLBitmap<MLFastArgbF> *bitmap, const MLFastArgbF &argb, double opacity) :
-		_bitmap(bitmap),
+	MLImageColorFiller(const MLFastArgbF &argb, double opacity) :
 		_argb(argb)
 	{
 		_argb.v *= mlFloatToVector(opacity);
 	}
 	
-	void blend(int x, int y, unsigned count, float *covers);
-	void blend(int x, int y, unsigned count, float cover);
+	void blend(MLBitmap<MLFastArgbF> &bitmap, MLBlendOp *blendOp, int x, int y, int count, float *covers)
+	{
+		blendOp->blend(count, bitmap.pixelPointer(x, y), _argb, covers);
+	}
+	
+	void blend(MLBitmap<MLFastArgbF> &bitmap, MLBlendOp *blendOp, int x, int y, int count, float cover)
+	{
+		blendOp->blend(count, bitmap.pixelPointer(x, y), _argb, cover);
+	}
 	
 private:
-	MLBitmap<MLFastArgbF> _bitmap;
 	MLFastArgbF _argb;
 };
 
-MLImagePaintEngine::MLImagePaintEngine() :
-	MLPaintEngine(),
-	_rasterizer(this)
-{
-}
 
 bool MLImagePaintEngine::begin(MLPaintable *paintable)
 {
@@ -156,9 +220,16 @@ void MLImagePaintEngine::updateState(const MLPaintEngineState &state)
 void MLImagePaintEngine::drawPath(const QPainterPath &path)
 {
 	agg::scanline_p8 sl;
-	agg::rasterizer_scanline_aa ras;
+	agg::rasterizer_scanline_aa<> ras;
 	
+	QPainterPath_agg_vertex_source vs(path);
+	ras.add_path(vs);
 	
+	MLImageColorFiller filler(_state.brush.argb(), _opacity);
+	MLImageBaseRenderer<MLImageColorFiller> baseRen(_bitmap, _blendOp, &filler);
+	MLRenderer<MLImageBaseRenderer<MLImageColorFiller> > ren(&baseRen);
+	
+	mlRenderScanline(ras, sl, ren);
 }
 
 void MLImagePaintEngine::drawImage(const QPoint &point, const MLImage &image)
@@ -176,30 +247,9 @@ void MLImagePaintEngine::drawImage(const QPoint &point, const MLImage &image)
 		QPoint p(targetRect.left(), y);
 		
 		if (_opacity == 1.0f)
-			_blendOp->blend(targetRect.width(), pixelPointer(p), image.constPixelPointer(p - point));
+			_blendOp->blend(targetRect.width(), _bitmap.pixelPointer(p), image.constPixelPointer(p - point));
 		else
-			_blendOp->blend(targetRect.width(), pixelPointer(p), image.constPixelPointer(p - point), _opacity);
+			_blendOp->blend(targetRect.width(), _bitmap.pixelPointer(p), image.constPixelPointer(p - point), _opacity);
 	}
-}
-
-void MLImagePaintEngine::fillScanline(int x, int y, int count, float *covers)
-{
-	if (_opacity != 1.0f)
-	{
-		for (int i = 0; i < count; ++i)
-		{
-			covers[i] *= _opacity;
-		}
-	}
-	
-	_blendOp->blend(count, pixelPointer(x, y), _state.argb, covers);
-}
-
-void MLImagePaintEngine::fillScanline(int x, int y, int count)
-{
-	if (_opacity == 1.0f)
-		_blendOp->blend(count, pixelPointer(x, y), _state.argb);
-	else
-		_blendOp->blend(count, pixelPointer(x, y), _state.argb, _opacity);
 }
 

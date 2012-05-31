@@ -5,7 +5,7 @@ MLPainter::MLPainter(MLPaintable *paintable) :
 	_paintEngine(0)
 {
 	_state.blendMode = MLGlobal::BlendModeNormal;
-	_state.argb = MLColor::fromRgb(0, 0, 0).toFastArgbF();
+	_state.brush = MLBrush(MLColor::fromRgb(0, 0, 0));
 	_state.opacity = 1.0;
 	bool ok = begin(paintable);
 	if (!ok)
