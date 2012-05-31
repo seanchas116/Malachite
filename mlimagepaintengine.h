@@ -32,14 +32,10 @@ public:
 	
 private:
 	
-	MLRasterizer<MLImagePaintEngine> _rasterizer;
-	
 	MLBlendOp *_blendOp;
 	float _opacity;
 	
-	uint8_t *_bits;
-	QSize _size;
-	int _bytesPerLine;
+	MLBitmap<MLFastArgbF> _bitmap;
 	
 	MLPaintEngineState _state;
 	MLImage *_image;

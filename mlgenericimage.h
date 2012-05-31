@@ -7,6 +7,54 @@
 #include "mlmisc.h"
 
 template <typename Color>
+class MLBitmap
+{
+public:
+	MLBitmap(uint8_t *bits, const QSize &size, int bytesPerLine);
+	
+	static MLBitmap allocate(const QSize &size, int bytesPerLine) :
+		_bits(reinterpret_cast<uint8_t *>(size.height() * bytesPerLine)),
+		_size(size),
+		_bytesPerLine(bytesPerLine)
+	{}
+	
+	uint8_t *bits() { return _bits; }
+	const uint8_t *constBits() const { return _bits; }
+	QSize size() const { return _size; }
+	int bytesPerLine() const { return _bytesPerLine; }
+	int byteCount() const { return _size.height() * _bytesPerLine; }
+	
+	Color *scanline(int y)
+	{
+		return reinterpret_cast<Color *>(_bits + _bytesPerLine * y);
+	}
+	
+	const Color *constScanline(int y) const
+	{
+		return reinterpret_cast<const Color *>(_bits + _bytesPerLine * y);
+	}
+	
+	Color *pixelPointer(int x, int y)
+	{
+		return reinterpret_cast<Color *>(_bits + _bytesPerLine * y + sizeof(Color) * x);
+	}
+	
+	Color *pixelPointer(const QPoint &p) { return pixelPointer(p.x(), p.y()); }
+	
+	const Color *constPixelPointer(int x, int y) const
+	{
+		return reinterpret_cast<const Color *>(_bits + _bytesPerLine * y + sizeof(Color) * x);
+	}
+	
+	const Color *constPixelPointer(const QPoint &p) const { return constPixelPointer((p.x(), p.y())); }
+	
+private:
+	uint8_t *_bits;
+	QSize _size;
+	int _bytesPerLine;
+};
+
+template <typename Color>
 class MALACHITESHARED_EXPORT MLAbstractImage
 {
 public:
@@ -63,36 +111,26 @@ template <typename Color>
 class MLGenericWrapperImage : public MLAbstractImage<Color>
 {
 public:
-	MLGenericWrapperImage(uint8_t *bits, const QSize &size, int bytesPerLine) :
-		_bits(bits),
-		_size(size),
-		_bytesPerLine(bytesPerLine)
-	{}
 	
-	MLGenericWrapperImage(uint8_t *bits, int width, int height, int bytesPerLine) :
-		_bits(bits),
-		_size(width, height),
-		_bytesPerLine(bytesPerLine)
-	{}
+	MLGenericWrapperImage(const MLBitmap<Color> &bitmap) :
+		_bitmap(bitmap) {}
 	
-	QSize size() const { return _size; }
+	QSize size() const { return _bitmap.size(); }
 	
 	Color *scanline(int y)
 	{
 		Q_ASSERT(0 <= y && y < _size.height());
-		return reinterpret_cast<Color *>(_bits + y * _bytesPerLine);
+		return _bitmap.scanline(y);
 	}
 	
 	const Color *constScanline(int y) const
 	{
 		Q_ASSERT(0 <= y && y < _size.height());
-		return reinterpret_cast<const Color *>(_bits + y * _bytesPerLine);
+		return _bitmap.constScanline(y);
 	}
 	
 private:
-	uint8_t *_bits;
-	QSize _size;
-	int _bytesPerLine;
+	MLBitmap<Color> _bitmap;
 };
 
 // Vertically inverted
@@ -100,41 +138,41 @@ template <typename Color>
 class MLGenericWrapperImageM : public MLAbstractImage<Color>
 {
 public:
-	MLGenericWrapperImageM(uint8_t *bits, const QSize &size, int bytesPerLine) :
-		_bits(bits),
-		_size(size),
-		_bytesPerLine(bytesPerLine)
-	{}
+	MLGenericWrapperImageM(const MLBitmap<Color> &bitmap) :
+		_bitmap(bitmap) {}
 	
-	MLGenericWrapperImageM(uint8_t *bits, int width, int height, int bytesPerLine) :
-		_bits(bits),
-		_size(width, height),
-		_bytesPerLine(bytesPerLine)
-	{}
-	
-	QSize size() const { return _size; }
+	QSize size() const { return _bitmap.size(); }
 	
 	Color *scanline(int y)
 	{
 		Q_ASSERT(0 <= y && y < _size.height());
-		return reinterpret_cast<Color *>(_bits + (this->height() - y - 1) * _bytesPerLine);
+		return _bitmap.scanline(size().height() - y - 1);
 	}
 	
 	const Color *constScanline(int y) const
 	{
 		Q_ASSERT(0 <= y && y < _size.height());
-		return reinterpret_cast<const Color *>(_bits + (this->height() - y - 1) * _bytesPerLine);
+		return _bitmap.constScanline(size().height() - y - 1);
 	}
 	
 private:
-	uint8_t *_bits;
-	QSize _size;
-	int _bytesPerLine;
+	MLBitmap<Color> _bitmap;
 };
 
+template <typename Color>
 class MLGenericImageData : public QSharedData
 {
 public:
+	MLGenericImageData(const QSize &size, int bytesPerLine) :
+		_bitmap(MLBitmap<Color>::allocate(size, bytesPerLine))
+	{}
+	
+	MLGenericImageData(const MLGenericImageData &other) :
+		_bitmap(MLBitmap<Color>::allocate(size, bytesPerLine))
+	{
+		mlCopyArray(_bitmap.bits(), other.constBits(), byteCount());
+	}
+	
 	MLGenericImageData(const QSize &size, int bytesPerLine)
 	    : _size(size),
 		  _bytesPerLine(bytesPerLine)
@@ -155,16 +193,14 @@ public:
 		mlFreeAlignedMemory(_bits);
 	}
 	
-	int byteCount() const { return _size.height() * _bytesPerLine; }
-	QSize size() const { return _size; }
-	int bytesPerLine() const { return _bytesPerLine; }
-	uint8_t *bits() { return _bits; }
-	const uint8_t *constBits() const { return _bits; }
+	int byteCount() const { return _bitmap.byteCount(); }
+	QSize size() const { return _bitmap.size(); }
+	int bytesPerLine() const { return _bitmap.bytesPerLine(); }
+	uint8_t *bits() { return _bitmap.bits(); }
+	const uint8_t *constBits() const { return _bitmap.constBits(); }
 	
 private:
-	QSize _size;
-	int _bytesPerLine;
-	uint8_t *_bits;
+	MLBitmap<Color> _bitmap;
 };
 
 template <typename Color>
@@ -221,6 +257,9 @@ public:
 		if (!d) return 0;
 		return d->constBits();
 	}
+	
+	MLBitmap<Color> bitmap() { return d->_bitmap; }
+	const MLBitmap<Color> constBitmap() const { return d->_bitmap; }
 	
 	bool isValid() const { return d; }
 	

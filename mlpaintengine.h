@@ -6,11 +6,12 @@
 #include "mlpaintable.h"
 #include "mlimage.h"
 #include "mlsurface.h"
+#include "mlbrush.h"
 
 struct MLPaintEngineState
 {
 	MLBlendMode blendMode;
-	MLFastArgbF argb;
+	MLBrush brush;
 	double opacity;
 };
 

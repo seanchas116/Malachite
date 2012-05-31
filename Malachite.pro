@@ -28,7 +28,9 @@ SOURCES += \
     mlsurfaceselection.cpp \
     mlmisc.cpp \
     mlpoint.cpp \
-    mlpolygon.cpp
+    mlpolygon.cpp \
+    mloutline.cpp \
+    mlbrush.cpp
 
 HEADERS += malachite.h\
     agg_curves.h \
@@ -61,7 +63,14 @@ HEADERS += malachite.h\
     mlsurfaceselection.h \
     agg_math.h \
     mlpoint.h \
-    mlpolygon.h
+    mlpolygon.h \
+    mloutline.h \
+    agg_scanline_p.h \
+    agg_rasterizer_sl_clip.h \
+    agg_rasterizer_scanline_aa.h \
+    agg_rasterizer_cells_aa.h \
+    agg_gamma_functions.h \
+    mlbrush.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

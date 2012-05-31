@@ -41,7 +41,7 @@ enum BlendMode {
 	BlendModeDestinationAtop,
 	BlendModeXor,
 	
-	BlendModePassThrough,	// Group only
+	BlendModePassThrough	// Group only
 };
 
 enum ComponentPosition {
@@ -49,6 +49,14 @@ enum ComponentPosition {
 	PositionRed = 2,
 	PositionGreen = 1,
 	PositionBlue = 0
+};
+
+enum BrushType {
+	BrushTypeNull,
+	BrushTypeColor,
+	BrushTypeGradient,
+	BrushTypeImage,
+	BrushTypeSurface
 };
 
 }

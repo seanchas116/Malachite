@@ -4,6 +4,7 @@
 #include "mlpaintengine.h"
 #include "mlpaintable.h"
 #include "mlsurface.h"
+#include "mlbrush.h"
 
 class MALACHITESHARED_EXPORT MLPainter
 {
@@ -18,11 +19,11 @@ public:
 	void setBlendMode(const MLBlendMode &mode) { _state.blendMode = mode; _paintEngine->updateState(_state); }
 	MLBlendMode blendMode() const { return _state.blendMode; }
 	
-	void setColor(const MLColor &color) { _state.argb = color.toFastArgbF(); _paintEngine->updateState(_state); }
-	MLColor color() const { return MLColor::fromFastArgbF(_state.argb); }
+	void setBrush(const MLBrush &brush) { _state.brush = brush; }
+	MLBrush brush() const { return _state.brush; }
 	
-	void setArgb(const MLFastArgbF &argb) { _state.argb = argb; }
-	MLFastArgbF argb() const { return _state.argb; }
+	void setColor(const MLColor &color) { setBrush(MLBrush(color)); }
+	void setArgb(const MLFastArgbF &argb) { setBlendMode(MLBrush(argb)); }
 	
 	void setOpacity(double opacity) { _state.opacity = opacity; _paintEngine->updateState(_state); }
 	double opacity() const { return _state.opacity; }
