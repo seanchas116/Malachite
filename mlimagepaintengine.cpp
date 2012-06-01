@@ -14,7 +14,7 @@ public:
 		_curve4(0)
 	{}
 	
-	void rewind(unsigned index) { _index = 0; }
+	void rewind(unsigned index) { Q_UNUSED(index); _index = 0; }
 	unsigned vertex(double *x, double *y);
 	
 private:
@@ -124,7 +124,7 @@ template <class Filler>
 class MLImageBaseRenderer
 {
 public:
-	MLImageBaseRenderer(const MLBitmap<MLFastArgbF> &bitmap, MLBlendOp *blendOp, Filler *filler) :
+	MLImageBaseRenderer(const MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, Filler *filler) :
 		_bitmap(bitmap),
 		_blendOp(blendOp),
 		_filler(filler)
@@ -138,6 +138,9 @@ public:
 		int start = qMax(x, _bitmap.rect().left());
 		int end = qMin(x + count, _bitmap.rect().left() + _bitmap.rect().width());
 		int newCount = end - start;
+		
+		if (newCount <= 0)
+			return;
 		
 		float *newCovers = new float[newCount];
 		
@@ -164,7 +167,7 @@ public:
 	}
 	
 private:
-	MLBitmap<MLFastArgbF> _bitmap;
+	MLBitmap<MLArgb> _bitmap;
 	MLBlendOp *_blendOp;
 	Filler *_filler;
 };
@@ -172,24 +175,24 @@ private:
 class MLImageColorFiller
 {
 public:
-	MLImageColorFiller(const MLFastArgbF &argb, double opacity) :
+	MLImageColorFiller(const MLArgb &argb, double opacity) :
 		_argb(argb)
 	{
-		_argb.v *= mlFloatToVector(opacity);
+		_argb.v *= opacity;
 	}
 	
-	void blend(MLBitmap<MLFastArgbF> &bitmap, MLBlendOp *blendOp, int x, int y, int count, float *covers)
+	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, int x, int y, int count, float *covers)
 	{
 		blendOp->blend(count, bitmap.pixelPointer(x, y), _argb, covers);
 	}
 	
-	void blend(MLBitmap<MLFastArgbF> &bitmap, MLBlendOp *blendOp, int x, int y, int count, float cover)
+	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, int x, int y, int count, float cover)
 	{
 		blendOp->blend(count, bitmap.pixelPointer(x, y), _argb, cover);
 	}
 	
 private:
-	MLFastArgbF _argb;
+	MLArgb _argb;
 };
 
 

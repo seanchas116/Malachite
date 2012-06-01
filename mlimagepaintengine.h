@@ -22,7 +22,7 @@ private:
 	MLBlendOp *_blendOp;
 	float _opacity;
 	
-	MLBitmap<MLFastArgbF> _bitmap;
+	MLBitmap<MLArgb> _bitmap;
 	
 	MLPaintEngineState _state;
 	MLImage *_image;

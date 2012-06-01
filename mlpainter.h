@@ -24,7 +24,7 @@ public:
 	MLBrush brush() const { return _state.brush; }
 	
 	void setColor(const MLColor &color) { setBrush(MLBrush(color)); updateState(); }
-	void setArgb(const MLFastArgbF &argb) { setBrush(MLBrush(argb)); updateState(); }
+	void setArgb(const MLArgb &argb) { setBrush(MLBrush(argb)); updateState(); }
 	
 	void setOpacity(double opacity) { _state.opacity = opacity; updateState(); }
 	double opacity() const { return _state.opacity; }

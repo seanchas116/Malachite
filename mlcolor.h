@@ -1,387 +1,12 @@
 #ifndef MLCOLOR_H
 #define MLCOLOR_H
 
-#include <stdint.h>
 #include <cstdlib>
 #include <cmath>
 #include <QColor>
 
-#include "mlglobal.h"
 #include "mlmisc.h"
-#include "mlssevector.h"
-
-// Color store is inverted (Little Endian)
-
-struct MLArgb8;
-struct MLRgb8;
-struct MLRgba8;
-struct MLRgb16;
-struct MLRgba16;
-struct MLArgb32;
-struct MLFastArgb8;
-struct MLFastArgb32;
-struct MLArgbF;
-struct MLFastArgbF;
-
-struct MALACHITESHARED_EXPORT MLArgb8
-{
-	union {
-		struct {
-			uint8_t b;
-			uint8_t g;
-			uint8_t r;
-			uint8_t a;
-		};
-		uint32_t data;
-	};
-	
-	MLArgb8 &operator=(const MLArgbF &src);
-	MLArgb8 &operator=(const MLFastArgbF &src);
-};
-
-struct MALACHITESHARED_EXPORT MLRgb8
-{
-	uint8_t b;
-	uint8_t g;
-	uint8_t r;
-	
-	MLRgb8 &operator=(const MLFastArgbF &src);
-};
-
-struct MALACHITESHARED_EXPORT MLRgba8
-{
-	union {
-		struct {
-			uint8_t a;
-			uint8_t b;
-			uint8_t g;
-			uint8_t r;
-		};
-		uint32_t data;
-	};
-	
-	MLRgba8 &operator=(const MLArgbF &src);
-	MLRgba8 &operator=(const MLFastArgbF &src);
-};
-
-struct MALACHITESHARED_EXPORT MLRgb16
-{
-	uint16_t b;
-	uint16_t g;
-	uint16_t r;
-	
-	MLRgb16 &operator=(const MLFastArgbF &src);
-};
-
-struct MALACHITESHARED_EXPORT MLRgba16
-{
-	union {
-		struct {
-			uint16_t a;
-			uint16_t b;
-			uint16_t g;
-			uint16_t r;
-		};
-		uint64_t data;
-	};
-	
-	MLRgba16 &operator=(const MLArgbF &src);
-	MLRgba16 &operator=(const MLFastArgbF &src);
-};
-
-struct MALACHITESHARED_EXPORT MLArgb32
-{
-	union {
-		struct {
-			uint32_t b;
-			uint32_t g;
-			uint32_t r;
-			uint32_t a;
-		};
-		__v4si v;
-	};
-	
-	ML_ALIGN_16BYTE
-};
-
-struct MALACHITESHARED_EXPORT MLFastArgb8
-{
-	union {
-		struct {
-			uint8_t b;
-			uint8_t g;
-			uint8_t r;
-			uint8_t a;
-		};
-		uint32_t data;
-	};
-	
-	MLFastArgb8 &operator=(const MLFastArgbF &src);
-};
-
-struct MALACHITESHARED_EXPORT MLFastArgb32
-{
-	union {
-		struct {
-			uint32_t b;
-			uint32_t g;
-			uint32_t r;
-			uint32_t a;
-		};
-		__v4si v;
-	};
-	
-	ML_ALIGN_16BYTE
-};
-
-struct MALACHITESHARED_EXPORT MLArgbF
-{
-	union {
-		struct {
-			float b;
-			float g;
-			float r;
-			float a;
-		};
-		__v4sf v;
-	};
-	
-	MLArgbF &operator=(const MLRgb8 &src);
-	MLArgbF &operator=(const MLRgb16 &src);
-	MLArgbF &operator=(const MLRgba8 &src);
-	MLArgbF &operator=(const MLRgba16 &src);
-	MLArgbF &operator=(const MLFastArgbF &src);
-	
-	ML_ALIGN_16BYTE
-};
-
-struct MALACHITESHARED_EXPORT MLFastArgbF
-{
-	union {
-		struct {
-			float b;
-			float g;
-			float r;
-			float a;
-		};
-		__v4sf v;
-	};
-	
-	MLFastArgbF &operator=(const MLRgb8 &src);
-	MLFastArgbF &operator=(const MLRgb16 &src);
-	MLFastArgbF &operator=(const MLFastArgb8 &src);
-	MLFastArgbF &operator=(const MLRgba8 &src);
-	MLFastArgbF &operator=(const MLRgba16 &src);
-	MLFastArgbF &operator=(const MLArgbF &src);
-	
-	ML_ALIGN_16BYTE
-};
-
-inline MLArgb8 &MLArgb8::operator=(const MLArgbF &src)
-{
-	MLArgb32 argb32;
-	argb32.v = __builtin_ia32_cvtps2dq(src.v * mlFloatToVector(0xFF));
-	a = argb32.a;
-	r = argb32.r;
-	g = argb32.g;
-	b = argb32.b;
-	return *this;
-}
-
-inline MLArgb8 &MLArgb8::operator=(const MLFastArgbF &src)
-{
-	MLArgbF argbf;
-	argbf = src;
-	return *this = argbf;
-}
-
-inline MLRgb8 &MLRgb8::operator=(const MLFastArgbF &src)
-{
-	MLFastArgb32 argb32;
-	MLFastArgbF argb;
-	argb.v = src.v + mlFloatToVector(1.0f - src.a);
-	
-	argb32.v = __builtin_ia32_cvtps2dq(argb.v * mlFloatToVector(0xFF));
-	r = argb32.r;
-	g = argb32.g;
-	b = argb32.b;
-	
-	return *this;
-}
-
-inline MLRgba8 &MLRgba8::operator=(const MLArgbF &src)
-{
-	MLArgb32 argb32;
-	argb32.v = __builtin_ia32_cvtps2dq(src.v * mlFloatToVector(0xFF));
-	a = argb32.a;
-	r = argb32.r;
-	g = argb32.g;
-	b = argb32.b;
-	return *this;
-}
-
-inline MLRgba8 &MLRgba8::operator=(const MLFastArgbF &src)
-{
-	MLArgbF argbf;
-	argbf = src;
-	return *this = argbf;
-}
-
-inline MLRgb16 &MLRgb16::operator=(const MLFastArgbF &src)
-{
-	MLFastArgb32 argb32;
-	MLFastArgbF argb;
-	argb.v = src.v + mlFloatToVector(1.0f - src.a);
-	
-	argb32.v = __builtin_ia32_cvtps2dq(argb.v * mlFloatToVector(0xFFFF));
-	r = argb32.r;
-	g = argb32.g;
-	b = argb32.b;
-	
-	return *this;
-}
-
-inline MLRgba16 &MLRgba16::operator=(const MLArgbF &src)
-{
-	MLArgb32 argb32;
-	argb32.v = __builtin_ia32_cvtps2dq(src.v * mlFloatToVector(0xFFFF));
-	a = argb32.a;
-	r = argb32.r;
-	g = argb32.g;
-	b = argb32.b;
-	return *this;
-}
-
-inline MLRgba16 &MLRgba16::operator=(const MLFastArgbF &src)
-{
-	MLArgbF argbf;
-	argbf = src;
-	return *this = argbf;
-}
-
-inline MLFastArgb8 &MLFastArgb8::operator=(const MLFastArgbF &src)
-{
-	MLFastArgb32 argb32;
-	argb32.v = __builtin_ia32_cvtps2dq(src.v * mlFloatToVector(0xFF));
-	a = argb32.a;
-	r = argb32.r;
-	g = argb32.g;
-	b = argb32.b;
-	return *this;
-}
-
-inline MLArgbF &MLArgbF::operator=(const MLRgb8 &src)
-{
-	MLArgb32 argb32;
-	argb32.a = 0xFF;
-	argb32.r = src.r;
-	argb32.g = src.g;
-	argb32.b = src.b;
-	v = __builtin_ia32_cvtdq2ps(argb32.v) / mlFloatToVector(0xFF);
-	return *this;
-}
-
-inline MLArgbF &MLArgbF::operator=(const MLRgb16 &src)
-{
-	MLArgb32 argb32;
-	argb32.a = 0xFFFF;
-	argb32.r = src.r;
-	argb32.g = src.g;
-	argb32.b = src.b;
-	v = __builtin_ia32_cvtdq2ps(argb32.v) / mlFloatToVector(0xFFFF);
-	return *this;
-}
-
-inline MLArgbF &MLArgbF::operator=(const MLRgba8 &src)
-{
-	MLArgb32 argb32;
-	argb32.a = src.a;
-	argb32.r = src.r;
-	argb32.g = src.g;
-	argb32.b = src.b;
-	v = __builtin_ia32_cvtdq2ps(argb32.v) / mlFloatToVector(0xFF);
-	return *this;
-}
-
-inline MLArgbF &MLArgbF::operator=(const MLRgba16 &src)
-{
-	MLArgb32 argb32;
-	argb32.a = src.a;
-	argb32.r = src.r;
-	argb32.g = src.g;
-	argb32.b = src.b;
-	v = __builtin_ia32_cvtdq2ps(argb32.v) / mlFloatToVector(0xFFFF);
-	return *this;
-}
-
-inline MLArgbF &MLArgbF::operator=(const MLFastArgbF &src)
-{
-	MLArgbF divisor;
-	divisor.a = 1.0f;
-	divisor.r = src.a;
-	divisor.g = src.a;
-	divisor.b = src.a;
-	v = src.v / divisor.v;
-	return *this;
-}
-
-inline MLFastArgbF &MLFastArgbF::operator=(const MLRgb8 &src)
-{
-	MLFastArgb32 argb32;
-	argb32.a = 0xFF;
-	argb32.r = src.r;
-	argb32.g = src.g;
-	argb32.b = src.b;
-	v = __builtin_ia32_cvtdq2ps(argb32.v) / mlFloatToVector(0xFF);
-	return *this;
-}
-
-inline MLFastArgbF &MLFastArgbF::operator=(const MLRgb16 &src)
-{
-	MLFastArgb32 argb32;
-	argb32.a = 0xFFFF;
-	argb32.r = src.r;
-	argb32.g = src.g;
-	argb32.b = src.b;
-	v = __builtin_ia32_cvtdq2ps(argb32.v) / mlFloatToVector(0xFFFF);
-	return *this;
-}
-
-inline MLFastArgbF &MLFastArgbF::operator=(const MLFastArgb8 &src)
-{
-	MLFastArgb32 argb32;
-	argb32.a = src.a;
-	argb32.r = src.r;
-	argb32.g = src.g;
-	argb32.b = src.b;
-	v = __builtin_ia32_cvtdq2ps(argb32.v) / mlFloatToVector(0xFF);
-	return *this;
-}
-
-inline MLFastArgbF &MLFastArgbF::operator=(const MLRgba8 &src)
-{
-	MLArgbF argbf;
-	argbf = src;
-	return *this = argbf;
-}
-
-inline MLFastArgbF &MLFastArgbF::operator=(const MLRgba16 &src)
-{
-	MLArgbF argbf;
-	argbf = src;
-	return *this = argbf;
-}
-
-inline MLFastArgbF &MLFastArgbF::operator=(const MLArgbF &src)
-{
-	MLArgbF factor;
-	factor.a = 1.0f;
-	factor.r = src.a;
-	factor.g = src.a;
-	factor.b = src.a;
-	v = src.v * factor.v;
-	return *this;
-}
+#include "mlargb.h"
 
 class MALACHITESHARED_EXPORT MLColor
 {
@@ -492,20 +117,20 @@ public:
 		return color;
 	}
 	
-	MLFastArgbF toFastArgbF() const
+	MLArgb toArgb() const
 	{
-		MLFastArgbF argb;
-		argb.a = _a;
-		argb.r = _r * _a;
-		argb.g = _g * _a;
-		argb.b = _b * _a;
+		MLArgb argb;
+		argb.a() = _a;
+		argb.r() = _r * _a;
+		argb.g() = _g * _a;
+		argb.b() = _b * _a;
 		return argb;
 	}
 	
 	MLFastArgb8 toFastArgb8() const
 	{
 		MLFastArgb8 argb8;
-		argb8 = toFastArgbF();
+		argb8 = toArgb();
 		return argb8;
 	}
 	
@@ -516,16 +141,16 @@ public:
 	
 	QString toWebColor() const;
 	
-	static MLColor fromFastArgbF(const MLFastArgbF &argb)
+	static MLColor fromArgb(const MLArgb &argb)
 	{
-		return MLColor::fromRgb(argb.r / argb.a, argb.g / argb.a, argb.b / argb.a, argb.a);
+		return argb.a() == 0 ? MLColor::fromRgb(argb.r() / argb.a(), argb.g() / argb.a(), argb.b() / argb.a(), argb.a()) : MLColor();
 	}
 	
 	static MLColor fromFastArgb8(const MLFastArgb8 &argb)
 	{
-		MLFastArgbF argbf;
+		MLArgb argbf;
 		argbf = argb;
-		return MLColor::fromFastArgbF(argbf);
+		return MLColor::fromArgb(argbf);
 	}
 	
 	static MLColor fromQColor(const QColor &qcolor)
@@ -555,6 +180,5 @@ private:
 };
 
 Q_DECLARE_METATYPE(MLColor)
-Q_DECLARE_METATYPE(MLFastArgbF)
 
 #endif // MLCOLOR_H

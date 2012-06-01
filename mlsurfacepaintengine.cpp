@@ -152,9 +152,9 @@ void MLSurfacePaintEngine::squeeze()
 bool MLSurfacePaintEngine::imageIsBlank(const MLImage &image)
 {
 	for (int y = 0; y < image.height(); ++y) {
-		const MLFastArgbF *p = image.constScanline(y);
+		const MLArgb *p = image.constScanline(y);
 		for (int x = 0; x < image.width(); ++x) {
-			if (p->a)
+			if (p->a())
 				return false;
 			p++;
 		}

@@ -48,22 +48,26 @@ MLImage MLImage::fromFIBITMAP(FIBITMAP *bitmap)
 		if (bpp == 24) {	// RGB8
 			qDebug() << "RGB8";
 			MLGenericWrapperImageM<MLRgb8> wrapper(FreeImage_GetBits(bitmap), size, FreeImage_GetPitch(bitmap));
-			image.paste(0, 0, wrapper);
+			image.paste(wrapper);
 		} else if (bpp == 32) {
-			MLGenericWrapperImageM<MLRgba8> wrapper(FreeImage_GetBits(bitmap), size, FreeImage_GetPitch(bitmap));
-			image.paste(0, 0, wrapper);
+			qDebug() << "RGBA8";
+			MLGenericWrapperImageM<MLArgb8> wrapper(FreeImage_GetBits(bitmap), size, FreeImage_GetPitch(bitmap));
+			image.paste(wrapper);
 		} else {
+			qDebug() << "less than RGBA8";
 			FIBITMAP *newBitmap = FreeImage_ConvertTo24Bits(bitmap);
 			MLGenericWrapperImageM<MLRgb8> wrapper(FreeImage_GetBits(newBitmap), size, FreeImage_GetPitch(newBitmap));
-			image.paste(0, 0, wrapper);
+			image.paste(wrapper);
 			FreeImage_Unload(newBitmap);
 		}
 	} else if (type == FIT_RGB16) {
+		qDebug() << "RGB16";
 		MLGenericWrapperImageM<MLRgb16> wrapper(FreeImage_GetBits(bitmap), size, FreeImage_GetPitch(bitmap));
-		image.paste(0, 0, wrapper);
+		image.paste(wrapper);
 	} else if (type == FIT_RGBA16) {
+		qDebug() << "RGBA16";
 		MLGenericWrapperImageM<MLRgba16> wrapper(FreeImage_GetBits(bitmap), size, FreeImage_GetPitch(bitmap));
-		image.paste(0, 0, wrapper);
+		image.paste(wrapper);
 	} else {
 		qDebug() << "MLImage::fromFIBITMAP: Unsupported data type";
 		return MLImage();

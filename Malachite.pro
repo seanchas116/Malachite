@@ -49,8 +49,6 @@ HEADERS += malachite.h\
     mlpaintable.h \
     mlpaintengine.h \
     mlpainter.h \
-    mlscanlineclipper.h \
-    mlssevector.h \
     mlsurface.h \
     mlsurfacepaintengine.h \
     mlsurfacepainter.h \
@@ -63,7 +61,9 @@ HEADERS += malachite.h\
     agg_gamma_functions.h \
     mlbrush.h \
     agg_clip_liang_barsky.h \
-    mlbitmap.h
+    mlbitmap.h \
+    mlsimdvector.h \
+    mlargb.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
@@ -94,4 +94,6 @@ mac {
 }
 
 LIBS += -lfreeimage
+
+QMAKE_CXXFLAFS += -std=c++0x
 

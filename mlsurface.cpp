@@ -43,12 +43,12 @@ bool MLSurface::save(QIODevice *device) const
 		QDataStream tileStream(&tileArray, QIODevice::WriteOnly);
 		
 		for (int y = 0; y < TileSize; ++y) {
-			const MLFastArgbF *p = tile->constScanline(y);
+			const MLArgb *p = tile->constScanline(y);
 			for (int x = 0; x < TileSize; ++x) {
-				tileStream << p->a;
-				tileStream << p->r;
-				tileStream << p->g;
-				tileStream << p->b;
+				tileStream << p->a();
+				tileStream << p->r();
+				tileStream << p->g();
+				tileStream << p->b();
 				++p;
 			}
 		}
@@ -80,12 +80,12 @@ MLSurface MLSurface::loaded(QIODevice *device)
 		QDataStream tileStream(&tileArray, QIODevice::ReadOnly);
 		
 		for (int y = 0; y < TileSize; ++y) {
-			MLFastArgbF *p = tile->scanline(y);
+			MLArgb *p = tile->scanline(y);
 			for (int x = 0; x < TileSize; ++x) {
-				tileStream >> p->a;
-				tileStream >> p->r;
-				tileStream >> p->g;
-				tileStream >> p->b;
+				tileStream >> p->a();
+				tileStream >> p->r();
+				tileStream >> p->g();
+				tileStream >> p->b();
 				++p;
 			}
 		}
@@ -271,7 +271,7 @@ int MLSurface::commonLeftBound(const QPointSet keys) const
 		foreach (const QPoint &key, keys) {
 			const MLImage image = tileForKey(key);
 			for (int y = 0; y < MLSurface::TileSize; ++y) {
-				if (image.pixel(x, y).a)
+				if (image.pixel(x, y).a())
 					return x;
 			}
 		}
@@ -285,7 +285,7 @@ int MLSurface::commonRightBound(const QPointSet keys) const
 		foreach (const QPoint &key, keys) {
 			const MLImage image = tileForKey(key);
 			for (int y = 0; y < MLSurface::TileSize; ++y) {
-				if (image.pixel(x, y).a)
+				if (image.pixel(x, y).a())
 					return x;
 			}
 		}
@@ -297,9 +297,9 @@ int MLSurface::commonTopBound(const QPointSet keys) const
 {
 	for (int y = 0; y < MLSurface::TileSize; ++y) {
 		foreach (const QPoint &key, keys) {
-			const MLFastArgbF *scanline = tileForKey(key).scanline(y);
+			const MLArgb *scanline = tileForKey(key).scanline(y);
 			for (int x = 0; x < MLSurface::TileSize; ++x) {
-				if (scanline->a)
+				if (scanline->a())
 					return y;
 				scanline++;
 			}
@@ -312,9 +312,9 @@ int MLSurface::commonBottomBound(const QPointSet keys) const
 {
 	for (int y = MLSurface::TileSize - 1; y >= 0; --y) {
 		foreach (const QPoint &key, keys) {
-			const MLFastArgbF *scanline = tileForKey(key).scanline(y);
+			const MLArgb *scanline = tileForKey(key).scanline(y);
 			for (int x = 0; x < MLSurface::TileSize; ++x) {
-				if (scanline->a)
+				if (scanline->a())
 					return y;
 				scanline++;
 			}
@@ -339,9 +339,9 @@ public:
 	MLSurfaceInitializer()
 	{
 		MLSurface::DefaultTile = MLImage(MLSurface::TileSize, MLSurface::TileSize);
-		MLSurface::DefaultTile.fill(MLColor::fromRgb(0, 0, 0, 0).toFastArgbF());
+		MLSurface::DefaultTile.fill(MLColor::fromRgb(0, 0, 0, 0).toArgb());
 		MLSurface::WhiteTile = MLImage(MLSurface::TileSize, MLSurface::TileSize);
-		MLSurface::WhiteTile.fill(MLColor::fromRgb(1, 1, 1, 1).toFastArgbF());
+		MLSurface::WhiteTile.fill(MLColor::fromRgb(1, 1, 1, 1).toArgb());
 	}
 };
 

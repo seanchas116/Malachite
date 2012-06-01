@@ -15,7 +15,7 @@ public:
 		type(MLGlobal::BrushTypeNull)
 	{}
 	
-	MLBrushData(const MLFastArgbF &argb) :
+	MLBrushData(const MLArgb &argb) :
 		type(MLGlobal::BrushTypeColor),
 		data(QVariant::fromValue(argb))
 	{}
@@ -54,10 +54,10 @@ public:
 	
 	MLBrush(const MLColor &color)
 	{
-		d = new MLBrushData(color.toFastArgbF());
+		d = new MLBrushData(color.toArgb());
 	}
 	
-	MLBrush(const MLFastArgbF &argb)
+	MLBrush(const MLArgb &argb)
 	{
 		d = new MLBrushData(argb);
 	}
@@ -73,7 +73,7 @@ public:
 	}
 	
 	MLGlobal::BrushType type() const { return d->type; }
-	MLFastArgbF argb() const { return d->type == MLGlobal::BrushTypeColor ? d->data.value<MLFastArgbF>() : MLFastArgbF(); }
+	MLArgb argb() const { return d->type == MLGlobal::BrushTypeColor ? d->data.value<MLArgb>() : MLArgb(); }
 	MLImage image() const { return d->type == MLGlobal::BrushTypeImage ? d->data.value<MLImage>() : MLImage(); }
 	MLSurface surface() const { return d->type == MLGlobal::BrushTypeSurface ? d->data.value<MLSurface>() : MLSurface(); }
 	

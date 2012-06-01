@@ -6,13 +6,13 @@
 #include "mlgenericimage.h"
 #include <FreeImage.h>
 
-class MALACHITESHARED_EXPORT MLImage : public MLGenericImage<MLFastArgbF>, public MLPaintable
+class MALACHITESHARED_EXPORT MLImage : public MLGenericImage<MLArgb>, public MLPaintable
 {
 public:
-	MLImage() : MLGenericImage<MLFastArgbF>() {}
-	MLImage(const MLGenericImage<MLFastArgbF> &other) : MLGenericImage<MLFastArgbF>(other) {}
-	MLImage(const QSize &size) : MLGenericImage<MLFastArgbF>(size) {}
-	MLImage(int width, int height) : MLGenericImage<MLFastArgbF>(width, height) {}
+	MLImage() : MLGenericImage<MLArgb>() {}
+	MLImage(const MLGenericImage<MLArgb> &other) : MLGenericImage<MLArgb>(other) {}
+	MLImage(const QSize &size) : MLGenericImage<MLArgb>(size) {}
+	MLImage(int width, int height) : MLGenericImage<MLArgb>(width, height) {}
 	
 	MLPaintEngine *createPaintEngine();
 	

@@ -18,25 +18,25 @@ public:
 	
 	Q_DECLARE_FLAGS(TileStates, TileState)
 	
-	virtual void blend(int count, MLFastArgbF *dst, const MLFastArgbF *src) = 0;
-	virtual void blend(int count, MLFastArgbF *dst, const MLFastArgbF *src, const MLFastArgbF *masks) = 0;
-	virtual void blend(int count, MLFastArgbF *dst, const MLFastArgbF *src, const float *opacities) = 0;
-	virtual void blend(int count, MLFastArgbF *dst, const MLFastArgbF *src, const MLFastArgbF &mask) = 0;
-	virtual void blend(int count, MLFastArgbF *dst, const MLFastArgbF *src, float opacity) = 0;
-	virtual void blend(int count, MLFastArgbF *dst, const MLFastArgbF &src) = 0;
-	virtual void blend(int count, MLFastArgbF *dst, const MLFastArgbF &src, const MLFastArgbF *masks) = 0;
-	virtual void blend(int count, MLFastArgbF *dst, const MLFastArgbF &src, const float *opacities) = 0;
-	virtual void blend(int count, MLFastArgbF *dst, const MLFastArgbF &src, const MLFastArgbF &mask) = 0;
-	virtual void blend(int count, MLFastArgbF *dst, const MLFastArgbF &src, float opacity) = 0;
+	virtual void blend(int count, MLArgb *dst, const MLArgb *src) = 0;
+	virtual void blend(int count, MLArgb *dst, const MLArgb *src, const MLArgb *masks) = 0;
+	virtual void blend(int count, MLArgb *dst, const MLArgb *src, const float *opacities) = 0;
+	virtual void blend(int count, MLArgb *dst, const MLArgb *src, const MLArgb &mask) = 0;
+	virtual void blend(int count, MLArgb *dst, const MLArgb *src, float opacity) = 0;
+	virtual void blend(int count, MLArgb *dst, const MLArgb &src) = 0;
+	virtual void blend(int count, MLArgb *dst, const MLArgb &src, const MLArgb *masks) = 0;
+	virtual void blend(int count, MLArgb *dst, const MLArgb &src, const float *opacities) = 0;
+	virtual void blend(int count, MLArgb *dst, const MLArgb &src, const MLArgb &mask) = 0;
+	virtual void blend(int count, MLArgb *dst, const MLArgb &src, float opacity) = 0;
 	
 	virtual TileStates tileOp(TileStates states) = 0;
 };
 
-template <void (*blendFunc)(MLFastArgbF *dst, const MLFastArgbF *src), MLBlendOp::TileStates (*tileOpFunc)(MLBlendOp::TileStates states)>
+template <void (*blendFunc)(MLArgb *dst, const MLArgb *src), MLBlendOp::TileStates (*tileOpFunc)(MLBlendOp::TileStates states)>
 class MLTemplateBlendOp : public MLBlendOp
 {
 public:
-	void blend(int count, MLFastArgbF *dst, const MLFastArgbF *src)
+	void blend(int count, MLArgb *dst, const MLArgb *src)
 	{
 		for (int i = 0; i < count; ++i)
 		{
@@ -44,53 +44,53 @@ public:
 		}
 	}
 	
-	void blend(int count, MLFastArgbF *dst, const MLFastArgbF *src, const MLFastArgbF *masks)
+	void blend(int count, MLArgb *dst, const MLArgb *src, const MLArgb *masks)
 	{
 		for (int i = 0; i < count; ++i)
 		{
-			MLFastArgbF c;
-			c.v = src->v * mlFloatToVector(masks->a);
+			MLArgb c;
+			c.v = src->v * masks->a();
 			src++;
 			masks++;
 			blendFunc(dst++, &c);
 		}
 	}
 
-	void blend(int count, MLFastArgbF *dst, const MLFastArgbF *src, const float *opacities)
+	void blend(int count, MLArgb *dst, const MLArgb *src, const float *opacities)
 	{
 		for (int i = 0; i < count; ++i)
 		{
-			MLFastArgbF c;
-			c.v = src->v * mlFloatToVector(*opacities);
+			MLArgb c;
+			c.v = src->v * *opacities;
 			src++;
 			opacities++;
 			blendFunc(dst++, &c);
 		}
 	}
 
-	void blend(int count, MLFastArgbF *dst, const MLFastArgbF *src, const MLFastArgbF &mask)
+	void blend(int count, MLArgb *dst, const MLArgb *src, const MLArgb &mask)
 	{
 		for (int i = 0; i < count; ++i)
 		{
-			MLFastArgbF c;
-			c.v = src->v * mlFloatToVector(mask.a);
+			MLArgb c;
+			c.v = src->v * mask.a();
 			src++;
 			blendFunc(dst++, &c);
 		}
 	}
 
-	void blend(int count, MLFastArgbF *dst, const MLFastArgbF *src, float opacity)
+	void blend(int count, MLArgb *dst, const MLArgb *src, float opacity)
 	{
 		for (int i = 0; i < count; ++i)
 		{
-			MLFastArgbF c;
-			c.v = src->v * mlFloatToVector(opacity);
+			MLArgb c;
+			c.v = src->v * opacity;
 			src++;
 			blendFunc(dst++, &c);
 		}
 	}
 	
-	void blend(int count, MLFastArgbF *dst, const MLFastArgbF &src)
+	void blend(int count, MLArgb *dst, const MLArgb &src)
 	{
 		for (int i = 0; i < count; ++i)
 		{
@@ -98,40 +98,40 @@ public:
 		}
 	}
 	
-	void blend(int count, MLFastArgbF *dst, const MLFastArgbF &src, const MLFastArgbF *masks)
+	void blend(int count, MLArgb *dst, const MLArgb &src, const MLArgb *masks)
 	{
 		for (int i = 0; i < count; ++i)
 		{
-			MLFastArgbF c;
-			c.v = src.v * mlFloatToVector((masks++)->a);
+			MLArgb c;
+			c.v = src.v * (masks++)->a();
 			blendFunc(dst++, &c);
 		}
 	}
 	
-	void blend(int count, MLFastArgbF *dst, const MLFastArgbF &src, const float *opacities)
+	void blend(int count, MLArgb *dst, const MLArgb &src, const float *opacities)
 	{
 		for (int i = 0; i < count; ++i)
 		{
-			MLFastArgbF c;
-			c.v = src.v * mlFloatToVector(*opacities++);
+			MLArgb c;
+			c.v = src.v * *opacities++;
 			blendFunc(dst++, &c);
 		}
 	} 
 	
-	void blend(int count, MLFastArgbF *dst, const MLFastArgbF &src, const MLFastArgbF &mask)
+	void blend(int count, MLArgb *dst, const MLArgb &src, const MLArgb &mask)
 	{
-		MLFastArgbF c;
-		c.v = src.v * mlFloatToVector(mask.a);
+		MLArgb c;
+		c.v = src.v * mask.a();
 		for (int i = 0; i < count; ++i)
 		{
 			blendFunc(dst++, &c);
 		}
 	}
 	
-	void blend(int count, MLFastArgbF *dst, const MLFastArgbF &src, float opacity)
+	void blend(int count, MLArgb *dst, const MLArgb &src, float opacity)
 	{
-		MLFastArgbF c;
-		c.v = src.v * mlFloatToVector(opacity);
+		MLArgb c;
+		c.v = src.v * opacity;
 		for (int i = 0; i < count; ++i)
 		{
 			blendFunc(dst++, &c);

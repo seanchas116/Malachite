@@ -3,7 +3,7 @@
 inline void blendFuncClear(MLFastArgbF *dst, const MLFastArgbF *src)
 {
 	Q_UNUSED(src);
-	dst->v = mlFloatToVector(0);
+	dst->v = MLSimdF4(0);
 }
 
 inline MLBlendOp::TileStates tileOpClear(MLBlendOp::TileStates states)
@@ -54,7 +54,7 @@ inline MLBlendOp::TileStates tileOpDestination(MLBlendOp::TileStates states)
 
 inline void blendFuncSourceOver(MLFastArgbF *dst, const MLFastArgbF *src)
 {
-	dst->v = src->v + mlFloatToVector(1.0f - src->a) * dst->v;
+	dst->v = src->v + (1.0f - src->a()) * dst->v;
 }
 
 inline MLBlendOp::TileStates tileOpSourceOver(MLBlendOp::TileStates states)
@@ -74,7 +74,7 @@ inline MLBlendOp::TileStates tileOpSourceOver(MLBlendOp::TileStates states)
 
 inline void blendFuncDestinationOver(MLFastArgbF *dst, const MLFastArgbF *src)
 {
-	dst->v = dst->v + mlFloatToVector(1.0f - dst->a) * src->v;
+	dst->v = dst->v + (1.0f - dst->a()) * src->v;
 }
 
 inline MLBlendOp::TileStates tileOpDestinationOver(MLBlendOp::TileStates states)
@@ -94,7 +94,7 @@ inline MLBlendOp::TileStates tileOpDestinationOver(MLBlendOp::TileStates states)
 
 inline void blendFuncSourceIn(MLFastArgbF *dst, const MLFastArgbF *src)
 {
-	dst->v = mlFloatToVector(dst->a) * src->v;
+	dst->v = dst->a() * src->v;
 }
 
 inline MLBlendOp::TileStates tileOpSourceIn(MLBlendOp::TileStates states)
@@ -114,7 +114,7 @@ inline MLBlendOp::TileStates tileOpSourceIn(MLBlendOp::TileStates states)
 
 inline void blendFuncDestinationIn(MLFastArgbF *dst, const MLFastArgbF *src)
 {
-	dst->v = mlFloatToVector(src->a) * dst->v;
+	dst->v = src->a() * dst->v;
 }
 
 inline MLBlendOp::TileStates tileOpDestinationIn(MLBlendOp::TileStates states)
@@ -134,7 +134,7 @@ inline MLBlendOp::TileStates tileOpDestinationIn(MLBlendOp::TileStates states)
 
 inline void blendFuncSourceOut(MLFastArgbF *dst, const MLFastArgbF *src)
 {
-	dst->v = mlFloatToVector(1.0f - dst->a) * src->v;
+	dst->v = (1.0f - dst->a()) * src->v;
 }
 
 
@@ -155,7 +155,7 @@ inline MLBlendOp::TileStates tileOpSourceOut(MLBlendOp::TileStates states)
 
 inline void blendFuncDestinationOut(MLFastArgbF *dst, const MLFastArgbF *src)
 {
-	dst->v = mlFloatToVector(1.0f - src->a) * dst->v;
+	dst->v = (1.0f - src->a()) * dst->v;
 }
 
 inline MLBlendOp::TileStates tileOpDestinationOut(MLBlendOp::TileStates states)
@@ -175,7 +175,7 @@ inline MLBlendOp::TileStates tileOpDestinationOut(MLBlendOp::TileStates states)
 
 inline void blendFuncSourceAtop(MLFastArgbF *dst, const MLFastArgbF *src)
 {
-	dst->v = mlFloatToVector(dst->a) * src->v + mlFloatToVector(1.0f - src->a) * dst->v;
+	dst->v = dst->a() * src->v + (1.0f - src->a()) * dst->v;
 }
 
 inline MLBlendOp::TileStates tileOpSourceAtop(MLBlendOp::TileStates states)
@@ -195,7 +195,7 @@ inline MLBlendOp::TileStates tileOpSourceAtop(MLBlendOp::TileStates states)
 
 inline void blendFuncDestinationAtop(MLFastArgbF *dst, const MLFastArgbF *src)
 {
-	dst->v = mlFloatToVector(src->a) * dst->v + mlFloatToVector(1.0f - dst->a) * src->v;
+	dst->v = src->a() * dst->v + (1.0f - dst->a()) * src->v;
 }
 
 inline MLBlendOp::TileStates tileOpDestinationAtop(MLBlendOp::TileStates states)
@@ -215,7 +215,7 @@ inline MLBlendOp::TileStates tileOpDestinationAtop(MLBlendOp::TileStates states)
 
 inline void blendFuncXor(MLFastArgbF *dst, const MLFastArgbF *src)
 {
-	dst->v = mlFloatToVector(1.0f - dst->a) * src->v + mlFloatToVector(1.0f - src->a) * dst->v;
+	dst->v = (1.0f - dst->a()) * src->v + (1.0f - src->a()) * dst->v;
 }
 
 inline MLBlendOp::TileStates tileOpXor(MLBlendOp::TileStates states)
