@@ -9,6 +9,7 @@
 class MALACHITESHARED_EXPORT MLPainter
 {
 public:
+	
 	MLPainter(MLPaintable *paintable);
 	~MLPainter();
 	
@@ -16,19 +17,19 @@ public:
 	void flush();
 	void end();
 	
-	void setBlendMode(const MLBlendMode &mode) { _state.blendMode = mode; _paintEngine->updateState(_state); }
+	void setBlendMode(const MLBlendMode &mode) { _state.blendMode = mode; updateState(); }
 	MLBlendMode blendMode() const { return _state.blendMode; }
 	
-	void setBrush(const MLBrush &brush) { _state.brush = brush; }
+	void setBrush(const MLBrush &brush) { _state.brush = brush; updateState(); }
 	MLBrush brush() const { return _state.brush; }
 	
-	void setColor(const MLColor &color) { setBrush(MLBrush(color)); }
-	void setArgb(const MLFastArgbF &argb) { setBrush(MLBrush(argb)); }
+	void setColor(const MLColor &color) { setBrush(MLBrush(color)); updateState(); }
+	void setArgb(const MLFastArgbF &argb) { setBrush(MLBrush(argb)); updateState(); }
 	
-	void setOpacity(double opacity) { _state.opacity = opacity; _paintEngine->updateState(_state); }
+	void setOpacity(double opacity) { _state.opacity = opacity; updateState(); }
 	double opacity() const { return _state.opacity; }
 	
-	void setState(const MLPaintEngineState &state) { _state = state; _paintEngine->updateState(state); }
+	void setState(const MLPaintEngineState &state) { _state = state; updateState(); }
 	MLPaintEngineState state() { return _state; }
 	
 	void drawPath(const QPainterPath &path);
@@ -40,10 +41,14 @@ public:
 	void drawSurface(int x, int y, const MLSurface &surface) { drawSurface(QPoint(x, y), surface); }
 	
 protected:
+	
 	MLPaintEngine *paintEngine() { return _paintEngine; }
 	const MLPaintEngine *paintEngine() const { return _paintEngine; }
 	
 private:
+	
+	void updateState() { _paintEngine->updateState(_state); }
+	
 	MLPaintEngineState _state;
 	MLPaintable *_paintable;
 	MLPaintEngine *_paintEngine;

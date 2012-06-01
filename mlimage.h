@@ -4,7 +4,7 @@
 #include "mlpaintable.h"
 #include "mlcolor.h"
 #include "mlgenericimage.h"
-//#include <FreeImage.h>
+#include <FreeImage.h>
 
 class MALACHITESHARED_EXPORT MLImage : public MLGenericImage<MLFastArgbF>, public MLPaintable
 {
@@ -16,8 +16,8 @@ public:
 	
 	MLPaintEngine *createPaintEngine();
 	
-	//static MLImage fromFile(const QString &filePath);
-	//static MLImage fromFIBITMAP(FIBITMAP *bitmap);
+	static MLImage fromFile(const QString &filePath);
+	static MLImage fromFIBITMAP(FIBITMAP *bitmap);
 };
 
 Q_DECLARE_METATYPE(MLImage)

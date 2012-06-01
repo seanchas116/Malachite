@@ -31,7 +31,7 @@ public:
 	friend class MLSurfacePaintEngine;
 	
 	enum {
-		TileSize = 64,
+		TileSize = 64
 	};
 	
 	MLSurface() : MLPaintable() { d = 0; }

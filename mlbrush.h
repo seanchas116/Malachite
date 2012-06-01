@@ -43,7 +43,7 @@ public:
 };
 
 
-class MLBrush
+class MALACHITESHARED_EXPORT MLBrush
 {
 public:
 	

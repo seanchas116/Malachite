@@ -91,13 +91,11 @@ public:
             int x = span->x;
             if(span->len > 0)
             {
-                _ren->blendRasterizerSpan(x, y, (unsigned)span->len, 
-                                      span->covers);
+                _ren->blendRasterizerSpan(x, y,span->len, span->covers);
             }
             else
             {
-                _ren->blendRasterizerLine(x, y, (unsigned)(x - span->len - 1), 
-                                *(span->covers));
+                _ren->blendRasterizerLine(x, y, -span->len, *(span->covers));
             }
             if(--num_spans == 0) break;
             ++span;
@@ -139,7 +137,7 @@ public:
 		
 		int start = qMax(x, _bitmap.rect().left());
 		int end = qMin(x + count, _bitmap.rect().left() + _bitmap.rect().width());
-		unsigned newCount = end - start;
+		int newCount = end - start;
 		
 		float *newCovers = new float[newCount];
 		

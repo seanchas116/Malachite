@@ -1,4 +1,5 @@
 #include <QtCore>
+#include "FreeImage.h"
 
 #include "mlimage.h"
 #include "mlimagepaintengine.h"
@@ -8,7 +9,6 @@ MLPaintEngine *MLImage::createPaintEngine()
 	return new MLImagePaintEngine();
 }
 
-/*
 MLImage MLImage::fromFile(const QString &filePath)
 {
 	QFileInfo fileInfo(filePath);
@@ -69,6 +69,6 @@ MLImage MLImage::fromFIBITMAP(FIBITMAP *bitmap)
 		return MLImage();
 	}
 	return image;
-}*/
+}
 
 

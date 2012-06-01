@@ -62,7 +62,8 @@ HEADERS += malachite.h\
     agg_rasterizer_cells_aa.h \
     agg_gamma_functions.h \
     mlbrush.h \
-    agg_clip_liang_barsky.h
+    agg_clip_liang_barsky.h \
+    mlbitmap.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
@@ -85,3 +86,12 @@ unix:!symbian {
 
 OTHER_FILES += \
     README.md
+
+# MacPorts
+mac {
+	INCLUDEPATH += /opt/local/include
+	LIBS += -L/opt/local/lib
+}
+
+LIBS += -lfreeimage
+

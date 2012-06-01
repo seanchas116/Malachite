@@ -5,62 +5,7 @@
 #include <QSharedDataPointer>
 #include <QRect>
 #include "mlmisc.h"
-
-template <typename Color>
-class MLBitmap
-{
-public:
-	MLBitmap() :
-		_bits(0)
-	{}
-	
-	MLBitmap(uint8_t *bits, const QSize &size, int bytesPerLine) :
-		_bits(bits),
-		_size(size),
-		_bytesPerLine(bytesPerLine)
-	{}
-	
-	static MLBitmap allocate(const QSize &size, int bytesPerLine)
-	{
-		return MLBitmap(reinterpret_cast<uint8_t *>(size.height() * bytesPerLine), size, bytesPerLine);
-	}
-	
-	uint8_t *bits() { return _bits; }
-	const uint8_t *constBits() const { return _bits; }
-	QSize size() const { return _size; }
-	int bytesPerLine() const { return _bytesPerLine; }
-	int byteCount() const { return _size.height() * _bytesPerLine; }
-	QRect rect() const { return QRect(QPoint(), _size); }
-	
-	Color *scanline(int y)
-	{
-		return reinterpret_cast<Color *>(_bits + _bytesPerLine * y);
-	}
-	
-	const Color *constScanline(int y) const
-	{
-		return reinterpret_cast<const Color *>(_bits + _bytesPerLine * y);
-	}
-	
-	Color *pixelPointer(int x, int y)
-	{
-		return reinterpret_cast<Color *>(_bits + _bytesPerLine * y + sizeof(Color) * x);
-	}
-	
-	Color *pixelPointer(const QPoint &p) { return pixelPointer(p.x(), p.y()); }
-	
-	const Color *constPixelPointer(int x, int y) const
-	{
-		return reinterpret_cast<const Color *>(_bits + _bytesPerLine * y + sizeof(Color) * x);
-	}
-	
-	const Color *constPixelPointer(const QPoint &p) const { return constPixelPointer((p.x(), p.y())); }
-	
-private:
-	uint8_t *_bits;
-	QSize _size;
-	int _bytesPerLine;
-};
+#include "mlbitmap.h"
 
 template <typename Color>
 class MALACHITESHARED_EXPORT MLAbstractImage
@@ -74,6 +19,7 @@ public:
 	int width() const { return size().width(); }
 	int height() const { return size().height(); }
 	int pixelCount() const { return size().width() * size().height(); }
+	QRect rect() const { return QRect(QPoint(), size()); }
 	
 	Color *pixelPointer(int x, int y) {
 		Color *p = scanline(y);
@@ -113,6 +59,29 @@ public:
 			}
 		}
 	}
+	
+	template <typename OtherColor>
+	void paste(const QPoint &point, const MLAbstractImage<OtherColor> &image)
+	{
+		QRect r = rect() & QRect(point, image.size());
+		
+		for (int y = r.top(); y <= r.bottom(); ++y)
+		{
+			Color *sp = scanline(y) + r.left();
+			const OtherColor *dp = image.constScanline(y - point.y()) + r.left() - point.x();
+			
+			for (int x = r.left(); x <= r.right(); ++x)
+			{
+				*sp++ = *dp++;
+			}
+		}
+	}
+	
+	template <typename OtherColor>
+	void paste(int x, int y, const MLAbstractImage<OtherColor> &image) { paste(QPoint(x, y), image); }
+	
+	template <typename OtherColor>
+	void paste(const MLAbstractImage<OtherColor> &image) { paste(0, 0, image); }
 };
 
 template <typename Color>
@@ -122,6 +91,9 @@ public:
 	
 	MLGenericWrapperImage(const MLBitmap<Color> &bitmap) :
 		_bitmap(bitmap) {}
+	
+	MLGenericWrapperImage(uint8_t *bits, const QSize &size, int bytesPerLine) :
+		_bitmap(bits, size, bytesPerLine) {}
 	
 	QSize size() const { return _bitmap.size(); }
 	
@@ -148,6 +120,9 @@ class MLGenericWrapperImageM : public MLAbstractImage<Color>
 public:
 	MLGenericWrapperImageM(const MLBitmap<Color> &bitmap) :
 		_bitmap(bitmap) {}
+	
+	MLGenericWrapperImageM(uint8_t *bits, const QSize &size, int bytesPerLine) :
+		_bitmap(bits, size, bytesPerLine) {}
 	
 	QSize size() const { return _bitmap.size(); }
 	
