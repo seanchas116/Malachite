@@ -8,6 +8,7 @@
 class MLSurfacePaintEngine : public MLPaintEngine
 {
 public:
+	
 	MLSurfacePaintEngine();
 	~MLSurfacePaintEngine();
 	
@@ -33,6 +34,7 @@ public:
 	QPointSet editedKeys() const { return _editedKeys; }
 	
 protected:
+	
 	MLImage *tileRefForKey(const QPoint &key);
 	MLImage *tileRefForKey(int x, int y) { return tileRefForKey(QPoint(x, y)); }
 	const MLImage *constTileRefForKey(const QPoint &key) const;
@@ -41,8 +43,6 @@ protected:
 	const MLImage *tileRefForKey(int x, int y) const { return constTileRefForKey(QPoint(x, y)); }
 	
 private:
-	void squeeze();
-	bool imageIsBlank(const MLImage &image);
 	
 	MLPaintEngineState _state;
 	MLSurface *_surface;

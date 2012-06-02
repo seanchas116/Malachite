@@ -32,7 +32,27 @@ public:
 	virtual TileStates tileOp(TileStates states) = 0;
 };
 
-template <void (*blendFunc)(MLArgb *dst, const MLArgb *src), MLBlendOp::TileStates (*tileOpFunc)(MLBlendOp::TileStates states)>
+/*
+  
+  example
+  
+class BlendFunctions
+{
+public:
+	static void blendFunc(MLArgb *dst, const MLArgb *src)
+	{
+		
+	}
+	
+	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	{
+		
+	}
+};
+
+*/
+
+template <typename BlendFunctions>
 class MLTemplateBlendOp : public MLBlendOp
 {
 public:
@@ -40,7 +60,7 @@ public:
 	{
 		for (int i = 0; i < count; ++i)
 		{
-			blendFunc(dst++, src++);
+			BlendFunctions::blendFunc(*dst++, *src++);
 		}
 	}
 	
@@ -52,7 +72,7 @@ public:
 			c.v = src->v * masks->a();
 			src++;
 			masks++;
-			blendFunc(dst++, &c);
+			BlendFunctions::blendFunc(*dst++, c);
 		}
 	}
 
@@ -64,7 +84,7 @@ public:
 			c.v = src->v * *opacities;
 			src++;
 			opacities++;
-			blendFunc(dst++, &c);
+			BlendFunctions::blendFunc(*dst++, c);
 		}
 	}
 
@@ -75,7 +95,7 @@ public:
 			MLArgb c;
 			c.v = src->v * mask.a();
 			src++;
-			blendFunc(dst++, &c);
+			BlendFunctions::blendFunc(*dst++, c);
 		}
 	}
 
@@ -86,7 +106,7 @@ public:
 			MLArgb c;
 			c.v = src->v * opacity;
 			src++;
-			blendFunc(dst++, &c);
+			BlendFunctions::blendFunc(*dst++, c);
 		}
 	}
 	
@@ -94,7 +114,7 @@ public:
 	{
 		for (int i = 0; i < count; ++i)
 		{
-			blendFunc(dst++, &src);
+			BlendFunctions::blendFunc(*dst++, src);
 		}
 	}
 	
@@ -104,7 +124,7 @@ public:
 		{
 			MLArgb c;
 			c.v = src.v * (masks++)->a();
-			blendFunc(dst++, &c);
+			BlendFunctions::blendFunc(*dst++, c);
 		}
 	}
 	
@@ -114,7 +134,7 @@ public:
 		{
 			MLArgb c;
 			c.v = src.v * *opacities++;
-			blendFunc(dst++, &c);
+			BlendFunctions::blendFunc(*dst++, c);
 		}
 	} 
 	
@@ -124,7 +144,7 @@ public:
 		c.v = src.v * mask.a();
 		for (int i = 0; i < count; ++i)
 		{
-			blendFunc(dst++, &c);
+			BlendFunctions::blendFunc(*dst++, c);
 		}
 	}
 	
@@ -134,13 +154,13 @@ public:
 		c.v = src.v * opacity;
 		for (int i = 0; i < count; ++i)
 		{
-			blendFunc(dst++, &c);
+			BlendFunctions::blendFunc(*dst++, c);
 		}
 	}
 	
 	TileStates tileOp(TileStates states)
 	{
-		return tileOpFunc(states);
+		return BlendFunctions::tileOpFunc(states);
 	}
 };
 

@@ -1,8 +1,21 @@
 #include <QtCore>
-#include "FreeImage.h"
+#include <FreeImage.h>
 
 #include "mlimage.h"
 #include "mlimagepaintengine.h"
+
+bool MLImage::isBlank() const
+{
+	for (int y = 0; y < height(); ++y) {
+		const MLArgb *p = constScanline(y);
+		for (int x = 0; x < width(); ++x) {
+			if (p->a())
+				return false;
+			p++;
+		}
+	}
+	return true;
+}
 
 MLPaintEngine *MLImage::createPaintEngine()
 {

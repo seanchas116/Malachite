@@ -14,6 +14,8 @@ public:
 	MLImage(const QSize &size) : MLGenericImage<MLArgb>(size) {}
 	MLImage(int width, int height) : MLGenericImage<MLArgb>(width, height) {}
 	
+	bool isBlank() const;
+	
 	MLPaintEngine *createPaintEngine();
 	
 	static MLImage fromFile(const QString &filePath);

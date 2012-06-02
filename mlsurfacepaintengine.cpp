@@ -11,7 +11,7 @@ MLSurfacePaintEngine::MLSurfacePaintEngine() :
 
 MLSurfacePaintEngine::~MLSurfacePaintEngine()
 {
-	squeeze();
+	_surface->squeeze(_editedKeys);
 }
 
 bool MLSurfacePaintEngine::begin(MLPaintable *paintable)
@@ -129,37 +129,6 @@ const MLImage *MLSurfacePaintEngine::constTileRefForKey(const QPoint &key) const
 		return _surface->d->tileHash[key];
 	else
 		return &MLSurface::DefaultTile;
-}
-
-// Deletes blank tiles
-void MLSurfacePaintEngine::squeeze()
-{
-	QPointList deleteList;
-	
-	foreach (const QPoint &key, _editedKeys) {
-		if (_surface->d->tileHash.contains(key)) {
-			if (imageIsBlank(*(_surface->d->tileHash.value(key))))
-				deleteList << key;
-		}
-	}
-	
-	foreach (const QPoint &key, deleteList) {
-		delete _surface->d->tileHash.take(key);
-	}
-}
-
-// Checks whether the image is blank (i.e., alpha value of any pixel on the image is 0)
-bool MLSurfacePaintEngine::imageIsBlank(const MLImage &image)
-{
-	for (int y = 0; y < image.height(); ++y) {
-		const MLArgb *p = image.constScanline(y);
-		for (int x = 0; x < image.width(); ++x) {
-			if (p->a())
-				return false;
-			p++;
-		}
-	}
-	return true;
 }
 
 

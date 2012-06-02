@@ -19,15 +19,15 @@ struct MLRgb16;
 
 struct MLArgb8
 {
-	uint8_t &a() { return v[3]; }
-	uint8_t &r() { return v[2]; }
-	uint8_t &g() { return v[1]; }
-	uint8_t &b() { return v[0]; }
+	uint8_t &a() { return v[MLGlobal::ArgbAlpha]; }
+	uint8_t &r() { return v[MLGlobal::ArgbRed]; }
+	uint8_t &g() { return v[MLGlobal::ArgbGreen]; }
+	uint8_t &b() { return v[MLGlobal::ArgbBlue]; }
 	
-	const uint8_t &a() const { return v[3]; }
-	const uint8_t &r() const { return v[2]; }
-	const uint8_t &g() const { return v[1]; }
-	const uint8_t &b() const { return v[0]; }
+	const uint8_t &a() const { return v[MLGlobal::ArgbAlpha]; }
+	const uint8_t &r() const { return v[MLGlobal::ArgbRed]; }
+	const uint8_t &g() const { return v[MLGlobal::ArgbGreen]; }
+	const uint8_t &b() const { return v[MLGlobal::ArgbBlue]; }
 	
 	MLArgb8 &operator=(const MLFastArgbF &fArgbF);
 	
@@ -36,15 +36,15 @@ struct MLArgb8
 
 struct MLRgba8
 {
-	uint8_t &r() { return v[3]; }
-	uint8_t &g() { return v[2]; }
-	uint8_t &b() { return v[1]; }
-	uint8_t &a() { return v[0]; }
+	uint8_t &r() { return v[MLGlobal::RgbaRed]; }
+	uint8_t &g() { return v[MLGlobal::RgbaGreen]; }
+	uint8_t &b() { return v[MLGlobal::RgbaBlue]; }
+	uint8_t &a() { return v[MLGlobal::RgbaAlpha]; }
 	
-	const uint8_t &r() const { return v[3]; }
-	const uint8_t &g() const { return v[2]; }
-	const uint8_t &b() const { return v[1]; }
-	const uint8_t &a() const { return v[0]; }
+	const uint8_t &r() const { return v[MLGlobal::RgbaRed]; }
+	const uint8_t &g() const { return v[MLGlobal::RgbaGreen]; }
+	const uint8_t &b() const { return v[MLGlobal::RgbaBlue]; }
+	const uint8_t &a() const { return v[MLGlobal::RgbaAlpha]; }
 	
 	MLRgba8 &operator=(const MLFastArgbF &fArgbF);
 	
@@ -53,15 +53,15 @@ struct MLRgba8
 
 struct MLArgb16
 {
-	uint16_t &a() { return v[3]; }
-	uint16_t &r() { return v[2]; }
-	uint16_t &g() { return v[1]; }
-	uint16_t &b() { return v[0]; }
+	uint16_t &a() { return v[MLGlobal::ArgbAlpha]; }
+	uint16_t &r() { return v[MLGlobal::ArgbRed]; }
+	uint16_t &g() { return v[MLGlobal::ArgbGreen]; }
+	uint16_t &b() { return v[MLGlobal::ArgbBlue]; }
 	
-	const uint16_t &a() const { return v[3]; }
-	const uint16_t &r() const { return v[2]; }
-	const uint16_t &g() const { return v[1]; }
-	const uint16_t &b() const { return v[0]; }
+	const uint16_t &a() const { return v[MLGlobal::ArgbAlpha]; }
+	const uint16_t &r() const { return v[MLGlobal::ArgbRed]; }
+	const uint16_t &g() const { return v[MLGlobal::ArgbGreen]; }
+	const uint16_t &b() const { return v[MLGlobal::ArgbBlue]; }
 	
 	MLArgb16 &operator=(const MLFastArgbF &fArgbF);
 	
@@ -70,15 +70,15 @@ struct MLArgb16
 
 struct MLRgba16
 {
-	uint16_t &r() { return v[3]; }
-	uint16_t &g() { return v[2]; }
-	uint16_t &b() { return v[1]; }
-	uint16_t &a() { return v[0]; }
+	uint16_t &r() { return v[MLGlobal::RgbaRed]; }
+	uint16_t &g() { return v[MLGlobal::RgbaGreen]; }
+	uint16_t &b() { return v[MLGlobal::RgbaBlue]; }
+	uint16_t &a() { return v[MLGlobal::RgbaAlpha]; }
 	
-	const uint16_t &r() const { return v[3]; }
-	const uint16_t &g() const { return v[2]; }
-	const uint16_t &b() const { return v[1]; }
-	const uint16_t &a() const { return v[0]; }
+	const uint16_t &r() const { return v[MLGlobal::RgbaRed]; }
+	const uint16_t &g() const { return v[MLGlobal::RgbaGreen]; }
+	const uint16_t &b() const { return v[MLGlobal::RgbaBlue]; }
+	const uint16_t &a() const { return v[MLGlobal::RgbaAlpha]; }
 	
 	MLRgba16 &operator=(const MLFastArgbF &fArgbF);
 	
@@ -87,30 +87,30 @@ struct MLRgba16
 
 struct MLArgbF
 {
-	float &a() { return v[3]; }
-	float &r() { return v[2]; }
-	float &g() { return v[1]; }
-	float &b() { return v[0]; }
+	float &a() { return v[MLGlobal::ArgbAlpha]; }
+	float &r() { return v[MLGlobal::ArgbRed]; }
+	float &g() { return v[MLGlobal::ArgbGreen]; }
+	float &b() { return v[MLGlobal::ArgbBlue]; }
 	
-	const float &a() const { return v[3]; }
-	const float &r() const { return v[2]; }
-	const float &g() const { return v[1]; }
-	const float &b() const { return v[0]; }
+	const float &a() const { return v[MLGlobal::ArgbAlpha]; }
+	const float &r() const { return v[MLGlobal::ArgbRed]; }
+	const float &g() const { return v[MLGlobal::ArgbGreen]; }
+	const float &b() const { return v[MLGlobal::ArgbBlue]; }
 	
 	MLSimdF4 v;
 };
 
 struct MLFastArgb8
 {
-	uint8_t &a() { return v[3]; }
-	uint8_t &r() { return v[2]; }
-	uint8_t &g() { return v[1]; }
-	uint8_t &b() { return v[0]; }
+	uint8_t &a() { return v[MLGlobal::ArgbAlpha]; }
+	uint8_t &r() { return v[MLGlobal::ArgbRed]; }
+	uint8_t &g() { return v[MLGlobal::ArgbGreen]; }
+	uint8_t &b() { return v[MLGlobal::ArgbBlue]; }
 	
-	const uint8_t &a() const { return v[3]; }
-	const uint8_t &r() const { return v[2]; }
-	const uint8_t &g() const { return v[1]; }
-	const uint8_t &b() const { return v[0]; }
+	const uint8_t &a() const { return v[MLGlobal::ArgbAlpha]; }
+	const uint8_t &r() const { return v[MLGlobal::ArgbRed]; }
+	const uint8_t &g() const { return v[MLGlobal::ArgbGreen]; }
+	const uint8_t &b() const { return v[MLGlobal::ArgbBlue]; }
 	
 	MLFastArgb8 &operator=(const MLFastArgbF &fArgbF);
 	
@@ -119,15 +119,15 @@ struct MLFastArgb8
 
 struct MLFastArgbF
 {
-	float &a() { return v[3]; }
-	float &r() { return v[2]; }
-	float &g() { return v[1]; }
-	float &b() { return v[0]; }
+	float &a() { return v[MLGlobal::ArgbAlpha]; }
+	float &r() { return v[MLGlobal::ArgbRed]; }
+	float &g() { return v[MLGlobal::ArgbGreen]; }
+	float &b() { return v[MLGlobal::ArgbBlue]; }
 	
-	const float &a() const { return v[3]; }
-	const float &r() const { return v[2]; }
-	const float &g() const { return v[1]; }
-	const float &b() const { return v[0]; }
+	const float &a() const { return v[MLGlobal::ArgbAlpha]; }
+	const float &r() const { return v[MLGlobal::ArgbRed]; }
+	const float &g() const { return v[MLGlobal::ArgbGreen]; }
+	const float &b() const { return v[MLGlobal::ArgbBlue]; }
 	
 	MLFastArgbF &operator=(const MLArgb8 &argb8);
 	MLFastArgbF &operator=(const MLRgba8 &rgba8);
@@ -144,13 +144,13 @@ struct MLFastArgbF
 
 struct MLRgb8
 {
-	uint8_t &r() { return v[2]; }
-	uint8_t &g() { return v[1]; }
-	uint8_t &b() { return v[0]; }
+	uint8_t &r() { return v[MLGlobal::RgbRed]; }
+	uint8_t &g() { return v[MLGlobal::RgbGreen]; }
+	uint8_t &b() { return v[MLGlobal::RgbBlue]; }
 	
-	const uint8_t &r() const { return v[2]; }
-	const uint8_t &g() const { return v[1]; }
-	const uint8_t &b() const { return v[0]; }
+	const uint8_t &r() const { return v[MLGlobal::RgbRed]; }
+	const uint8_t &g() const { return v[MLGlobal::RgbGreen]; }
+	const uint8_t &b() const { return v[MLGlobal::RgbBlue]; }
 	
 	MLRgb8 &operator=(const MLFastArgbF &fArgbF);
 	
@@ -162,26 +162,26 @@ struct MLRgb8ArgbWrapper
 	MLRgb8ArgbWrapper(const MLRgb8 &rgb) : rgb(rgb) {}
 	
 	uint8_t a() const { return 0xFF; }
-	uint8_t &r() { return rgb.v[2]; }
-	uint8_t &g() { return rgb.v[1]; }
-	uint8_t &b() { return rgb.v[0]; }
+	uint8_t &r() { return rgb.r(); }
+	uint8_t &g() { return rgb.g(); }
+	uint8_t &b() { return rgb.b(); }
 	
-	const uint8_t &r() const { return rgb.v[2]; }
-	const uint8_t &g() const { return rgb.v[1]; }
-	const uint8_t &b() const { return rgb.v[0]; }
+	const uint8_t &r() const { return rgb.r(); }
+	const uint8_t &g() const { return rgb.g(); }
+	const uint8_t &b() const { return rgb.b(); }
 	
 	MLRgb8 rgb;
 };
 
 struct MLRgb16
 {
-	uint16_t &r() { return v[2]; }
-	uint16_t &g() { return v[1]; }
-	uint16_t &b() { return v[0]; }
+	uint16_t &r() { return v[MLGlobal::RgbRed]; }
+	uint16_t &g() { return v[MLGlobal::RgbGreen]; }
+	uint16_t &b() { return v[MLGlobal::RgbBlue]; }
 	
-	const uint16_t &r() const { return v[2]; }
-	const uint16_t &g() const { return v[1]; }
-	const uint16_t &b() const { return v[0]; }
+	const uint16_t &r() const { return v[MLGlobal::RgbRed]; }
+	const uint16_t &g() const { return v[MLGlobal::RgbGreen]; }
+	const uint16_t &b() const { return v[MLGlobal::RgbBlue]; }
 	
 	MLRgb16 &operator=(const MLFastArgbF &fArgbF);
 	
@@ -193,13 +193,13 @@ struct MLRgb16ArgbWrapper
 	MLRgb16ArgbWrapper(const MLRgb16 &rgb) : rgb(rgb) {}
 	
 	uint16_t a() const { return 0xFFFF; }
-	uint16_t &r() { return rgb.v[2]; }
-	uint16_t &g() { return rgb.v[1]; }
-	uint16_t &b() { return rgb.v[0]; }
+	uint16_t &r() { return rgb.r(); }
+	uint16_t &g() { return rgb.g(); }
+	uint16_t &b() { return rgb.b(); }
 	
-	const uint16_t &r() const { return rgb.v[2]; }
-	const uint16_t &g() const { return rgb.v[1]; }
-	const uint16_t &b() const { return rgb.v[0]; }
+	const uint16_t &r() const { return rgb.r(); }
+	const uint16_t &g() const { return rgb.g(); }
+	const uint16_t &b() const { return rgb.b(); }
 	
 	MLRgb16 rgb;
 };
@@ -212,20 +212,20 @@ void mlArgbFToInt(Dst &dst, const Src &srcArgb)
 {
 	MLSimd32I4 iv;
 	iv = mlSimdRound(srcArgb.v * ((1 << DstBitWidth) - 1));
-	dst.a() = iv[3];
-	dst.r() = iv[2];
-	dst.g() = iv[1];
-	dst.b() = iv[0];
+	dst.a() = iv[MLGlobal::ArgbAlpha];
+	dst.r() = iv[MLGlobal::ArgbRed];
+	dst.g() = iv[MLGlobal::ArgbGreen];
+	dst.b() = iv[MLGlobal::ArgbBlue];
 }
 
 template <int SrcBitWidth, typename Dst, typename Src>
 void mlArgbFFromInt(Dst &dstArgb, const Src &src)
 {
 	MLSimd32I4 iv;
-	iv[3] = src.a();
-	iv[2] = src.r();
-	iv[1] = src.g();
-	iv[0] = src.b();
+	iv[MLGlobal::ArgbAlpha] = src.a();
+	iv[MLGlobal::ArgbRed] = src.r();
+	iv[MLGlobal::ArgbGreen] = src.g();
+	iv[MLGlobal::ArgbBlue] = src.b();
 	dstArgb.v = iv;
 	dstArgb.v /= ((1 << SrcBitWidth) - 1);
 }
@@ -340,9 +340,9 @@ inline MLRgb8 &MLRgb8::operator =(const MLFastArgbF &fArgbF)
 	MLSimd32I4 iv;
 	iv = mlSimdRound(fv * 0xFF);
 	
-	r() = iv[2];
-	g() = iv[1];
-	b() = iv[0];
+	r() = iv[MLGlobal::ArgbRed];
+	g() = iv[MLGlobal::ArgbGreen];
+	b() = iv[MLGlobal::ArgbBlue];
 	
 	return *this;
 }
@@ -353,9 +353,9 @@ inline MLRgb16 &MLRgb16::operator =(const MLFastArgbF &fArgbF)
 	MLSimd32I4 iv;
 	iv = mlSimdRound(fv * 0xFFFF);
 	
-	r() = iv[2];
-	g() = iv[1];
-	b() = iv[0];
+	r() = iv[MLGlobal::ArgbRed];
+	g() = iv[MLGlobal::ArgbGreen];
+	b() = iv[MLGlobal::ArgbBlue];
 	
 	return *this;
 }

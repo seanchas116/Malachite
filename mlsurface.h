@@ -69,12 +69,15 @@ public:
 	static MLImage WhiteTile;
 	
 private:
-	int commonLeftBound(const QPointSet keys) const;
-	int commonRightBound(const QPointSet keys) const;
-	int commonTopBound(const QPointSet keys) const;
-	int commonBottomBound(const QPointSet keys) const;
+	int commonLeftBound(const QPointSet &keys) const;
+	int commonRightBound(const QPointSet &keys) const;
+	int commonTopBound(const QPointSet &keys) const;
+	int commonBottomBound(const QPointSet &keys) const;
 	
-	void setupData();
+	void squeeze(const QPointSet &keys);
+	void squeeze() { squeeze(d->tileHash.keys().toSet()); }
+	
+	void setupData() { if (!d) d = new MLSurfaceData; }
 	
 	QSharedDataPointer<MLSurfaceData> d;
 };

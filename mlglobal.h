@@ -44,11 +44,24 @@ enum BlendMode {
 	BlendModePassThrough	// Group only
 };
 
-enum ComponentPosition {
-	PositionAlpha = 3,
-	PositionRed = 2,
-	PositionGreen = 1,
-	PositionBlue = 0
+enum ArgbPosition {
+	ArgbAlpha = 3,
+	ArgbRed = 2,
+	ArgbGreen = 1,
+	ArgbBlue = 0
+};
+
+enum RgbaPosition {
+	RgbaRed = 3,
+	RgbaGreen = 2,
+	RgbaBlue = 1,
+	RgbaAlpha = 0
+};
+
+enum RgbPositoon {
+	RgbRed = 2,
+	RgbGreen = 1,
+	RgbBlue = 0
 };
 
 enum BrushType {

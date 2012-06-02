@@ -265,7 +265,7 @@ MLSurface &MLSurface::operator =(const MLSurface &surface)
 	return *this;
 }
 
-int MLSurface::commonLeftBound(const QPointSet keys) const
+int MLSurface::commonLeftBound(const QPointSet &keys) const
 {
 	for (int x = 0; x < MLSurface::TileSize; ++x) {
 		foreach (const QPoint &key, keys) {
@@ -279,7 +279,7 @@ int MLSurface::commonLeftBound(const QPointSet keys) const
 	return -1;
 }
 
-int MLSurface::commonRightBound(const QPointSet keys) const
+int MLSurface::commonRightBound(const QPointSet &keys) const
 {
 	for (int x = MLSurface::TileSize - 1; x >= 0; --x) {
 		foreach (const QPoint &key, keys) {
@@ -293,7 +293,7 @@ int MLSurface::commonRightBound(const QPointSet keys) const
 	return -1;
 }
 
-int MLSurface::commonTopBound(const QPointSet keys) const
+int MLSurface::commonTopBound(const QPointSet &keys) const
 {
 	for (int y = 0; y < MLSurface::TileSize; ++y) {
 		foreach (const QPoint &key, keys) {
@@ -308,7 +308,7 @@ int MLSurface::commonTopBound(const QPointSet keys) const
 	return -1;
 }
 
-int MLSurface::commonBottomBound(const QPointSet keys) const
+int MLSurface::commonBottomBound(const QPointSet &keys) const
 {
 	for (int y = MLSurface::TileSize - 1; y >= 0; --y) {
 		foreach (const QPoint &key, keys) {
@@ -323,12 +323,21 @@ int MLSurface::commonBottomBound(const QPointSet keys) const
 	return -1;
 }
 
-void MLSurface::setupData()
+void MLSurface::squeeze(const QPointSet &keys)
 {
-	if (!d)
-		d = new MLSurfaceData;
+	QPointList deleteList;
+	
+	foreach (const QPoint &key, keys) {
+		if (d->tileHash.contains(key)) {
+			if (d->tileHash.value(key)->isBlank())
+				deleteList << key;
+		}
+	}
+	
+	foreach (const QPoint &key, deleteList) {
+		delete d->tileHash.take(key);
+	}
 }
-
 
 MLImage MLSurface::DefaultTile;
 MLImage MLSurface::WhiteTile;
