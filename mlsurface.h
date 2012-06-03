@@ -23,12 +23,12 @@ public:
 	MLSurfaceHash tileHash;
 };
 
-class MLSurfacePaintEngine;
+class MLSurfaceEditor;
 
 class MALACHITESHARED_EXPORT MLSurface : public MLPaintable
 {
 public:
-	friend class MLSurfacePaintEngine;
+	friend class MLSurfaceEditor;
 	
 	enum {
 		TileSize = 64
@@ -61,7 +61,8 @@ public:
 	MLSurface section(const QPointSet &keys) const;
 	MLSurface exclusion(const QPointSet &keys) const;
 	
-	MLSurface &operator=(const MLSurface &surface);
+	template <typename Image> void paste(const QPoint &p, const Image &image);
+	template <typename Image> void paste(const Image &image) { fromImage(QPoint(), image); }
 	
 	static QPointSet keysForRect(const QRect &rect);
 	
@@ -74,14 +75,59 @@ private:
 	int commonTopBound(const QPointSet &keys) const;
 	int commonBottomBound(const QPointSet &keys) const;
 	
-	void squeeze(const QPointSet &keys);
-	void squeeze() { squeeze(d->tileHash.keys().toSet()); }
-	
 	void setupData() { if (!d) d = new MLSurfaceData; }
 	
 	QSharedDataPointer<MLSurfaceData> d;
 };
 
+
 Q_DECLARE_METATYPE(MLSurface)
+
+
+
+class MLSurfaceEditor
+{
+public:
+	
+	MLSurfaceEditor(MLSurface *surface) : _surface(surface) {}
+	~MLSurfaceEditor();
+	
+	void deleteTile(const QPoint &key);
+	void clear();
+	MLImage *replaceTile(const QPoint &key, MLImage *image);
+	MLImage *takeTile(const QPoint &key);
+	
+	void replace(const MLSurface &surface, const QPointSet &keys);
+	
+	QPointSet editedKeys() const { return _editedKeys; }
+	
+	MLImage *tileRefForKey(const QPoint &key);
+	MLImage *tileRefForKey(int x, int y) { return tileRefForKey(QPoint(x, y)); }
+	const MLImage *constTileRefForKey(const QPoint &key) const;
+	const MLImage *constTileRefForKey(int x, int y) const { return constTileRefForKey(QPoint(x, y)); }
+	const MLImage *tileRefForKey(const QPoint &key) const { return constTileRefForKey(key); }
+	const MLImage *tileRefForKey(int x, int y) const { return constTileRefForKey(QPoint(x, y)); }
+	
+private:
+	
+	void squeeze(const QPointSet &keys);
+	
+	MLSurface *_surface;
+	QPointSet _editedKeys;
+};
+
+
+template <typename Image>
+void MLSurface::paste(const QPoint &p, const Image &image)
+{
+	MLSurfaceEditor editor(this);
+	
+	QPointSet keys = keysForRect(QRect(p, image.size()));
+	
+	foreach (const QPoint &key, keys)
+	{
+		editor.tileRefForKey(key)->paste(p - key * MLSurface::TileSize, image);
+	}
+}
 
 #endif // MLSURFACE_H

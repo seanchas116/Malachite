@@ -3,25 +3,27 @@
 
 #include "mlpaintable.h"
 #include "mlcolor.h"
-#include "mlgenericimage.h"
-#include <FreeImage.h>
+#include "mlgenericsharedimage.h"
 
-class MALACHITESHARED_EXPORT MLImage : public MLGenericImage<MLArgb>, public MLPaintable
+class MALACHITESHARED_EXPORT MLImage : public MLGenericSharedImage<MLArgb>, public MLPaintable
 {
 public:
-	MLImage() : MLGenericImage<MLArgb>() {}
-	MLImage(const MLGenericImage<MLArgb> &other) : MLGenericImage<MLArgb>(other) {}
-	MLImage(const QSize &size) : MLGenericImage<MLArgb>(size) {}
-	MLImage(int width, int height) : MLGenericImage<MLArgb>(width, height) {}
+	MLImage() : MLGenericSharedImage<MLArgb>() {}
+	MLImage(const MLGenericSharedImage<MLArgb> &other) : MLGenericSharedImage<MLArgb>(other) {}
+	MLImage(const QSize &size) : MLGenericSharedImage<MLArgb>(size) {}
+	MLImage(int width, int height) : MLGenericSharedImage<MLArgb>(width, height) {}
 	
 	bool isBlank() const;
 	
 	MLPaintEngine *createPaintEngine();
 	
-	static MLImage fromFile(const QString &filePath);
-	static MLImage fromFIBITMAP(FIBITMAP *bitmap);
+	QImage toQImage() const;
+	
+	static MLImage fromQImage(const QImage &qimage);
 };
 
 Q_DECLARE_METATYPE(MLImage)
+
+
 
 #endif // MLIMAGE_H

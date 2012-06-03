@@ -1,6 +1,7 @@
 #ifndef MLBRUSH_H
 #define MLBRUSH_H
 
+#include <QVariant>
 #include <QSharedDataPointer>
 #include "mlcolor.h"
 #include "mlimage.h"

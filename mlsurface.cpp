@@ -259,12 +259,6 @@ MLSurface MLSurface::exclusion(const QPointSet &keys) const
 	return surface;
 }
 
-MLSurface &MLSurface::operator =(const MLSurface &surface)
-{
-	d = surface.d;
-	return *this;
-}
-
 int MLSurface::commonLeftBound(const QPointSet &keys) const
 {
 	for (int x = 0; x < MLSurface::TileSize; ++x) {
@@ -323,22 +317,6 @@ int MLSurface::commonBottomBound(const QPointSet &keys) const
 	return -1;
 }
 
-void MLSurface::squeeze(const QPointSet &keys)
-{
-	QPointList deleteList;
-	
-	foreach (const QPoint &key, keys) {
-		if (d->tileHash.contains(key)) {
-			if (d->tileHash.value(key)->isBlank())
-				deleteList << key;
-		}
-	}
-	
-	foreach (const QPoint &key, deleteList) {
-		delete d->tileHash.take(key);
-	}
-}
-
 MLImage MLSurface::DefaultTile;
 MLImage MLSurface::WhiteTile;
 
@@ -355,4 +333,97 @@ public:
 };
 
 MLSurfaceInitializer fsSurfaceInitializer;
+
+
+
+
+MLSurfaceEditor::~MLSurfaceEditor()
+{
+	squeeze(_editedKeys);
+}
+
+void MLSurfaceEditor::deleteTile(const QPoint &key)
+{
+	delete takeTile(key);
+}
+
+void MLSurfaceEditor::clear()
+{
+	_editedKeys += _surface->keys();
+	qDeleteAll(_surface->d->tileHash);
+	_surface->d->tileHash.clear();
+}
+
+MLImage *MLSurfaceEditor::takeTile(const QPoint &key)
+{
+	if (!_surface->d->tileHash.contains(key))
+		return 0;
+	_editedKeys << key;
+	return _surface->d->tileHash.take(key);
+}
+
+MLImage *MLSurfaceEditor::replaceTile(const QPoint &key, MLImage *image)
+{
+	_editedKeys << key;
+	MLImage *tile = takeTile(key);
+	_surface->d->tileHash.insert(key, image);
+	return tile;
+}
+
+void MLSurfaceEditor::replace(const MLSurface &surface, const QPointSet &keys)
+{
+	foreach (const QPoint &key, keys)
+	{
+		MLImage *oldTile = replaceTile(key, new MLImage(surface.tileForKey(key)));
+		if (oldTile)
+			delete oldTile;
+	}
+}
+
+// Returns tile item with "key"
+// If the tile hash no tile with "key", inserts a new tile and returns it
+MLImage *MLSurfaceEditor::tileRefForKey(const QPoint &key)
+{
+	MLImage *tile;
+	
+	if (!_surface->d->tileHash.contains(key))
+	{
+		tile = new MLImage(MLSurface::DefaultTile);
+		_surface->d->tileHash.insert(key, tile);
+	}
+	else
+	{
+		tile = _surface->d->tileHash[key];
+	}
+	_editedKeys << key;
+	return tile;
+}
+
+const MLImage *MLSurfaceEditor::constTileRefForKey(const QPoint &key) const
+{
+	if (_surface->d->tileHash.contains(key))
+		return _surface->d->tileHash[key];
+	else
+		return &MLSurface::DefaultTile;
+}
+
+void MLSurfaceEditor::squeeze(const QPointSet &keys)
+{
+	QPointList deleteList;
+	
+	foreach (const QPoint &key, keys)
+	{
+		if (_surface->d->tileHash.contains(key))
+		{
+			if (_surface->d->tileHash.value(key)->isBlank())
+				deleteList << key;
+		}
+	}
+	
+	foreach (const QPoint &key, deleteList)
+	{
+		delete _surface->d->tileHash.take(key);
+	}
+}
+
 

@@ -26,7 +26,9 @@ SOURCES += \
     mlsurfacepainter.cpp \
     mlsurfaceselection.cpp \
     mlmisc.cpp \
-    mlbrush.cpp
+    mlbrush.cpp \
+    mlimageio.cpp \
+    mlimagerenderer.cpp
 
 HEADERS += malachite.h\
     agg_curves.h \
@@ -63,7 +65,11 @@ HEADERS += malachite.h\
     agg_clip_liang_barsky.h \
     mlbitmap.h \
     mlsimdvector.h \
-    mlargb.h
+    mlargb.h \
+    mlimageio.h \
+    mlgenericwrapperimage.h \
+    mlgenericsharedimage.h \
+    mlimagerenderer.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
@@ -87,13 +93,6 @@ unix:!symbian {
 OTHER_FILES += \
     README.md
 
-# MacPorts
-mac {
-	INCLUDEPATH += /opt/local/include
-	LIBS += -L/opt/local/lib
-}
-
 LIBS += -lfreeimage
-
-QMAKE_CXXFLAFS += -std=c++0x
+#QMAKE_CXXFLAGS += -std=c++0x
 

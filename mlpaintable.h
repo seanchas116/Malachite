@@ -8,6 +8,7 @@ class MLPaintEngine;
 class MALACHITESHARED_EXPORT MLPaintable
 {
 public:
+	virtual ~MLPaintable() {}
 	virtual MLPaintEngine *createPaintEngine() = 0;
 };
 

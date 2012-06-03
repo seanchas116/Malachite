@@ -2,6 +2,7 @@
 #define MLBITMAP_H
 
 #include <QSize>
+#include <QRect>
 #include "mlmisc.h"
 
 template <typename Color>
@@ -18,11 +19,7 @@ public:
 		_bytesPerLine(bytesPerLine)
 	{}
 	
-	static MLBitmap allocate(const QSize &size, int bytesPerLine)
-	{
-		return MLBitmap(reinterpret_cast<uint8_t *>(mlAllocateAlignedMemory(size.height() * bytesPerLine, 16)), size, bytesPerLine);
-	}
-	
+	void setBits(uint8_t *bits) { _bits = bits; }
 	uint8_t *bits() { return _bits; }
 	const uint8_t *constBits() const { return _bits; }
 	QSize size() const { return _size; }
@@ -56,6 +53,46 @@ public:
 	
 private:
 	uint8_t *_bits;
+	QSize _size;
+	int _bytesPerLine;
+};
+
+
+template <typename Color>
+class MLConstBitmap
+{
+public:
+	MLConstBitmap() :
+		_bits(0)
+	{}
+	
+	MLConstBitmap(const uint8_t *bits, const QSize &size, int bytesPerLine) :
+		_bits(bits),
+		_size(size),
+		_bytesPerLine(bytesPerLine)
+	{}
+	
+	void setComstBits(const uint8_t *bits) { _bits = bits; }
+	const uint8_t *constBits() const { return _bits; }
+	QSize size() const { return _size; }
+	int bytesPerLine() const { return _bytesPerLine; }
+	int byteCount() const { return _size.height() * _bytesPerLine; }
+	QRect rect() const { return QRect(QPoint(), _size); }
+	
+	const Color *constScanline(int y) const
+	{
+		return reinterpret_cast<const Color *>(_bits + _bytesPerLine * y);
+	}
+	
+	const Color *constPixelPointer(int x, int y) const
+	{
+		return reinterpret_cast<const Color *>(_bits + _bytesPerLine * y + sizeof(Color) * x);
+	}
+	
+	const Color *constPixelPointer(const QPoint &p) const { return constPixelPointer((p.x(), p.y())); }
+	
+private:
+	const uint8_t *_bits;
 	QSize _size;
 	int _bytesPerLine;
 };

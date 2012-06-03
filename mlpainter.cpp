@@ -1,3 +1,4 @@
+#include <QtGui>
 #include "mlpainter.h"
 
 MLPainter::MLPainter(MLPaintable *paintable) :

@@ -148,12 +148,12 @@ inline MLSimdF4 mlSimdBound(const MLSimdF4 &min, const MLSimdF4 &v, const MLSimd
 }
 
 inline MLSimdF4 mlSimdBound(float min, const MLSimdF4 &v, float max) { return mlSimdBound(MLSimdF4(min), v, MLSimdF4(max)); }
-inline MLSimd32I4 mlSimdEqual(const MLSimdF4 &v1, const MLSimdF4 &v2) { return MLSimd32I4(__builtin_ia32_cmpeqps(v1.v, v2.v)); }
-inline MLSimd32I4 mlSimdNotEqual(const MLSimdF4 &v1, const MLSimdF4 &v2) { return MLSimd32I4(__builtin_ia32_cmpneqps(v1.v, v2.v)); }
-inline MLSimd32I4 mlSimdLessThan(const MLSimdF4 &v1, const MLSimdF4 &v2) { return MLSimd32I4(__builtin_ia32_cmpltps(v1.v, v2.v)); }
-inline MLSimd32I4 mlSimdLessThanOrEqual(const MLSimdF4 &v1, const MLSimdF4 &v2) { return MLSimd32I4(__builtin_ia32_cmpleps(v1.v, v2.v)); }
-inline MLSimd32I4 mlSimdGreaterThan(const MLSimdF4 &v1, const MLSimdF4 &v2) { return MLSimd32I4(__builtin_ia32_cmpltps(v2.v, v1.v)); }
-inline MLSimd32I4 mlSimdGreaterThanOrEqual(const MLSimdF4 &v1, const MLSimdF4 &v2) { return MLSimd32I4(__builtin_ia32_cmpleps(v2.v, v1.v)); }
+inline MLSimd32I4 mlSimdEqual(const MLSimdF4 &v1, const MLSimdF4 &v2) { return MLSimd32I4(reinterpret_cast<__v4si>(__builtin_ia32_cmpeqps(v1.v, v2.v))); }
+inline MLSimd32I4 mlSimdNotEqual(const MLSimdF4 &v1, const MLSimdF4 &v2) { return MLSimd32I4(reinterpret_cast<__v4si>(__builtin_ia32_cmpneqps(v1.v, v2.v))); }
+inline MLSimd32I4 mlSimdLessThan(const MLSimdF4 &v1, const MLSimdF4 &v2) { return MLSimd32I4(reinterpret_cast<__v4si>(__builtin_ia32_cmpltps(v1.v, v2.v))); }
+inline MLSimd32I4 mlSimdLessThanOrEqual(const MLSimdF4 &v1, const MLSimdF4 &v2) { return MLSimd32I4(reinterpret_cast<__v4si>(__builtin_ia32_cmpleps(v1.v, v2.v))); }
+inline MLSimd32I4 mlSimdGreaterThan(const MLSimdF4 &v1, const MLSimdF4 &v2) { return MLSimd32I4(reinterpret_cast<__v4si>(__builtin_ia32_cmpltps(v2.v, v1.v))); }
+inline MLSimd32I4 mlSimdGreaterThanOrEqual(const MLSimdF4 &v1, const MLSimdF4 &v2) { return MLSimd32I4(reinterpret_cast<__v4si>(__builtin_ia32_cmpleps(v2.v, v1.v))); }
 
 inline MLSimdF4 mlSimdSqrt(const MLSimdF4 &v) { return MLSimdF4(__builtin_ia32_sqrtps(v.v)); }
 

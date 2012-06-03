@@ -13,9 +13,6 @@ public:
 	void setKeyClip(const QPointSet &keys) { surfacePaintEngine()->setKeyClip(keys); }
 	QPointSet keyClip() const { return surfacePaintEngine()->keyClip(); }
 	
-	void deleteTile(const QPoint &key) { surfacePaintEngine()->deleteTile(key); }
-	void clear() { surfacePaintEngine()->clear(); }
-	
 	QPointSet editedKeys() const { return surfacePaintEngine()->editedKeys(); }
 	
 	MLSurfacePaintEngine *surfacePaintEngine() { return static_cast<MLSurfacePaintEngine *>(paintEngine()); }
