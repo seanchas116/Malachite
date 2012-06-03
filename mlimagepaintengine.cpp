@@ -25,7 +25,6 @@
 
 
 #include <QtGui>
-#include "agg_curves.h"
 #include "agg_rasterizer_scanline_aa.h"
 #include "agg_scanline_p.h"
 #include "mlimagerenderer.h"
@@ -66,7 +65,7 @@ void MLImagePaintEngine::drawPath(const QPainterPath &path)
 	MLImageBaseRenderer<MLImageColorFiller> baseRen(_bitmap, _blendOp, &filler);
 	MLRenderer<MLImageBaseRenderer<MLImageColorFiller> > ren(&baseRen);
 	
-	render_scanlines(ras, sl, ren);
+	agg::render_scanlines(ras, sl, ren);
 }
 
 void MLImagePaintEngine::drawImage(const QPoint &point, const MLImage &image)

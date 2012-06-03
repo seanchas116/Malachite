@@ -24,8 +24,7 @@ public:
 	
 	template <typename Image> bool pasteToImage(const QPoint &p, Image *image) const;
 	MLImage toImage() const;
-	MLSurface toSurface(const QPoint &p) const;
-	MLSurface toSurface() const { return toSurface(QPoint()); }
+	MLSurface toSurface(const QPoint &p = QPoint()) const;
 	
 private:
 	FIBITMAP *_bitmap;
@@ -42,7 +41,7 @@ bool MLImageIO::pasteToImage(const QPoint &p, Image *image) const
 		if (bpp == 24) {	// RGB8
 			MLGenericConstWrapperImageM<MLRgb8> wrapper(constBits(), _size, bytesPerLine());
 			image->paste(p, wrapper);
-		} else if (bpp == 32) {
+		} else if (bpp == 32) {	// ARGB8
 			MLGenericConstWrapperImageM<MLArgb8> wrapper(constBits(), _size, bytesPerLine());
 			image->paste(p, wrapper);
 		} else {
@@ -55,7 +54,7 @@ bool MLImageIO::pasteToImage(const QPoint &p, Image *image) const
 		MLGenericConstWrapperImageM<MLRgb16> wrapper(constBits(), _size, bytesPerLine());
 		image->paste(p, wrapper);
 	} else if (type == FIT_RGBA16) {
-		MLGenericConstWrapperImageM<MLRgba16> wrapper(constBits(), _size, bytesPerLine());
+		MLGenericConstWrapperImageM<MLArgb16> wrapper(constBits(), _size, bytesPerLine());
 		image->paste(p, wrapper);
 	} else {
 		qDebug() << "MLImage::fromFIBITMAP: Unsupported data type";

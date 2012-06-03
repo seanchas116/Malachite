@@ -344,11 +344,16 @@ MLSurfaceEditor::~MLSurfaceEditor()
 
 void MLSurfaceEditor::deleteTile(const QPoint &key)
 {
-	delete takeTile(key);
+	if (_surface->isNull()) return;
+	
+	MLImage *tile = takeTile(key);
+	if (tile) delete tile;
 }
 
 void MLSurfaceEditor::clear()
 {
+	if (_surface->isNull()) return;
+	
 	_editedKeys += _surface->keys();
 	qDeleteAll(_surface->d->tileHash);
 	_surface->d->tileHash.clear();
@@ -356,8 +361,9 @@ void MLSurfaceEditor::clear()
 
 MLImage *MLSurfaceEditor::takeTile(const QPoint &key)
 {
-	if (!_surface->d->tileHash.contains(key))
-		return 0;
+	if (_surface->isNull()) return 0;
+	if (!_surface->d->tileHash.contains(key)) return 0;
+	
 	_editedKeys << key;
 	return _surface->d->tileHash.take(key);
 }
@@ -366,12 +372,19 @@ MLImage *MLSurfaceEditor::replaceTile(const QPoint &key, MLImage *image)
 {
 	_editedKeys << key;
 	MLImage *tile = takeTile(key);
+	
+	_surface->setupData();
 	_surface->d->tileHash.insert(key, image);
+	
 	return tile;
 }
 
 void MLSurfaceEditor::replace(const MLSurface &surface, const QPointSet &keys)
 {
+	if (surface.isNull()) return;
+	
+	_surface->setupData();
+	
 	foreach (const QPoint &key, keys)
 	{
 		MLImage *oldTile = replaceTile(key, new MLImage(surface.tileForKey(key)));
@@ -384,6 +397,8 @@ void MLSurfaceEditor::replace(const MLSurface &surface, const QPointSet &keys)
 // If the tile hash no tile with "key", inserts a new tile and returns it
 MLImage *MLSurfaceEditor::tileRefForKey(const QPoint &key)
 {
+	_surface->setupData();
+	
 	MLImage *tile;
 	
 	if (!_surface->d->tileHash.contains(key))
@@ -401,7 +416,7 @@ MLImage *MLSurfaceEditor::tileRefForKey(const QPoint &key)
 
 const MLImage *MLSurfaceEditor::constTileRefForKey(const QPoint &key) const
 {
-	if (_surface->d->tileHash.contains(key))
+	if (_surface->isNull() || _surface->d->tileHash.contains(key))
 		return _surface->d->tileHash[key];
 	else
 		return &MLSurface::DefaultTile;
@@ -409,6 +424,8 @@ const MLImage *MLSurfaceEditor::constTileRefForKey(const QPoint &key) const
 
 void MLSurfaceEditor::squeeze(const QPointSet &keys)
 {
+	if (_surface->isNull()) return;
+	
 	QPointList deleteList;
 	
 	foreach (const QPoint &key, keys)

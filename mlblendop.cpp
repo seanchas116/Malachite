@@ -13,7 +13,7 @@ public:
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
 	{
-		Q_ASSERT(states);
+		Q_UNUSED(states);
 		return MLBlendOp::NoTiles;
 	}
 };

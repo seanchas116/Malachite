@@ -10,7 +10,6 @@ TEMPLATE = lib
 DEFINES += MALACHITE_LIBRARY
 
 SOURCES += \
-    agg_curves.cpp \
     mlblendmode.cpp \
     mlblendop.cpp \
     mlcolor.cpp \
@@ -31,7 +30,6 @@ SOURCES += \
     mlimagerenderer.cpp
 
 HEADERS += malachite.h\
-    agg_curves.h \
     agg_config.h \
     agg_basics.h \
     agg_array.h \
