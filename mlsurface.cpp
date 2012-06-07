@@ -14,7 +14,8 @@ MLSurfaceData::MLSurfaceData(const MLSurfaceData &other)
       tileHash(other.tileHash)
 {
 	MLSurfaceHash::iterator i;
-	for (i = tileHash.begin(); i != tileHash.end(); ++i) {
+	for (i = tileHash.begin(); i != tileHash.end(); ++i)
+	{
 		i.value() = new MLImage(*(i.value()));
 	}
 }
@@ -36,7 +37,8 @@ bool MLSurface::save(QIODevice *device) const
 		return true;
 	
 	MLSurfaceHash::const_iterator i;
-	for (i = d->tileHash.begin(); i != d->tileHash.end(); ++i) {
+	for (i = d->tileHash.begin(); i != d->tileHash.end(); ++i)
+	{
 		const MLImage *tile = i.value();
 		
 		QByteArray tileArray;
@@ -44,7 +46,8 @@ bool MLSurface::save(QIODevice *device) const
 		
 		for (int y = 0; y < TileSize; ++y) {
 			const MLArgb *p = tile->constScanline(y);
-			for (int x = 0; x < TileSize; ++x) {
+			for (int x = 0; x < TileSize; ++x)
+			{
 				tileStream << p->a();
 				tileStream << p->r();
 				tileStream << p->g();
@@ -69,7 +72,8 @@ MLSurface MLSurface::loaded(QIODevice *device)
 	MLSurface surface;
 	surface.setupData();
 	
-	while (!inStream.atEnd()) {
+	while (!inStream.atEnd())
+	{
 		QPoint key;
 		QByteArray tileArray;
 		
@@ -79,9 +83,11 @@ MLSurface MLSurface::loaded(QIODevice *device)
 		MLImage *tile = new MLImage(TileSize, TileSize);
 		QDataStream tileStream(&tileArray, QIODevice::ReadOnly);
 		
-		for (int y = 0; y < TileSize; ++y) {
+		for (int y = 0; y < TileSize; ++y)
+		{
 			MLArgb *p = tile->scanline(y);
-			for (int x = 0; x < TileSize; ++x) {
+			for (int x = 0; x < TileSize; ++x) 
+			{
 				tileStream >> p->a();
 				tileStream >> p->r();
 				tileStream >> p->g();
@@ -90,12 +96,16 @@ MLSurface MLSurface::loaded(QIODevice *device)
 			}
 		}
 		
-		if (tileSize == TileSize) {
-			if (!surface.d->tileHash.contains(key)) {
+		if (tileSize == TileSize)
+		{
+			if (!surface.d->tileHash.contains(key))
+			{
 				surface.d->tileHash[key] = tile;
 				continue;
 			}
-		} else {
+		}
+		else
+		{
 			MLPainter painter(&surface);
 			painter.drawImage(key * (int)tileSize, *tile);
 		}
@@ -134,8 +144,10 @@ QPointSet MLSurface::keysForRect(const QRect &rect)
 	QRect keyRect(topLeftKey, bottomRightKey);
 	set.reserve(keyRect.width() * keyRect.height());
 	
-	for (int y = topLeftKey.y(); y <= bottomRightKey.y(); ++y) {
-		for (int x = topLeftKey.x(); x <= bottomRightKey.x(); ++x) {
+	for (int y = topLeftKey.y(); y <= bottomRightKey.y(); ++y)
+	{
+		for (int x = topLeftKey.x(); x <= bottomRightKey.x(); ++x)
+		{
 			set << QPoint(x, y);
 		}
 	}
@@ -155,7 +167,8 @@ QRect MLSurface::boundingKeyRect() const
 	top = bottom = iterator.key().y();
 	++iterator;
 	
-	for (; iterator != d->tileHash.end(); ++iterator) {
+	for (; iterator != d->tileHash.end(); ++iterator)
+	{
 		int x = iterator.key().x();
 		int y = iterator.key().y();
 		
@@ -187,7 +200,8 @@ QRect MLSurface::boundingRect() const
 	QRect keyRect = boundingKeyRect();
 	
 	QPointSet topTileKeys;
-	for (int tileX = keyRect.left(); tileX <= keyRect.right(); ++tileX) {
+	for (int tileX = keyRect.left(); tileX <= keyRect.right(); ++tileX)
+	{
 		QPoint key(tileX, keyRect.top());
 		if (!contains(key))
 			continue;
@@ -195,7 +209,8 @@ QRect MLSurface::boundingRect() const
 	}
 	
 	QPointSet bottomTileKeys;
-	for (int tileX = keyRect.left(); tileX <= keyRect.right(); ++tileX) {
+	for (int tileX = keyRect.left(); tileX <= keyRect.right(); ++tileX)
+	{
 		QPoint key(tileX, keyRect.bottom());
 		if (!contains(key))
 			continue;
@@ -203,7 +218,8 @@ QRect MLSurface::boundingRect() const
 	}
 	
 	QPointSet leftTileKeys;
-	for (int tileY = keyRect.top(); tileY <= keyRect.bottom(); ++tileY) {
+	for (int tileY = keyRect.top(); tileY <= keyRect.bottom(); ++tileY)
+	{
 		QPoint key(keyRect.left(), tileY);
 		if (!contains(key))
 			continue;
@@ -211,7 +227,8 @@ QRect MLSurface::boundingRect() const
 	}
 	
 	QPointSet rightTileKeys;
-	for (int tileY = keyRect.top(); tileY <= keyRect.bottom(); ++tileY) {
+	for (int tileY = keyRect.top(); tileY <= keyRect.bottom(); ++tileY)
+	{
 		QPoint key(keyRect.right(), tileY);
 		if (!contains(key))
 			continue;
@@ -234,7 +251,8 @@ MLSurface MLSurface::section(const QPointSet &keys) const
 	
 	MLSurface surface;
 	
-	foreach (const QPoint &key, keys) {
+	foreach (const QPoint &key, keys)
+	{
 		if (!d->tileHash.contains(key))
 			continue;
 		surface.setupData();
@@ -250,7 +268,8 @@ MLSurface MLSurface::exclusion(const QPointSet &keys) const
 	
 	MLSurface surface;
 	
-	foreach (const QPoint &key, d->tileHash.keys()) {
+	foreach (const QPoint &key, d->tileHash.keys())
+	{
 		if (keys.contains(key))
 			continue;
 		surface.setupData();
@@ -261,10 +280,13 @@ MLSurface MLSurface::exclusion(const QPointSet &keys) const
 
 int MLSurface::commonLeftBound(const QPointSet &keys) const
 {
-	for (int x = 0; x < MLSurface::TileSize; ++x) {
-		foreach (const QPoint &key, keys) {
+	for (int x = 0; x < MLSurface::TileSize; ++x)
+	{
+		foreach (const QPoint &key, keys)
+		{
 			const MLImage image = tileForKey(key);
-			for (int y = 0; y < MLSurface::TileSize; ++y) {
+			for (int y = 0; y < MLSurface::TileSize; ++y)
+			{
 				if (image.pixel(x, y).a())
 					return x;
 			}
@@ -275,10 +297,13 @@ int MLSurface::commonLeftBound(const QPointSet &keys) const
 
 int MLSurface::commonRightBound(const QPointSet &keys) const
 {
-	for (int x = MLSurface::TileSize - 1; x >= 0; --x) {
-		foreach (const QPoint &key, keys) {
+	for (int x = MLSurface::TileSize - 1; x >= 0; --x)
+	{
+		foreach (const QPoint &key, keys)
+		{
 			const MLImage image = tileForKey(key);
-			for (int y = 0; y < MLSurface::TileSize; ++y) {
+			for (int y = 0; y < MLSurface::TileSize; ++y)
+			{
 				if (image.pixel(x, y).a())
 					return x;
 			}
@@ -289,10 +314,13 @@ int MLSurface::commonRightBound(const QPointSet &keys) const
 
 int MLSurface::commonTopBound(const QPointSet &keys) const
 {
-	for (int y = 0; y < MLSurface::TileSize; ++y) {
-		foreach (const QPoint &key, keys) {
+	for (int y = 0; y < MLSurface::TileSize; ++y)
+	{
+		foreach (const QPoint &key, keys)
+		{
 			const MLArgb *scanline = tileForKey(key).scanline(y);
-			for (int x = 0; x < MLSurface::TileSize; ++x) {
+			for (int x = 0; x < MLSurface::TileSize; ++x)
+			{
 				if (scanline->a())
 					return y;
 				scanline++;
@@ -304,10 +332,13 @@ int MLSurface::commonTopBound(const QPointSet &keys) const
 
 int MLSurface::commonBottomBound(const QPointSet &keys) const
 {
-	for (int y = MLSurface::TileSize - 1; y >= 0; --y) {
-		foreach (const QPoint &key, keys) {
+	for (int y = MLSurface::TileSize - 1; y >= 0; --y)
+	{
+		foreach (const QPoint &key, keys)
+		{
 			const MLArgb *scanline = tileForKey(key).scanline(y);
-			for (int x = 0; x < MLSurface::TileSize; ++x) {
+			for (int x = 0; x < MLSurface::TileSize; ++x)
+			{
 				if (scanline->a())
 					return y;
 				scanline++;

@@ -11,9 +11,11 @@
 #  define MALACHITESHARED_EXPORT Q_DECL_IMPORT
 #endif
 
-namespace MLGlobal {
+namespace MLGlobal
+{
 
-enum BlendMode {
+enum BlendMode
+{
 	BlendModeNormal = 0,	// 通常
 	BlendModePlus,	// 加算
 	BlendModeMultiply,	// 乗算
@@ -44,32 +46,43 @@ enum BlendMode {
 	BlendModePassThrough	// Group only
 };
 
-enum ArgbPosition {
+enum ArgbPosition
+{
 	ArgbAlpha = 3,
 	ArgbRed = 2,
 	ArgbGreen = 1,
 	ArgbBlue = 0
 };
 
-enum RgbaPosition {
+enum RgbaPosition
+{
 	RgbaRed = 3,
 	RgbaGreen = 2,
 	RgbaBlue = 1,
 	RgbaAlpha = 0
 };
 
-enum RgbPositoon {
+enum RgbPositoon
+{
 	RgbRed = 2,
 	RgbGreen = 1,
 	RgbBlue = 0
 };
 
-enum BrushType {
+enum BrushType
+{
 	BrushTypeNull,
 	BrushTypeColor,
 	BrushTypeGradient,
 	BrushTypeImage,
 	BrushTypeSurface
+};
+
+enum SpreadType
+{
+	SpreadTypePad,
+	SpreadTypeRepeat,
+	SpreadTypeReflective
 };
 
 }

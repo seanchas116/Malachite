@@ -29,6 +29,12 @@ public:
 	virtual void blend(int count, MLArgb *dst, const MLArgb &src, const MLArgb &mask) = 0;
 	virtual void blend(int count, MLArgb *dst, const MLArgb &src, float opacity) = 0;
 	
+	virtual void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src) = 0;
+	virtual void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, const MLArgb *masks) = 0;
+	virtual void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, const float *opacities) = 0;
+	virtual void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, const MLArgb &mask) = 0;
+	virtual void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, float opacity) = 0;
+	
 	virtual TileStates tileOp(TileStates states) = 0;
 };
 
@@ -157,6 +163,64 @@ public:
 			BlendFunctions::blendFunc(*dst++, c);
 		}
 	}
+	
+	
+	
+	void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src)
+	{
+		for (int i = 0; i < count; ++i)
+		{
+			BlendFunctions::blendFunc(*dst++, *src--);
+		}
+	}
+	
+	void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, const MLArgb *masks)
+	{
+		for (int i = 0; i < count; ++i)
+		{
+			MLArgb c;
+			c.v = src->v * masks->a();
+			src--;
+			masks++;
+			BlendFunctions::blendFunc(*dst++, c);
+		}
+	}
+
+	void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, const float *opacities)
+	{
+		for (int i = 0; i < count; ++i)
+		{
+			MLArgb c;
+			c.v = src->v * *opacities;
+			src--;
+			opacities++;
+			BlendFunctions::blendFunc(*dst++, c);
+		}
+	}
+
+	void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, const MLArgb &mask)
+	{
+		for (int i = 0; i < count; ++i)
+		{
+			MLArgb c;
+			c.v = src->v * mask.a();
+			src--;
+			BlendFunctions::blendFunc(*dst++, c);
+		}
+	}
+
+	void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, float opacity)
+	{
+		for (int i = 0; i < count; ++i)
+		{
+			MLArgb c;
+			c.v = src->v * opacity;
+			src--;
+			BlendFunctions::blendFunc(*dst++, c);
+		}
+	}
+	
+	
 	
 	TileStates tileOp(TileStates states)
 	{

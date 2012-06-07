@@ -17,6 +17,7 @@
 #define MLIMAGERENDERER_H
 
 #include <QPainterPath>
+#include "mlintdivision.h"
 #include "mlimage.h"
 #include "mlpainter.h"
 #include "agg_array.h"
@@ -245,7 +246,7 @@ public:
 			newCovers[i] = (float)covers[i + start - x] / 255.0f;
 		}
 		
-		_filler->blend(_bitmap, _blendOp, start, y, newCount, newCovers);
+		_filler->blend(_bitmap, _blendOp, QPoint(start, y), newCount, newCovers);
 		
 		delete[] newCovers;
 	}
@@ -259,7 +260,7 @@ public:
 		int end = qMin(x + count, _bitmap.rect().left() + _bitmap.rect().width());
 		unsigned newCount = end - start;
 		
-		_filler->blend(_bitmap, _blendOp, start, y, newCount, (float)cover / 255.0f);
+		_filler->blend(_bitmap, _blendOp, QPoint(start, y), newCount, (float)cover / 255.0f);
 	}
 	
 private:
@@ -278,18 +279,186 @@ public:
 		_argb.v *= opacity;
 	}
 	
-	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, int x, int y, int count, float *covers)
+	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, const QPoint &point, int count, float *covers)
 	{
-		blendOp->blend(count, bitmap.pixelPointer(x, y), _argb, covers);
+		blendOp->blend(count, bitmap.pixelPointer(point), _argb, covers);
 	}
 	
-	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, int x, int y, int count, float cover)
+	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, const QPoint &point, int count, float cover)
 	{
-		blendOp->blend(count, bitmap.pixelPointer(x, y), _argb, cover);
+		blendOp->blend(count, bitmap.pixelPointer(point), _argb, cover);
 	}
 	
 private:
 	MLArgb _argb;
 };
+
+
+class MLLineGradientMethod
+{
+public:
+	MLLineGradientMethod(const QPointF &a, const QPointF &b) :
+		_a(a), _ab(b-a)
+	{
+		_ab2 = _ab.x() * _ab.x() + _ab.y() * _ab.y();
+		Q_ASSERT(_ab2 != 0);
+	}
+	
+	double position(const QPointF &p)
+	{
+		QPointF ap = p -_a;
+		return (ap.x() * _ab.x() + ap.y() * _ab.y()) / _ab2;
+	}
+	
+private:
+	QPointF _a;
+	QPointF _ab;
+	double _ab2;
+};
+
+class MLRadialGradientMethod
+{
+public:
+	MLRadialGradientMethod(const QPointF &center, double radius) :
+		_c(center), _r(radius)
+	{
+		Q_ASSERT(_r > 0);
+	}
+	
+	double position(const QPointF &p)
+	{
+		QPointF d = p - _c;
+		return hypot(d.x(), d.y()) / _r;
+	}
+	
+private:
+	QPointF _c;
+	double _r;
+};
+
+class MLFocalGradientMethod
+{
+public:
+	MLFocalGradientMethod(const QPointF &center, double radius, const QPointF &focal) :
+		o(center), f(focal), r(radius)
+	{
+		Q_ASSERT(r > 0);
+		of = f - o;
+		c = of.x() * of.x() + of.y() * of.y() - r * r;
+		Q_ASSERT(c < 0);
+	}
+	
+	double position(const QPointF &p)
+	{
+		QPointF fp = p - f;
+		double dot = of.x() * fp.x() + of.y() * fp.y();
+		double fp2 = fp.x() * fp.x() + fp.y() * fp.y();
+		
+		return fp2 / (sqrt(dot * dot - fp2 * c) - dot); 
+	}
+	
+private:
+	QPointF o, f, of;
+	double r, c;
+};
+
+template <class Gradient, class Method>
+class MLImageGradientFiller
+{
+public:
+	
+	MLImageGradientFiller(const Gradient &gradient, const Method &gradientMethod, const QTransform &transform = QTransform()) :
+		_gradient(gradient), _method(gradientMethod), _transform(transform) {}
+	
+	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, const QPoint &point, int count, float *covers)
+	{
+		MLArgb *fill = new MLArgb[count];
+		
+		for (int i = 0; i < count; ++i)
+		{
+			QPointF p((point.x() + i) + 0.5, point.y() + 0.5);
+			fill[i] = _gradient.at(_method.position(p * _transform));
+		}
+		
+		blendOp->blend(count, bitmap.pixelPointer(point), fill, covers);
+		
+		delete fill;
+	}
+	
+	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, const QPoint &point, int count, float cover)
+	{
+		MLArgb *fill = new MLArgb[count];
+		
+		for (int i = 0; i < count; ++i)
+		{
+			QPointF p((point.x() + i) + 0.5, point.y() + 0.5);
+			fill[i] = _gradient.at(_method.position(p * _transform));
+		}
+		
+		blendOp->blend(count, bitmap.pixelPointer(point), fill, cover);
+		
+		delete fill;
+	}
+	
+private:
+	
+	Gradient _gradient;
+	Method _method;
+	QTransform _transform;
+};
+
+template <MLGlobal::SpreadType SpreadType>
+class MLImageImageFiller
+{
+public:
+	MLImageImageFiller(const MLImage &image, const QPoint &offset) :
+		_image(image), _offset(offset) {}
+	
+	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, const QPoint &point, int count, float *covers)
+	{
+		MLIntDivision divY(point.y() - _offset.y(), _image.height());
+		MLIntDivision divX(point.x() - _offset.x(), _image.width());
+		
+		blendOp->blend(_image.width() - divX.rem(), bitmap.pixelPointer(point), _image.constPixelPointer(divX.rem(), divY.rem()), covers);
+		
+		int i = _image.width() - divX.rem();
+		
+		forever
+		{
+			if (i >= count) return;
+			if (count - i < _image.width()) break;
+			blendOp->blend(_image.width(), bitmap.pixelPointer(point + QPoint(i, 0)), _image.constPixelPointer(0, divY.rem()), covers + i);
+			i += _image.width();
+		}
+		
+		blendOp->blend(count - i, bitmap.pixelPointer(point + QPoint(i, 0)), _image.constPixelPointer(0, divY.rem()), covers + i);
+	}
+	
+	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, const QPoint &point, int count, float cover)
+	{
+		MLIntDivision divY(point.y() - _offset.y(), _image.height());
+		MLIntDivision divX(point.x() - _offset.x(), _image.width());
+		
+		blendOp->blend(_image.width() - divX.rem(), bitmap.pixelPointer(point), _image.constPixelPointer(divX.rem(), divY.rem()), cover);
+		
+		int i = _image.width() - divX.rem();
+		
+		forever
+		{
+			if (i >= count) return;
+			if (count - i < _image.width()) break;
+			blendOp->blend(_image.width(), bitmap.pixelPointer(point + QPoint(i, 0)), _image.constPixelPointer(0, divY.rem()), cover);
+			i += _image.width();
+		}
+		
+		blendOp->blend(count - i, bitmap.pixelPointer(point + QPoint(i, 0)), _image.constPixelPointer(0, divY.rem()), cover);
+	}
+	
+private:
+	
+	const MLImage _image;
+	QPoint _offset;
+};
+
 
 #endif // MLIMAGERENDERER_H
