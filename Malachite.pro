@@ -14,10 +14,8 @@ SOURCES += \
     mlblendop.cpp \
     mlcolor.cpp \
     mlcurves.cpp \
-    mlgradientcache.cpp \
     mlimage.cpp \
     mlimagepaintengine.cpp \
-    mllinegradient.cpp \
     mlpaintengine.cpp \
     mlpainter.cpp \
     mlsurface.cpp \
@@ -27,7 +25,8 @@ SOURCES += \
     mlmisc.cpp \
     mlbrush.cpp \
     mlimageio.cpp \
-    mlimagerenderer.cpp
+    mlimagerenderer.cpp \
+    mlcolorgradient.cpp
 
 HEADERS += malachite.h\
     agg_config.h \
@@ -39,12 +38,9 @@ HEADERS += malachite.h\
     mlcolor.h \
     mlcurves.h \
     mlgenericimage.h \
-    mlgradient.h \
-    mlgradientcache.h \
     mlimage.h \
     mlimagepaintengine.h \
     mlintdivision.h \
-    mllinegradient.h \
     mlmisc.h \
     mlpaintable.h \
     mlpaintengine.h \
@@ -67,7 +63,10 @@ HEADERS += malachite.h\
     mlimageio.h \
     mlgenericwrapperimage.h \
     mlgenericsharedimage.h \
-    mlimagerenderer.h
+    mlimagerenderer.h \
+    mlscalingfilter.h \
+    mlgenericgradient.h \
+    mlcolorgradient.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

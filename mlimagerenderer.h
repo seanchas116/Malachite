@@ -367,8 +367,8 @@ class MLImageGradientFiller
 {
 public:
 	
-	MLImageGradientFiller(const Gradient &gradient, const Method &gradientMethod, const QTransform &transform = QTransform()) :
-		_gradient(gradient), _method(gradientMethod), _transform(transform) {}
+	MLImageGradientFiller(const Gradient &gradient, const Method &gradientMethod) :
+		_gradient(gradient), _method(gradientMethod) {}
 	
 	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, const QPoint &point, int count, float *covers)
 	{
@@ -377,7 +377,7 @@ public:
 		for (int i = 0; i < count; ++i)
 		{
 			QPointF p((point.x() + i) + 0.5, point.y() + 0.5);
-			fill[i] = _gradient.at(_method.position(p * _transform));
+			fill[i] = _gradient.at(_method.position(p));
 		}
 		
 		blendOp->blend(count, bitmap.pixelPointer(point), fill, covers);
@@ -392,7 +392,7 @@ public:
 		for (int i = 0; i < count; ++i)
 		{
 			QPointF p((point.x() + i) + 0.5, point.y() + 0.5);
-			fill[i] = _gradient.at(_method.position(p * _transform));
+			fill[i] = _gradient.at(_method.position(p));
 		}
 		
 		blendOp->blend(count, bitmap.pixelPointer(point), fill, cover);
@@ -404,7 +404,51 @@ private:
 	
 	Gradient _gradient;
 	Method _method;
-	QTransform _transform;
+};
+
+template <class Gradient, class Method>
+class MLImageTransformedGradientFiller
+{
+public:
+	
+	MLImageTransformedGradientFiller(const Gradient &gradient, const Method &gradientMethod, const QTransform &transform) :
+		_gradient(gradient), _method(gradientMethod), _iTransform(transform.inverted()) {}
+	
+	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, const QPoint &point, int count, float *covers)
+	{
+		MLArgb *fill = new MLArgb[count];
+		
+		for (int i = 0; i < count; ++i)
+		{
+			QPointF p((point.x() + i) + 0.5, point.y() + 0.5);
+			fill[i] = _gradient.at(_method.position(p * _iTransform));
+		}
+		
+		blendOp->blend(count, bitmap.pixelPointer(point), fill, covers);
+		
+		delete fill;
+	}
+	
+	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, const QPoint &point, int count, float cover)
+	{
+		MLArgb *fill = new MLArgb[count];
+		
+		for (int i = 0; i < count; ++i)
+		{
+			QPointF p((point.x() + i) + 0.5, point.y() + 0.5);
+			fill[i] = _gradient.at(_method.position(p * _iTransform));
+		}
+		
+		blendOp->blend(count, bitmap.pixelPointer(point), fill, cover);
+		
+		delete fill;
+	}
+	
+private:
+	
+	Gradient _gradient;
+	Method _method;
+	QTransform _iTransform;
 };
 
 template <MLGlobal::SpreadType SpreadType>
@@ -419,13 +463,18 @@ public:
 		MLIntDivision divY(point.y() - _offset.y(), _image.height());
 		MLIntDivision divX(point.x() - _offset.x(), _image.width());
 		
-		blendOp->blend(_image.width() - divX.rem(), bitmap.pixelPointer(point), _image.constPixelPointer(divX.rem(), divY.rem()), covers);
-		
 		int i = _image.width() - divX.rem();
+		
+		if (i >= count)
+		{
+			blendOp->blend(count, bitmap.pixelPointer(point), _image.constPixelPointer(divX.rem(), divY.rem()), covers);
+			return;
+		}
+		
+		blendOp->blend(i, bitmap.pixelPointer(point), _image.constPixelPointer(divX.rem(), divY.rem()), covers);
 		
 		forever
 		{
-			if (i >= count) return;
 			if (count - i < _image.width()) break;
 			blendOp->blend(_image.width(), bitmap.pixelPointer(point + QPoint(i, 0)), _image.constPixelPointer(0, divY.rem()), covers + i);
 			i += _image.width();
@@ -439,13 +488,18 @@ public:
 		MLIntDivision divY(point.y() - _offset.y(), _image.height());
 		MLIntDivision divX(point.x() - _offset.x(), _image.width());
 		
-		blendOp->blend(_image.width() - divX.rem(), bitmap.pixelPointer(point), _image.constPixelPointer(divX.rem(), divY.rem()), cover);
-		
 		int i = _image.width() - divX.rem();
+		
+		if (i >= count)
+		{
+			blendOp->blend(count, bitmap.pixelPointer(point), _image.constPixelPointer(divX.rem(), divY.rem()), cover);
+			return;
+		}
+		
+		blendOp->blend(i, bitmap.pixelPointer(point), _image.constPixelPointer(divX.rem(), divY.rem()), cover);
 		
 		forever
 		{
-			if (i >= count) return;
 			if (count - i < _image.width()) break;
 			blendOp->blend(_image.width(), bitmap.pixelPointer(point + QPoint(i, 0)), _image.constPixelPointer(0, divY.rem()), cover);
 			i += _image.width();

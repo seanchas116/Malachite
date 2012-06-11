@@ -30,20 +30,6 @@ bool MLSurfacePaintEngine::flush()
 	return true;
 }
 
-void MLSurfacePaintEngine::drawEllipse(double x, double y, double rx, double ry)
-{
-	QRectF rect(x - rx, y - ry, 2 * rx, 2 * ry);
-	QPointSet keys = MLSurface::keysForRect(rect.toAlignedRect());
-	
-	foreach (const QPoint &key, keys)
-	{
-		QPointF realCenter = QPointF(x, y) - key * MLSurface::TileSize;
-		MLPainter painter(_editor->tileRefForKey(key));
-		painter.setState(_state);
-		painter.drawEllipse(realCenter, rx, ry);
-	}
-}
-
 void MLSurfacePaintEngine::drawPath(const QPainterPath &path)
 {
 	foreach (const QPoint &key, MLSurface::keysForRect(path.boundingRect().toAlignedRect()))
@@ -52,6 +38,11 @@ void MLSurfacePaintEngine::drawPath(const QPainterPath &path)
 		{
 			MLPainter painter(_editor->tileRefForKey(key));
 			painter.setState(_state);
+			
+			MLBrush brush = _state.brush;
+			brush.translate(-key * MLSurface::TileSize);
+			painter.setBrush(brush);
+			
 			painter.drawPath(path.translated(-key * MLSurface::TileSize));
 		}
 	}
@@ -65,6 +56,11 @@ void MLSurfacePaintEngine::drawImage(const QPoint &point, const MLImage &image)
 		{
 			MLPainter painter(_editor->tileRefForKey(key));
 			painter.setState(_state);
+			
+			MLBrush brush = _state.brush;
+			brush.translate(-key * MLSurface::TileSize);
+			painter.setBrush(brush);
+			
 			painter.drawImage(point - key * MLSurface::TileSize, image);
 		}
 	}

@@ -85,6 +85,13 @@ enum SpreadType
 	SpreadTypeReflective
 };
 
+enum GradientType
+{
+	GradientTypeNull,
+	GradientTypeLinear,
+	GradientTypeRadial
+};
+
 }
 
 #endif // MLGLOBAL_H

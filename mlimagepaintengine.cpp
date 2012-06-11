@@ -1,29 +1,3 @@
-
-//----------------------------------------------------------------------------
-// Anti-Grain Geometry (AGG) - Version 2.5
-// A high quality rendering engine for C++
-// Copyright (C) 2002-2006 Maxim Shemanarev
-// Contact: mcseem@antigrain.com
-//          mcseemagg@yahoo.com
-//          http://antigrain.com
-// 
-// AGG is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
-// 
-// AGG is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
-// MA 02110-1301, USA.
-//----------------------------------------------------------------------------
-
-
 #include <QtGui>
 #include "agg_rasterizer_scanline_aa.h"
 #include "agg_scanline_p.h"
@@ -53,19 +27,130 @@ void MLImagePaintEngine::updateState(const MLPaintEngineState &state)
 	_opacity = state.opacity;
 }
 
-void MLImagePaintEngine::drawPath(const QPainterPath &path)
+template <class Filler>
+void mlFillBitmap(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, agg::rasterizer_scanline_aa<> &rasterizer, Filler &filler)
 {
 	agg::scanline_p8 sl;
+	
+	typedef MLImageBaseRenderer<Filler> BaseRenderer;
+	typedef MLRenderer<BaseRenderer> Renderer;
+	
+	BaseRenderer baseRen(bitmap, blendOp, &filler);
+	Renderer ren(&baseRen);
+	
+	agg::render_scanlines(rasterizer, sl, ren);
+}
+
+void MLImagePaintEngine::drawPath(const QPainterPath &path)
+{
 	agg::rasterizer_scanline_aa<> ras;
 	
 	QPainterPath_vs vs(path);
 	ras.add_path(vs);
 	
-	MLImageColorFiller filler(_state.brush.argb(), _opacity);
-	MLImageBaseRenderer<MLImageColorFiller> baseRen(_bitmap, _blendOp, &filler);
-	MLRenderer<MLImageBaseRenderer<MLImageColorFiller> > ren(&baseRen);
-	
-	agg::render_scanlines(ras, sl, ren);
+	switch (_state.brush.type())
+	{
+	case MLGlobal::BrushTypeColor:
+	{
+		
+		MLImageColorFiller filler(_state.brush.argb(), _opacity);
+		mlFillBitmap(_bitmap, _blendOp, ras, filler);
+		break;
+	}
+	case MLGlobal::BrushTypeImage:
+	{
+		typedef MLImageImageFiller<MLGlobal::SpreadTypeRepeat> Filler;
+		
+		MLBrush brush = _state.brush;
+		
+		Filler filler(brush.image(), QPoint(brush.transform().dx(), brush.transform().dy()));
+		mlFillBitmap(_bitmap, _blendOp, ras, filler);
+		
+		break;
+	}
+	case MLGlobal::BrushTypeGradient:
+	{
+		MLColorGradient aGradient = _state.brush.gradient();
+		QTransform transform = _state.brush.transform();
+		
+		switch (_state.brush.gradient().type())
+		{
+		case MLGlobal::GradientTypeLinear:
+		{
+			MLLinearColorGradient gradient = *(static_cast<MLLinearColorGradient *>(&aGradient));
+			
+			if (transform.isAffine())
+			{
+				typedef MLImageGradientFiller<MLColorGradient, MLLineGradientMethod> Filler;
+				
+				MLLineGradientMethod method(gradient.start() * transform, gradient.end() * transform);
+				Filler filler(gradient, method);
+				mlFillBitmap(_bitmap, _blendOp, ras, filler);
+			}
+			else
+			{
+				typedef MLImageTransformedGradientFiller<MLColorGradient, MLLineGradientMethod> Filler;
+				
+				MLLineGradientMethod method(gradient.start(), gradient.end());
+				Filler filler(gradient, method, transform);
+				mlFillBitmap(_bitmap, _blendOp, ras, filler);
+			}
+			
+			break;
+		}
+		case MLGlobal::GradientTypeRadial:
+		{
+			MLRadialColorGradient gradient = *(static_cast<MLRadialColorGradient *>(&aGradient));
+			
+			if (gradient.center() == gradient.focal())
+			{
+				// similar transform
+				if (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22())
+				{
+					typedef MLImageGradientFiller<MLColorGradient, MLRadialGradientMethod> Filler;
+					
+					MLRadialGradientMethod method(gradient.center() * transform, gradient.radius() * transform.m11());
+					Filler filler(gradient, method);
+					mlFillBitmap(_bitmap, _blendOp, ras, filler);
+				}
+				else
+				{
+					typedef MLImageTransformedGradientFiller<MLColorGradient, MLRadialGradientMethod> Filler;
+					
+					MLRadialGradientMethod method(gradient.center(), gradient.radius());
+					Filler filler(gradient, method, transform);
+					mlFillBitmap(_bitmap, _blendOp, ras, filler);
+				}
+			}
+			else
+			{
+				// similar transform
+				if (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22())
+				{
+					typedef MLImageGradientFiller<MLColorGradient, MLFocalGradientMethod> Filler;
+					
+					MLFocalGradientMethod method(gradient.center() * transform, gradient.radius() * transform.m11(), gradient.focal() * transform);
+					Filler filler(gradient, method);
+					mlFillBitmap(_bitmap, _blendOp, ras, filler);
+				}
+				else
+				{
+					typedef MLImageTransformedGradientFiller<MLColorGradient, MLFocalGradientMethod> Filler;
+					
+					MLFocalGradientMethod method(gradient.center(), gradient.radius(), gradient.focal());
+					Filler filler(gradient, method, transform);
+					mlFillBitmap(_bitmap, _blendOp, ras, filler);
+				}
+			}
+			break;
+		}
+		default:
+			break;
+		}
+	}
+	default:
+		break;
+	}
 }
 
 void MLImagePaintEngine::drawImage(const QPoint &point, const MLImage &image)

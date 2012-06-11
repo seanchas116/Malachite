@@ -15,7 +15,6 @@ public:
 	bool begin(MLPaintable *paintable);
 	bool flush();
 	
-	void drawEllipse(double x, double y, double rx, double ry);
 	void drawPath(const QPainterPath &path);
 	void drawImage(const QPoint &point, const MLImage &image);
 	
