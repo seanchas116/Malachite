@@ -40,7 +40,10 @@ void MLSurfacePaintEngine::drawPath(const QPainterPath &path)
 			painter.setState(_state);
 			
 			MLBrush brush = _state.brush;
-			brush.translate(-key * MLSurface::TileSize);
+			
+			QPoint offset = -key * MLSurface::TileSize;
+			brush.setTransform(brush.transform() * QTransform::fromTranslate(offset.x(), offset.y()));
+			
 			painter.setBrush(brush);
 			
 			painter.drawPath(path.translated(-key * MLSurface::TileSize));
@@ -58,7 +61,10 @@ void MLSurfacePaintEngine::drawImage(const QPoint &point, const MLImage &image)
 			painter.setState(_state);
 			
 			MLBrush brush = _state.brush;
-			brush.translate(-key * MLSurface::TileSize);
+			
+			QPoint offset = -key * MLSurface::TileSize;
+			brush.setTransform(brush.transform() * QTransform::fromTranslate(offset.x(), offset.y()));
+			
 			painter.setBrush(brush);
 			
 			painter.drawImage(point - key * MLSurface::TileSize, image);

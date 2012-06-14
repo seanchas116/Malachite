@@ -3,7 +3,7 @@
 
 #include "mlcolor.h"
 #include "mlgenericgradient.h"
-
+#include <QDebug>
 
 class MLColorGradientCache;
 
@@ -15,7 +15,7 @@ public:
 	
 	MLColorGradient() : _type(MLGlobal::GradientTypeNull) {}
 	
-	MLGlobal::GradientType type() { return _type; }
+	MLGlobal::GradientType type() const { return _type; }
 	
 	void addStop(float x, const MLArgb &y) { _gradient.addStop(x, y.v); }
 	void addStop(float x, const MLColor &color) { addStop(x, color.toArgb()); }
@@ -66,6 +66,11 @@ class MALACHITESHARED_EXPORT MLLinearColorGradient : public MLColorGradient
 {
 public:
 	
+	MLLinearColorGradient()
+	{
+		setType(MLGlobal::GradientTypeLinear);
+	}
+	
 	MLLinearColorGradient(const QPointF &start, const QPointF &end) :
 		_start(start),
 		_end(end)
@@ -83,6 +88,12 @@ private:
 class MALACHITESHARED_EXPORT MLRadialColorGradient : public MLColorGradient
 {
 public:
+	
+	MLRadialColorGradient() :
+		_radius(0)
+	{
+		setType(MLGlobal::GradientTypeRadial);
+	}
 	
 	MLRadialColorGradient(const QPointF &center, double radius, const QPointF &focal) :
 		_center(center),
@@ -111,6 +122,8 @@ private:
 
 Q_DECLARE_METATYPE(MLColorGradient)
 Q_DECLARE_METATYPE(MLColorGradientCache)
+Q_DECLARE_METATYPE(MLLinearColorGradient)
+Q_DECLARE_METATYPE(MLRadialColorGradient)
 
 
 #endif // MLCOLORGRADIENT_H

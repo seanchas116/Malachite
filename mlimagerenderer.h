@@ -293,18 +293,27 @@ private:
 	MLArgb _argb;
 };
 
+class MLGradientMethod
+{
+public:
+	MLGradientMethod() {}
+	virtual ~MLGradientMethod() {}
+	
+	virtual double position(const QPointF &p) const = 0;
+};
 
-class MLLineGradientMethod
+class MLLineGradientMethod : public MLGradientMethod
 {
 public:
 	MLLineGradientMethod(const QPointF &a, const QPointF &b) :
+		MLGradientMethod(),
 		_a(a), _ab(b-a)
 	{
 		_ab2 = _ab.x() * _ab.x() + _ab.y() * _ab.y();
 		Q_ASSERT(_ab2 != 0);
 	}
 	
-	double position(const QPointF &p)
+	double position(const QPointF &p) const
 	{
 		QPointF ap = p -_a;
 		return (ap.x() * _ab.x() + ap.y() * _ab.y()) / _ab2;
@@ -316,16 +325,17 @@ private:
 	double _ab2;
 };
 
-class MLRadialGradientMethod
+class MLRadialGradientMethod : public MLGradientMethod
 {
 public:
 	MLRadialGradientMethod(const QPointF &center, double radius) :
+		MLGradientMethod(),
 		_c(center), _r(radius)
 	{
 		Q_ASSERT(_r > 0);
 	}
 	
-	double position(const QPointF &p)
+	double position(const QPointF &p) const
 	{
 		QPointF d = p - _c;
 		return hypot(d.x(), d.y()) / _r;
@@ -336,10 +346,11 @@ private:
 	double _r;
 };
 
-class MLFocalGradientMethod
+class MLFocalGradientMethod : public MLGradientMethod
 {
 public:
 	MLFocalGradientMethod(const QPointF &center, double radius, const QPointF &focal) :
+		MLGradientMethod(),
 		o(center), f(focal), r(radius)
 	{
 		Q_ASSERT(r > 0);
@@ -348,7 +359,7 @@ public:
 		Q_ASSERT(c < 0);
 	}
 	
-	double position(const QPointF &p)
+	double position(const QPointF &p) const
 	{
 		QPointF fp = p - f;
 		double dot = of.x() * fp.x() + of.y() * fp.y();
@@ -362,13 +373,32 @@ private:
 	double r, c;
 };
 
-template <class Gradient, class Method>
+
+inline float mlBoundGradientPosition(float position, MLGlobal::SpreadType spreadType)
+{
+	switch (spreadType)
+	{
+	default:
+	case MLGlobal::SpreadTypePad:
+		return qBound(0.0f, position, 1.0f);
+	case MLGlobal::SpreadTypeRepeat:
+		return position - floorf(position);
+	case MLGlobal::SpreadTypeReflective:
+	{
+		float f = floorf(position);
+		float r = position - f;
+		return (int)f % 2 ? 1.0f - r : r;
+	}
+	}
+}
+
+template <class Gradient>
 class MLImageGradientFiller
 {
 public:
 	
-	MLImageGradientFiller(const Gradient &gradient, const Method &gradientMethod) :
-		_gradient(gradient), _method(gradientMethod) {}
+	MLImageGradientFiller(const Gradient *gradient, const MLGradientMethod *gradientMethod, MLGlobal::SpreadType spreadType) :
+		_gradient(gradient), _method(gradientMethod), _spreadType(spreadType) {}
 	
 	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, const QPoint &point, int count, float *covers)
 	{
@@ -377,7 +407,7 @@ public:
 		for (int i = 0; i < count; ++i)
 		{
 			QPointF p((point.x() + i) + 0.5, point.y() + 0.5);
-			fill[i] = _gradient.at(_method.position(p));
+			fill[i] = _gradient->at(mlBoundGradientPosition(_method->position(p), _spreadType));
 		}
 		
 		blendOp->blend(count, bitmap.pixelPointer(point), fill, covers);
@@ -392,7 +422,7 @@ public:
 		for (int i = 0; i < count; ++i)
 		{
 			QPointF p((point.x() + i) + 0.5, point.y() + 0.5);
-			fill[i] = _gradient.at(_method.position(p));
+			fill[i] = _gradient->at(mlBoundGradientPosition(_method->position(p), _spreadType));
 		}
 		
 		blendOp->blend(count, bitmap.pixelPointer(point), fill, cover);
@@ -402,17 +432,18 @@ public:
 	
 private:
 	
-	Gradient _gradient;
-	Method _method;
+	const Gradient *_gradient;
+	const MLGradientMethod *_method;
+	MLGlobal::SpreadType _spreadType;
 };
 
-template <class Gradient, class Method>
+template <class Gradient>
 class MLImageTransformedGradientFiller
 {
 public:
 	
-	MLImageTransformedGradientFiller(const Gradient &gradient, const Method &gradientMethod, const QTransform &transform) :
-		_gradient(gradient), _method(gradientMethod), _iTransform(transform.inverted()) {}
+	MLImageTransformedGradientFiller(const Gradient *gradient, const MLGradientMethod *gradientMethod, MLGlobal::SpreadType spreadType, const QTransform &transform) :
+		_gradient(gradient), _method(gradientMethod), _spreadType(spreadType), _iTransform(transform.inverted()) {}
 	
 	void blend(MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, const QPoint &point, int count, float *covers)
 	{
@@ -421,7 +452,7 @@ public:
 		for (int i = 0; i < count; ++i)
 		{
 			QPointF p((point.x() + i) + 0.5, point.y() + 0.5);
-			fill[i] = _gradient.at(_method.position(p * _iTransform));
+			fill[i] = _gradient->at(mlBoundGradientPosition(_method->position(p * _iTransform), _spreadType));
 		}
 		
 		blendOp->blend(count, bitmap.pixelPointer(point), fill, covers);
@@ -436,7 +467,7 @@ public:
 		for (int i = 0; i < count; ++i)
 		{
 			QPointF p((point.x() + i) + 0.5, point.y() + 0.5);
-			fill[i] = _gradient.at(_method.position(p * _iTransform));
+			fill[i] = _gradient->at(mlBoundGradientPosition(_method->position(p * _iTransform), _spreadType));
 		}
 		
 		blendOp->blend(count, bitmap.pixelPointer(point), fill, cover);
@@ -446,8 +477,9 @@ public:
 	
 private:
 	
-	Gradient _gradient;
-	Method _method;
+	const Gradient *_gradient;
+	const MLGradientMethod *_method;
+	MLGlobal::SpreadType _spreadType;
 	QTransform _iTransform;
 };
 

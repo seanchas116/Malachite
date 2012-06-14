@@ -5,6 +5,13 @@
 #include "mlimagepaintengine.h"
 
 
+// return if transform is similar
+// currently this function cannot detect similar transforms which contain rotation
+bool mlTransformIsSimilar(const QTransform &transform)
+{
+	return transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22();
+}
+
 bool MLImagePaintEngine::begin(MLPaintable *paintable)
 {
 	_image = dynamic_cast<MLImage *>(paintable);
@@ -48,6 +55,8 @@ void MLImagePaintEngine::drawPath(const QPainterPath &path)
 	QPainterPath_vs vs(path);
 	ras.add_path(vs);
 	
+	QTransform transform = _state.brush.transform();
+	
 	switch (_state.brush.type())
 	{
 	case MLGlobal::BrushTypeColor:
@@ -61,92 +70,78 @@ void MLImagePaintEngine::drawPath(const QPainterPath &path)
 	{
 		typedef MLImageImageFiller<MLGlobal::SpreadTypeRepeat> Filler;
 		
-		MLBrush brush = _state.brush;
-		
-		Filler filler(brush.image(), QPoint(brush.transform().dx(), brush.transform().dy()));
+		Filler filler(_state.brush.image(), QPoint(transform.dx(), transform.dy()));
 		mlFillBitmap(_bitmap, _blendOp, ras, filler);
 		
 		break;
 	}
-	case MLGlobal::BrushTypeGradient:
+	case MLGlobal::BrushTypeLinearGradient:
 	{
-		MLColorGradient aGradient = _state.brush.gradient();
-		QTransform transform = _state.brush.transform();
+		MLLinearColorGradient gradient = _state.brush.linearGradient();
 		
-		switch (_state.brush.gradient().type())
+		if (mlTransformIsSimilar(transform))
 		{
-		case MLGlobal::GradientTypeLinear:
+			typedef MLImageGradientFiller<MLColorGradient> Filler;
+			MLLineGradientMethod method(gradient.start() * transform, gradient.end() * transform);
+			Filler filler(&gradient, &method, _state.brush.spreadType());
+			mlFillBitmap(_bitmap, _blendOp, ras, filler);
+		}
+		else
 		{
-			MLLinearColorGradient gradient = *(static_cast<MLLinearColorGradient *>(&aGradient));
+			typedef MLImageTransformedGradientFiller<MLColorGradient> Filler;
 			
-			if (transform.isAffine())
+			MLLineGradientMethod method(gradient.start(), gradient.end());
+			Filler filler(&gradient, &method, _state.brush.spreadType(), transform);
+			mlFillBitmap(_bitmap, _blendOp, ras, filler);
+		}
+		
+		break;
+	}
+	case MLGlobal::BrushTypeRadialGradient:
+	{
+		MLRadialColorGradient gradient = _state.brush.radialGradient();
+		
+		if (gradient.center() == gradient.focal())
+		{
+			// similar transform
+			if (mlTransformIsSimilar(transform))
 			{
-				typedef MLImageGradientFiller<MLColorGradient, MLLineGradientMethod> Filler;
+				typedef MLImageGradientFiller<MLColorGradient> Filler;
 				
-				MLLineGradientMethod method(gradient.start() * transform, gradient.end() * transform);
-				Filler filler(gradient, method);
+				MLRadialGradientMethod method(gradient.center() * transform, gradient.radius() * transform.m11());
+				Filler filler(&gradient, &method, _state.brush.spreadType());
 				mlFillBitmap(_bitmap, _blendOp, ras, filler);
 			}
 			else
 			{
-				typedef MLImageTransformedGradientFiller<MLColorGradient, MLLineGradientMethod> Filler;
+				typedef MLImageTransformedGradientFiller<MLColorGradient> Filler;
 				
-				MLLineGradientMethod method(gradient.start(), gradient.end());
-				Filler filler(gradient, method, transform);
+				MLRadialGradientMethod method(gradient.center(), gradient.radius());
+				Filler filler(&gradient, &method, _state.brush.spreadType(), transform);
 				mlFillBitmap(_bitmap, _blendOp, ras, filler);
 			}
-			
-			break;
 		}
-		case MLGlobal::GradientTypeRadial:
+		else
 		{
-			MLRadialColorGradient gradient = *(static_cast<MLRadialColorGradient *>(&aGradient));
-			
-			if (gradient.center() == gradient.focal())
+			// similar transform
+			if (mlTransformIsSimilar(transform))
 			{
-				// similar transform
-				if (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22())
-				{
-					typedef MLImageGradientFiller<MLColorGradient, MLRadialGradientMethod> Filler;
-					
-					MLRadialGradientMethod method(gradient.center() * transform, gradient.radius() * transform.m11());
-					Filler filler(gradient, method);
-					mlFillBitmap(_bitmap, _blendOp, ras, filler);
-				}
-				else
-				{
-					typedef MLImageTransformedGradientFiller<MLColorGradient, MLRadialGradientMethod> Filler;
-					
-					MLRadialGradientMethod method(gradient.center(), gradient.radius());
-					Filler filler(gradient, method, transform);
-					mlFillBitmap(_bitmap, _blendOp, ras, filler);
-				}
+				typedef MLImageGradientFiller<MLColorGradient> Filler;
+				
+				MLFocalGradientMethod method(gradient.center() * transform, gradient.radius() * transform.m11(), gradient.focal() * transform);
+				Filler filler(&gradient, &method, _state.brush.spreadType());
+				mlFillBitmap(_bitmap, _blendOp, ras, filler);
 			}
 			else
 			{
-				// similar transform
-				if (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22())
-				{
-					typedef MLImageGradientFiller<MLColorGradient, MLFocalGradientMethod> Filler;
-					
-					MLFocalGradientMethod method(gradient.center() * transform, gradient.radius() * transform.m11(), gradient.focal() * transform);
-					Filler filler(gradient, method);
-					mlFillBitmap(_bitmap, _blendOp, ras, filler);
-				}
-				else
-				{
-					typedef MLImageTransformedGradientFiller<MLColorGradient, MLFocalGradientMethod> Filler;
-					
-					MLFocalGradientMethod method(gradient.center(), gradient.radius(), gradient.focal());
-					Filler filler(gradient, method, transform);
-					mlFillBitmap(_bitmap, _blendOp, ras, filler);
-				}
+				typedef MLImageTransformedGradientFiller<MLColorGradient> Filler;
+				
+				MLFocalGradientMethod method(gradient.center(), gradient.radius(), gradient.focal());
+				Filler filler(&gradient, &method, _state.brush.spreadType(), transform);
+				mlFillBitmap(_bitmap, _blendOp, ras, filler);
 			}
-			break;
 		}
-		default:
-			break;
-		}
+		break;
 	}
 	default:
 		break;

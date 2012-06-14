@@ -13,46 +13,68 @@ class MLBrushData : public QSharedData
 {
 public:
 	MLBrushData() :
-		type(MLGlobal::BrushTypeNull)
+		type(MLGlobal::BrushTypeNull),
+		spreadType(MLGlobal::SpreadTypeRepeat),
+		cache(0)
 	{}
 	
 	MLBrushData(const MLArgb &argb) :
 		type(MLGlobal::BrushTypeColor),
-		data(QVariant::fromValue(argb))
+		spreadType(MLGlobal::SpreadTypeRepeat),
+		data(QVariant::fromValue(argb)),
+		cache(0)
 	{}
 	
 	MLBrushData(const MLImage &image) :
 		type(MLGlobal::BrushTypeImage),
-		data(QVariant::fromValue(image))
+		spreadType(MLGlobal::SpreadTypeRepeat),
+		data(QVariant::fromValue(image)),
+		cache(0)
 	{}
 	
-	MLBrushData(const MLColorGradient &gradient) :
-		type(MLGlobal::BrushTypeGradient),
-		data(QVariant::fromValue(gradient))
+	MLBrushData(const MLLinearColorGradient &linearGradient) :
+		type(MLGlobal::BrushTypeLinearGradient),
+		spreadType(MLGlobal::SpreadTypeRepeat),
+		data(QVariant::fromValue(linearGradient))
 	{
-		cache = new MLColorGradientCache;
-		cache->load(gradient);
+		cache = new MLColorGradientCache();
+		cache->load(linearGradient);
+	}
+	
+	MLBrushData(const MLRadialColorGradient &radialGradient) :
+		type(MLGlobal::BrushTypeRadialGradient),
+		spreadType(MLGlobal::SpreadTypeRepeat),
+		data(QVariant::fromValue(radialGradient))
+	{
+		cache = new MLColorGradientCache();
+		cache->load(radialGradient);
 	}
 	
 	MLBrushData(const MLSurface &surface) :
 		type(MLGlobal::BrushTypeSurface),
-		data(QVariant::fromValue(surface))
+		spreadType(MLGlobal::SpreadTypeRepeat),
+		data(QVariant::fromValue(surface)),
+		cache(0)
 	{}
 	
 	MLBrushData(const MLBrushData &other) :
 		QSharedData(other),
 		type(other.type),
+		spreadType(other.spreadType),
 		data(other.data),
 		transform(other.transform)
-	{}
+	{
+		cache = other.cache ? new MLColorGradientCache(*(other.cache)) : 0;
+	}
 	
 	~MLBrushData()
 	{
-		if (type == MLGlobal::BrushTypeGradient)
+		if (cache)
 			delete cache;
 	}
 	
 	MLGlobal::BrushType type;
+	MLGlobal::SpreadType spreadType;
 	QVariant data;
 	MLColorGradientCache *cache;
 	QTransform transform;
@@ -78,9 +100,14 @@ public:
 		d = new MLBrushData(argb);
 	}
 	
-	MLBrush(const MLColorGradient &gradient)
+	MLBrush(const MLLinearColorGradient &linearGradient)
 	{
-		d = new MLBrushData(gradient);
+		d = new MLBrushData(linearGradient);
+	}
+	
+	MLBrush(const MLRadialColorGradient &radialGradient)
+	{
+		d = new MLBrushData(radialGradient);
 	}
 	
 	MLBrush(const MLImage &image)
@@ -94,11 +121,15 @@ public:
 	}
 	
 	MLGlobal::BrushType type() const { return d->type; }
+	MLGlobal::SpreadType spreadType() const { return d->spreadType; }
 	
 	MLArgb argb() const { return d->type == MLGlobal::BrushTypeColor ? d->data.value<MLArgb>() : MLArgb(); }
 	MLImage image() const { return d->type == MLGlobal::BrushTypeImage ? d->data.value<MLImage>() : MLImage(); }
 	MLSurface surface() const { return d->type == MLGlobal::BrushTypeSurface ? d->data.value<MLSurface>() : MLSurface(); }
-	MLColorGradient gradient() const { return d->type == MLGlobal::BrushTypeGradient ? d->data.value<MLColorGradient>() : MLColorGradient(); }
+	MLLinearColorGradient linearGradient() const { return d->type == MLGlobal::BrushTypeLinearGradient ? d->data.value<MLLinearColorGradient>() : MLLinearColorGradient(); }
+	MLRadialColorGradient radialGradient() const { return d->type == MLGlobal::BrushTypeRadialGradient ? d->data.value<MLRadialColorGradient>() : MLRadialColorGradient(); }
+	
+	const MLColorGradientCache *gradientCache() { return d->cache; }
 	
 	void setTransform(const QTransform &transform) { d->transform = transform; }
 	QTransform transform() const { return d->transform; }

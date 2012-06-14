@@ -2,6 +2,7 @@
 #define MLGENERICGRADIENT_H
 
 #include <QMap>
+#include <QDebug>
 #include <cmath>
 
 template <class VarX, class VarY>
@@ -18,6 +19,7 @@ public:
 	{
 		_stops.insert(x, y);
 	}
+	
 	void clear() { _stops.clear(); }
 	
 	VarY at(VarX x) const
@@ -33,7 +35,7 @@ public:
 		if (x <= i.peekNext().key()) return i.peekNext().value();
 		i.next();
 		
-		for (; !i.hasNext(); i.next())
+		for (; i.hasNext(); i.next())
 		{
 			VarX x1 = i.peekNext().key();
 			VarY y1 = i.peekNext().value();
@@ -48,7 +50,7 @@ public:
 				return y1;
 		}
 		
-		return i.peekPrevious().value();
+		return _stops.values().at(0);
 	}
 	
 private:
@@ -69,9 +71,16 @@ public:
 		_data = new VarY[size + 1];
 	}
 	
+	MLGenericGradientCache(const MLGenericGradientCache &other)
+	{
+		_size = other._size;
+		_data = new VarY[_size + 1];
+		memcpy(_data, other._data, (_size + 1) * sizeof(VarY));
+	}
+	
 	~MLGenericGradientCache()
 	{
-		delete _data;
+		delete [] _data;
 	}
 	
 	template <class Gradient>

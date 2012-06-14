@@ -73,7 +73,8 @@ enum BrushType
 {
 	BrushTypeNull,
 	BrushTypeColor,
-	BrushTypeGradient,
+	BrushTypeLinearGradient,
+	BrushTypeRadialGradient,
 	BrushTypeImage,
 	BrushTypeSurface
 };
