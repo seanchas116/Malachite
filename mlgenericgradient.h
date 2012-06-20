@@ -5,44 +5,44 @@
 #include <QDebug>
 #include <cmath>
 
-template <class VarX, class VarY>
+template <class Key, class Value>
 class MLGenericLineGradient
 {
 public:
 	
-	typedef VarX VarXType;
-	typedef VarY VarYType;
+	typedef Key KeyType;
+	typedef Value ValueType;
 	
 	MLGenericLineGradient() {}
 	
-	void addStop(VarX x, VarY y)
+	void addStop(Key x, Value y)
 	{
 		_stops.insert(x, y);
 	}
 	
 	void clear() { _stops.clear(); }
 	
-	VarY at(VarX x) const
+	Value at(Key x) const
 	{
 		int count = _stops.size();
 		if (count == 0)
-			return VarY();
+			return Value();
 		if (count == 1)
 			return _stops.value(0);
 		
-		QMapIterator<VarX, VarY> i(_stops);
+		QMapIterator<Key, Value> i(_stops);
 		
 		if (x <= i.peekNext().key()) return i.peekNext().value();
 		i.next();
 		
 		for (; i.hasNext(); i.next())
 		{
-			VarX x1 = i.peekNext().key();
-			VarY y1 = i.peekNext().value();
+			Key x1 = i.peekNext().key();
+			Value y1 = i.peekNext().value();
 			if (x < x1)
 			{
-				VarX x0 = i.peekPrevious().key();
-				VarY y0 = i.peekPrevious().value();
+				Key x0 = i.peekPrevious().key();
+				Value y0 = i.peekPrevious().value();
 				
 				return y0 + (x - x0) / (x1 - x0) * (y1 - y0);
 			}
@@ -54,28 +54,28 @@ public:
 	}
 	
 private:
-	QMap<VarX, VarY> _stops;
+	QMap<Key, Value> _stops;
 };
 
-template <class VarX, class VarY>
+template <class Key, class Value>
 class MLGenericGradientCache
 {
 public:
 	
-	typedef VarX VarXType;
-	typedef VarY VarYType;
+	typedef Key KeyType;
+	typedef Value ValueType;
 	
 	MLGenericGradientCache(int size)
 	{
 		_size = size;
-		_data = new VarY[size + 1];
+		_data = new ValueType[size + 1];
 	}
 	
 	MLGenericGradientCache(const MLGenericGradientCache &other)
 	{
 		_size = other._size;
-		_data = new VarY[_size + 1];
-		memcpy(_data, other._data, (_size + 1) * sizeof(VarY));
+		_data = new ValueType[_size + 1];
+		memcpy(_data, other._data, (_size + 1) * sizeof(ValueType));
 	}
 	
 	~MLGenericGradientCache()
@@ -83,34 +83,46 @@ public:
 		delete [] _data;
 	}
 	
+	int size() const { return _size; }
+	
 	template <class Gradient>
 	void load(const Gradient &gradient)
 	{
-		typedef typename Gradient::VarXType	VarXOther;
+		typedef typename Gradient::KeyType	OtherKeyType;
 		
 		for (int i = 0; i <= _size; ++i)
 		{
-			_data[i] = gradient.at((VarXOther)i / (VarXOther)_size);
+			_data[i] = gradient.at((OtherKeyType)i / (OtherKeyType)_size);
 		}
 	}
 	
-	VarY at(VarX x) const
+	Value at(Key x) const
 	{
 		Q_ASSERT(0 <= x && x <= 1);
-		VarX f = floor(x);
+		x *= (Key)_size;
+		Key f = floor(x);
 		
 		if (f == x)
 			return _data[(int)f];
 		
-		VarX r = x - f;
-		VarX d = 1 - r;
-		return d * _data[(int)f] + r * _data[(int)f + 1];
+		Key r = x - f;
+		return ((Key)1 - r) * _data[(int)f] + r * _data[(int)f + 1];
+	}
+	
+	Value &operator[](int index)
+	{
+		return _data[index];
+	}
+	
+	const Value &operator[](int index) const
+	{
+		return _data[index];
 	}
 	
 private:
 	
 	int _size;
-	VarY *_data;
+	Value *_data;
 };
 
 

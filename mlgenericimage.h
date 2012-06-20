@@ -60,6 +60,22 @@ public:
 	ColorType pixel(int x, int y) const { return *constPixelPointer(x, y); }
 	ColorType pixel(const QPoint &point) const { return pixel(point.x(), point.y()); }
 	
+	ColorType pixelReflected(int x, int y) const
+	{
+		if (x < 0)
+			x = -x - 1;
+		else if (x >= width())
+			x = 2 * width() - x - 1;
+		if (y < 0)
+			y = -y - 1;
+		else if (y >= height())
+			y = 2 * height() - y - 1;
+		
+		return pixel(x, y);
+	}
+	
+	ColorType pixelReflected(const QPoint &point) const { return pixelReflected(point.x(), point.y()); }
+	
 	void fill(const ColorType &c)
 	{
 		int w = width();

@@ -23,6 +23,8 @@ public:
 	uint8_t *bits() { return _bits; }
 	const uint8_t *constBits() const { return _bits; }
 	QSize size() const { return _size; }
+	int width() const { return _size.width(); }
+	int height() const { return _size.height(); }
 	int bytesPerLine() const { return _bytesPerLine; }
 	int byteCount() const { return _size.height() * _bytesPerLine; }
 	QRect rect() const { return QRect(QPoint(), _size); }
@@ -50,6 +52,9 @@ public:
 	}
 	
 	const Color *constPixelPointer(const QPoint &p) const { return constPixelPointer((p.x(), p.y())); }
+	
+	Color pixel(int x, int y) { return *constPixelPointer(x, y); }
+	Color pixel(const QPoint &p) { return pixel(p.x(), p.y()); }
 	
 private:
 	uint8_t *_bits;

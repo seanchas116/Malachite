@@ -29,11 +29,11 @@ public:
 	virtual void blend(int count, MLArgb *dst, const MLArgb &src, const MLArgb &mask) = 0;
 	virtual void blend(int count, MLArgb *dst, const MLArgb &src, float opacity) = 0;
 	
-	virtual void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src) = 0;
-	virtual void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, const MLArgb *masks) = 0;
-	virtual void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, const float *opacities) = 0;
-	virtual void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, const MLArgb &mask) = 0;
-	virtual void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, float opacity) = 0;
+	virtual void blendReversed(int count, MLArgb *dst, const MLArgb *src) = 0;
+	virtual void blendReversed(int count, MLArgb *dst, const MLArgb *src, const MLArgb *masks) = 0;
+	virtual void blendReversed(int count, MLArgb *dst, const MLArgb *src, const float *opacities) = 0;
+	virtual void blendReversed(int count, MLArgb *dst, const MLArgb *src, const MLArgb &mask) = 0;
+	virtual void blendReversed(int count, MLArgb *dst, const MLArgb *src, float opacity) = 0;
 	
 	virtual TileStates tileOp(TileStates states) = 0;
 };
@@ -166,16 +166,20 @@ public:
 	
 	
 	
-	void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src)
+	void blendReversed(int count, MLArgb *dst, const MLArgb *src)
 	{
+		src += count - 1;
+		
 		for (int i = 0; i < count; ++i)
 		{
 			BlendFunctions::blendFunc(*dst++, *src--);
 		}
 	}
 	
-	void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, const MLArgb *masks)
+	void blendReversed(int count, MLArgb *dst, const MLArgb *src, const MLArgb *masks)
 	{
+		src += count - 1;
+		
 		for (int i = 0; i < count; ++i)
 		{
 			MLArgb c;
@@ -186,8 +190,10 @@ public:
 		}
 	}
 
-	void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, const float *opacities)
+	void blendReversed(int count, MLArgb *dst, const MLArgb *src, const float *opacities)
 	{
+		src += count - 1;
+		
 		for (int i = 0; i < count; ++i)
 		{
 			MLArgb c;
@@ -198,8 +204,10 @@ public:
 		}
 	}
 
-	void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, const MLArgb &mask)
+	void blendReversed(int count, MLArgb *dst, const MLArgb *src, const MLArgb &mask)
 	{
+		src += count - 1;
+		
 		for (int i = 0; i < count; ++i)
 		{
 			MLArgb c;
@@ -209,8 +217,10 @@ public:
 		}
 	}
 
-	void blendInvertedSource(int count, MLArgb *dst, const MLArgb *src, float opacity)
+	void blendReversed(int count, MLArgb *dst, const MLArgb *src, float opacity)
 	{
+		src += count - 1;
+		
 		for (int i = 0; i < count; ++i)
 		{
 			MLArgb c;

@@ -5,17 +5,26 @@
 #include "mlgenericgradient.h"
 #include <QDebug>
 
+class MALACHITESHARED_EXPORT MLColorGradient
+{
+public:
+	MLColorGradient() {}
+	virtual ~MLColorGradient() {}
+	
+	virtual MLArgb at(float x) const = 0;
+	
+protected:
+};
+
 class MLColorGradientCache;
 
-class MALACHITESHARED_EXPORT MLColorGradient
+class MALACHITESHARED_EXPORT MLArgbGradient : public MLColorGradient
 {
 	friend class MLColorGradientCache;
 	
 public:
 	
-	MLColorGradient() : _type(MLGlobal::GradientTypeNull) {}
-	
-	MLGlobal::GradientType type() const { return _type; }
+	MLArgbGradient() : MLColorGradient() {}
 	
 	void addStop(float x, const MLArgb &y) { _gradient.addStop(x, y.v); }
 	void addStop(float x, const MLColor &color) { addStop(x, color.toArgb()); }
@@ -31,99 +40,86 @@ public:
 	
 protected:
 	
-	void setType(MLGlobal::GradientType type) { _type = type; }
-	
 private:
 	
-	MLGlobal::GradientType _type;
 	MLGenericLineGradient<float, MLSimdF4> _gradient;
 };
 
-class MLColorGradientCache
+class MLColorGradientCache : public MLColorGradient
 {
 public:
 	
-	MLColorGradientCache() : _cache(256) {}
+	MLColorGradientCache() : MLColorGradient(), _cache(256) {}
 	
 	void load(const MLColorGradient &gradient)
 	{
-		_cache.load(gradient._gradient);
+		for (int i = 0; i <= _cache.size(); ++i)
+		{
+			_cache[i] = gradient.at((float)i / (float)_cache.size()).v;
+		}
 	}
 	
 	MLArgb at(float x) const
 	{
-		MLArgb r;
-		r.v = _cache.at(x);
-		return r;
+		MLArgb color;
+		color.v = _cache.at(x);
+		return color;
 	}
+	
+protected:
 	
 private:
 	
 	MLGenericGradientCache<float, MLSimdF4> _cache;
 };
 
-class MALACHITESHARED_EXPORT MLLinearColorGradient : public MLColorGradient
+class MLLinearGradientInfo
 {
 public:
 	
-	MLLinearColorGradient()
-	{
-		setType(MLGlobal::GradientTypeLinear);
-	}
+	MLLinearGradientInfo() {}
 	
-	MLLinearColorGradient(const QPointF &start, const QPointF &end) :
-		_start(start),
-		_end(end)
-	{
-		setType(MLGlobal::GradientTypeLinear);
-	}
+	MLLinearGradientInfo(const QPointF &start, const QPointF &end) :
+		_start(start), _end(end) {}
 	
 	QPointF start() const { return _start; }
 	QPointF end() const { return _end; }
+	void setStart(const QPointF &p) { _start = p; }
+	void setEnd(const QPointF &p) { _end = p; }
 	
 private:
+	
 	QPointF _start, _end;
 };
 
-class MALACHITESHARED_EXPORT MLRadialColorGradient : public MLColorGradient
+class MLRadialGradientInfo
 {
 public:
 	
-	MLRadialColorGradient() :
-		_radius(0)
-	{
-		setType(MLGlobal::GradientTypeRadial);
-	}
+	MLRadialGradientInfo() {}
 	
-	MLRadialColorGradient(const QPointF &center, double radius, const QPointF &focal) :
-		_center(center),
-		_focal(focal),
-		_radius(radius)
-	{
-		setType(MLGlobal::GradientTypeRadial);
-	}
+	MLRadialGradientInfo(const QPointF &center, double radius, const QPointF &focal) :
+		_center(center), _focal(focal), _radius(radius) {}
 	
-	MLRadialColorGradient(const QPointF &center, double radius) :
-		_center(center),
-		_focal(center),
-		_radius(radius)
-	{
-		setType(MLGlobal::GradientTypeRadial);
-	}
+	MLRadialGradientInfo(const QPointF &center, double radius) :
+		_center(center), _focal(center), _radius(radius) {}
 	
 	QPointF center() const { return _center; }
 	QPointF focal() const { return _focal; }
 	double radius() const { return _radius; }
+	void setCenter(const QPointF &p) { _center = p; }
+	void setFocal(const QPointF &p) { _focal = p; }
+	void setRadius(double r) { _radius = r; }
 	
 private:
+	
 	QPointF _center, _focal;
 	double _radius;
 };
 
-Q_DECLARE_METATYPE(MLColorGradient)
-Q_DECLARE_METATYPE(MLColorGradientCache)
-Q_DECLARE_METATYPE(MLLinearColorGradient)
-Q_DECLARE_METATYPE(MLRadialColorGradient)
+Q_DECLARE_METATYPE(MLLinearGradientInfo)
+Q_DECLARE_METATYPE(MLRadialGradientInfo)
+
 
 
 #endif // MLCOLORGRADIENT_H

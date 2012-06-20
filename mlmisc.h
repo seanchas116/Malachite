@@ -58,6 +58,39 @@ inline T mlMin(const T &a, const T &b, const T &c)
 }
 
 
+inline QPointF mlPointFloor(const QPointF &p)
+{
+	return QPointF(floor(p.x()), floor(p.y()));
+}
+
+inline double mlPointDist(const QPointF &p1, const QPointF &p2)
+{
+	return hypot(p2.x() - p1.x(), p2.y() - p1.y());
+}
+
+inline double mlSinc(double x)
+{
+	if (x == 0) return 1;
+	return sin(M_PI * x) / (M_PI * x);
+}
+
+inline float mlSincF(float x)
+{
+	if (x == 0) return 1;
+	return sinf(M_PI * x) / (M_PI * x);
+}
+
+inline double mlLanczos2Weight(double d)
+{
+	return mlSinc(d) * mlSinc(d * 0.5);
+}
+
+inline float mlLanczos2WeightF(float d)
+{
+	return mlSincF(d) * mlSincF(d * 0.5f);
+}
+
+
 
 inline void *mlAllocateAlignedMemory(size_t size, size_t alignment)
 {

@@ -34,6 +34,8 @@ void MLSurfacePaintEngine::drawPath(const QPainterPath &path)
 {
 	foreach (const QPoint &key, MLSurface::keysForRect(path.boundingRect().toAlignedRect()))
 	{
+		qDebug() << key;
+		
 		if (_keyClip.isEmpty() || _keyClip.contains(key))
 		{
 			MLPainter painter(_editor->tileRefForKey(key));
@@ -59,13 +61,6 @@ void MLSurfacePaintEngine::drawImage(const QPoint &point, const MLImage &image)
 		{
 			MLPainter painter(_editor->tileRefForKey(key));
 			painter.setState(_state);
-			
-			MLBrush brush = _state.brush;
-			
-			QPoint offset = -key * MLSurface::TileSize;
-			brush.setTransform(brush.transform() * QTransform::fromTranslate(offset.x(), offset.y()));
-			
-			painter.setBrush(brush);
 			
 			painter.drawImage(point - key * MLSurface::TileSize, image);
 		}
