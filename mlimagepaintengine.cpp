@@ -9,7 +9,7 @@
 // currently this function cannot detect similar transforms which contain rotation
 bool mlTransformIsSimilar(const QTransform &transform)
 {
-	return transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22();
+	return transform.isIdentity() || (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22());
 }
 
 bool MLImagePaintEngine::begin(MLPaintable *paintable)
@@ -52,7 +52,7 @@ template <class Rasterizer> void MLImagePaintEngine::fillImage(Rasterizer &ras, 
 {
 	QPoint offset(transform.dx(), transform.dy());
 	
-	if (transform.isTranslating() && QPointF(transform.dx(), transform.dy()) == QPointF(offset))
+	if (transform.isIdentity() || (transform.isAffine() && QPointF(transform.dx(), transform.dy()) == QPointF(offset)))
 	{
 		switch (spreadType)
 		{
