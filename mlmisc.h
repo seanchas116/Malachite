@@ -58,6 +58,8 @@ inline T mlMin(const T &a, const T &b, const T &c)
 }
 
 
+
+
 inline QPointF mlPointFloor(const QPointF &p)
 {
 	return QPointF(floor(p.x()), floor(p.y()));

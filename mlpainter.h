@@ -29,6 +29,9 @@ public:
 	void setOpacity(double opacity) { _state.opacity = opacity; updateState(); }
 	double opacity() const { return _state.opacity; }
 	
+	void setTransform(const QTransform &transform) { _state.transform = transform; updateState(); }
+	QTransform transform() const { return _state.transform; }
+	
 	void setState(const MLPaintEngineState &state) { _state = state; updateState(); }
 	MLPaintEngineState state() { return _state; }
 	

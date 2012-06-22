@@ -34,8 +34,6 @@ void MLSurfacePaintEngine::drawPath(const QPainterPath &path)
 {
 	foreach (const QPoint &key, MLSurface::keysForRect(path.boundingRect().toAlignedRect()))
 	{
-		qDebug() << key;
-		
 		if (_keyClip.isEmpty() || _keyClip.contains(key))
 		{
 			MLPainter painter(_editor->tileRefForKey(key));

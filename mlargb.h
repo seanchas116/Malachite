@@ -139,6 +139,8 @@ struct MLFastArgbF
 	MLFastArgbF &operator=(const MLRgb8 &rgb8);
 	MLFastArgbF &operator=(const MLRgb16 &rgb16);
 	
+	void clamp() { v = mlSimdBound(0.f, v, 1.f); }
+	
 	MLSimdF4 v;
 };
 

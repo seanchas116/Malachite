@@ -52,7 +52,7 @@ template <class Rasterizer> void MLImagePaintEngine::fillImage(Rasterizer &ras, 
 {
 	QPoint offset(transform.dx(), transform.dy());
 	
-	if (transform.isIdentity() || (transform.isAffine() && QPointF(transform.dx(), transform.dy()) == QPointF(offset)))
+	if (transform.isAffine() && transform.m11() == 1 && transform.m12() == 0 && transform.m21() == 0 && transform.m22() == 1 && QPointF(transform.dx(), transform.dy()) == QPointF(offset))
 	{
 		switch (spreadType)
 		{
@@ -171,7 +171,7 @@ void MLImagePaintEngine::drawPath(const QPainterPath &path)
 	ras.add_path(vs);
 	
 	MLBrush brush = _state.brush;
-	QTransform transform = brush.transform();
+	QTransform transform = brush.transform().inverted() * _state.transform;
 	
 	switch (brush.type())
 	{

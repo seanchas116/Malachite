@@ -9,7 +9,7 @@ class MLScalingFilterLanczos2Hypot
 {
 public:
 	
-	MLScalingFilterLanczos2Hypot(MLBitmap<MLArgb> *bitmap) :
+	MLScalingFilterLanczos2Hypot(const MLBitmap<MLArgb> *bitmap) :
 		_bitmap(bitmap)
 	{
 		reset();
@@ -34,7 +34,16 @@ public:
 		addPixel(fp);
 		
 		MLArgb result = _argb;
-		result.v /= _divisor;
+		
+		if (_divisor == 0)
+		{
+			result.v = MLSimdF4(0);
+		}
+		else
+		{
+			result.v /= _divisor;
+			result.clamp();
+		}
 		
 		return result;
 	}
@@ -123,7 +132,7 @@ private:
 	QPointF _p;
 	float _divisor;
 	MLArgb _argb;
-	MLBitmap<MLArgb> *_bitmap;
+	const MLBitmap<MLArgb> *_bitmap;
 };
 
 

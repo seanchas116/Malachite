@@ -53,8 +53,8 @@ public:
 	
 	const Color *constPixelPointer(const QPoint &p) const { return constPixelPointer((p.x(), p.y())); }
 	
-	Color pixel(int x, int y) { return *constPixelPointer(x, y); }
-	Color pixel(const QPoint &p) { return pixel(p.x(), p.y()); }
+	Color pixel(int x, int y) const { return *constPixelPointer(x, y); }
+	Color pixel(const QPoint &p) const { return pixel(p.x(), p.y()); }
 	
 private:
 	uint8_t *_bits;
