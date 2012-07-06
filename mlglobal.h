@@ -81,6 +81,7 @@ enum BrushType
 
 enum SpreadType
 {
+	SpreadTypeWindowed,
 	SpreadTypePad,
 	SpreadTypeRepeat,
 	SpreadTypeReflective
@@ -91,6 +92,15 @@ enum GradientType
 	GradientTypeNull,
 	GradientTypeLinear,
 	GradientTypeRadial
+};
+
+enum ImageTransformType
+{
+	ImageTransformTypeNearestNeighbor,
+	ImageTransformTypeBilinear,
+	ImageTransformTypeBicubic,
+	ImageTransformTypeLanczos2,
+	ImageTransformTypeLanczos2Hypot
 };
 
 }

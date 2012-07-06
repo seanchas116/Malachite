@@ -26,7 +26,8 @@ SOURCES += \
     mlbrush.cpp \
     mlimageio.cpp \
     mlimagerenderer.cpp \
-    mlcolorgradient.cpp
+    mlcolorgradient.cpp \
+    mlfillgenerator.cpp
 
 HEADERS += malachite.h\
     agg_config.h \
@@ -64,9 +65,10 @@ HEADERS += malachite.h\
     mlgenericwrapperimage.h \
     mlgenericsharedimage.h \
     mlimagerenderer.h \
-    mlscalingfilter.h \
     mlgenericgradient.h \
-    mlcolorgradient.h
+    mlcolorgradient.h \
+    mlpixelgenerator.h \
+    mlfillgenerator.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
@@ -91,5 +93,6 @@ OTHER_FILES += \
     README.md
 
 LIBS += -lfreeimage
+QMAKE_CXXFLAGS += -fpermissive
 #QMAKE_CXXFLAGS += -std=c++0x
 

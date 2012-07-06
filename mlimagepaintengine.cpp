@@ -34,212 +34,319 @@ void MLImagePaintEngine::updateState(const MLPaintEngineState &state)
 	_opacity = state.opacity;
 }
 
-template <class Rasterizer, class Filler>
-void MLImagePaintEngine::fill(Rasterizer &rasterizer, Filler &filler)
+/*
+template <class Rasterizer, class Filler> inline void MLImagePaintEngine::fill(Rasterizer &ras, Filler &filler)
 {
 	agg::scanline_p8 sl;
+	MLImageBaseRenderer<Filler> baseRen(_bitmap, _blendOp, filler);
+	MLRenderer<MLImageBaseRenderer<Filler> > ren(baseRen);
 	
-	typedef MLImageBaseRenderer<Filler> BaseRenderer;
-	typedef MLRenderer<BaseRenderer> Renderer;
-	
-	BaseRenderer baseRen(_bitmap, _blendOp, &filler);
-	Renderer ren(&baseRen);
-	
-	agg::render_scanlines(rasterizer, sl, ren);
+	agg::render_scanlines(ras, sl, ren);
 }
 
-template <class Rasterizer> void MLImagePaintEngine::fillImage(Rasterizer &ras, const MLImage &image, MLGlobal::SpreadType spreadType, const QTransform &transform)
+template <MLGlobal::SpreadType SpreadType>
+void MLImagePaintEngine::drawPathReal(const QPainterPath &path)
 {
-	QPoint offset(transform.dx(), transform.dy());
+	MLBrush brush = _state.brush;
 	
-	if (transform.isAffine() && transform.m11() == 1 && transform.m12() == 0 && transform.m21() == 0 && transform.m22() == 1 && QPointF(transform.dx(), transform.dy()) == QPointF(offset))
+	QTransform shapeTransform = _state.worldTransform.inverted();
+	QTransform fillShapeTransform = shapeTransform * brush.transform();
+	
+	QPainterPath newPath = shapeTransform.map(path);
+	
+	agg::rasterizer_scanline_aa<> ras;
+	
+	QPainterPath_vs vs(newPath);
+	ras.add_path(vs);
+	
+	if (brush.type() == MLGlobal::BrushTypeColor)
 	{
-		switch (spreadType)
+		MLColorFiller filler(brush.argb(), _opacity);
+		fill(ras, filler);
+	}
+	else if (brush.type() == MLGlobal::BrushTypeImage && fillShapeTransform.isIdentity())
+	{
+		QPoint offset(fillShapeTransform.dx(), fillShapeTransform.dy());
+		
+		if (fillShapeTransform.isAffine() && fillShapeTransform.m11() == 1 && fillShapeTransform.m12() == 0 && fillShapeTransform.m21() == 0 && fillShapeTransform.m22() == 1 && QPointF(fillShapeTransform.dx(), fillShapeTransform.dy()) == QPointF(offset))
 		{
-		case MLGlobal::SpreadTypePad:
-		{
-			MLPadImageFiller filler(image, offset);
-			fill(ras, filler);
-			break;
-		}
-		case MLGlobal::SpreadTypeRepeat:
-		{
-			MLRepeatImageFiller filler(image, offset);
-			fill(ras, filler);
-			break;
-		}
-		case MLGlobal::SpreadTypeReflective:
-		{
-			MLReflectiveImageFiller filler(image, offset);
-			fill(ras, filler);
-			break;
-		}
-		default:
-			break;
+			switch (SpreadType)
+			{
+			case MLGlobal::SpreadTypePad:
+			{
+				MLPadImageFiller filler(brush.image().constBitmap(), offset);
+				fill(ras, filler);
+				break;
+			}
+			case MLGlobal::SpreadTypeRepeat:
+			{
+				MLRepeatImageFiller filler(brush.image().constBitmap(), offset);
+				fill(ras, filler);
+				break;
+			}
+			case MLGlobal::SpreadTypeReflective:
+			{
+				MLReflectiveImageFiller filler(brush.image().constBitmap(), offset);
+				fill(ras, filler);
+				break;
+			}
+			default:
+				return;
+			}
 		}
 	}
 	else
 	{
-		switch (spreadType)
+		switch (brush.type())
 		{
-		case MLGlobal::SpreadTypePad:
+		case MLGlobal::BrushTypeLinearGradient:
 		{
-			MLTransformedImageFiller<MLGlobal::SpreadTypePad> filler(image, transform);
-			fill(ras, filler);
+			MLLinearGradientInfo info = brush.linearGradientInfo();
+			
+			if (mlTransformIsSimilar(fillShapeTransform))
+			{
+				MLLinearGradientMethod method(info.start() * fillShapeTransform, info.end() * fillShapeTransform);
+				
+				typedef MLGradientFillGenerator<MLColorGradientCache, MLLinearGradientMethod, SpreadType> Generator;
+				typedef MLGeneratedFiller<Generator> Filler;
+				
+				Generator generator(*brush.gradientCache(), method);
+				Filler filler(generator, _opacity);
+				fill(ras, filler);
+			}
+			else
+			{
+				MLLinearGradientMethod method(info.start(), info.end());
+				
+				typedef MLGradientFillGenerator<MLColorGradientCache, MLLinearGradientMethod, SpreadType> Generator;
+				typedef MLGeneratedFiller<Generator> Filler;
+				
+				Generator generator(*brush.gradientCache(), method);
+				Filler filler(generator, _opacity, fillShapeTransform.inverted());
+				fill(ras, filler);
+			}
+			
 			break;
 		}
-		case MLGlobal::SpreadTypeRepeat:
+		case MLGlobal::BrushTypeRadialGradient:
 		{
-			MLTransformedImageFiller<MLGlobal::SpreadTypeRepeat> filler(image, transform);
-			fill(ras, filler);
-			break;
-		}
-		case MLGlobal::SpreadTypeReflective:
-		{
-			MLTransformedImageFiller<MLGlobal::SpreadTypeReflective> filler(image, transform);
-			fill(ras, filler);
+			MLRadialGradientInfo info = brush.radialGradientInfo();
+			
+			if (info.center() == info.focal())
+			{
+				if (mlTransformIsSimilar(fillShapeTransform))
+				{
+					MLRadialGradientMethod method(fillShapeTransform * info.center(), info.radius() * fillShapeTransform.m11());
+					
+					typedef MLGradientFillGenerator<MLColorGradientCache, MLRadialGradientMethod, SpreadType> Generator;
+					typedef MLGeneratedFiller<Generator> Filler;
+					
+					Generator generator(*brush.gradientCache(), method);
+					Filler filler(generator, _opacity);
+					fill(ras, filler);
+				}
+				else
+				{
+					MLRadialGradientMethod method(info.center(), info.radius());
+					
+					typedef MLGradientFillGenerator<MLColorGradientCache, MLRadialGradientMethod, SpreadType> Generator;
+					typedef MLGeneratedFiller<Generator> Filler;
+					
+					Generator generator(*brush.gradientCache(), method);
+					Filler filler(generator, _opacity, fillShapeTransform.inverted());
+					fill(ras, filler);
+				}
+			}
+			else
+			{
+				if (mlTransformIsSimilar(fillShapeTransform))
+				{
+					MLFocalGradientMethod method(fillShapeTransform * info.center(), info.radius() * fillShapeTransform.m11(), info.focal() * fillShapeTransform);
+					
+					typedef MLGradientFillGenerator<MLColorGradientCache, MLFocalGradientMethod, SpreadType> Generator;
+					typedef MLGeneratedFiller<Generator> Filler;
+					
+					Generator generator(*brush.gradientCache(), method);
+					Filler filler(generator, _opacity);
+					fill(ras, filler);
+				}
+				else
+				{
+					MLFocalGradientMethod method(info.center(), info.radius(), info.focal());
+					
+					typedef MLGradientFillGenerator<MLColorGradientCache, MLFocalGradientMethod, SpreadType> Generator;
+					typedef MLGeneratedFiller<Generator> Filler;
+					
+					Generator generator(*brush.gradientCache(), method);
+					Filler filler(generator, _opacity, fillShapeTransform.inverted());
+					fill(ras, filler);
+				}
+			}
 			break;
 		}
 		default:
-			break;
+			return;
 		}
 	}
 }
-
-
-template <class Rasterizer, class Gradient, class Method>
-void MLImagePaintEngine::fillGradient(Rasterizer &ras, Gradient *gradient, const Method &method, MLGlobal::SpreadType spreadType)
-{
-	switch (spreadType)
-	{
-	case MLGlobal::SpreadTypePad:
-	{
-		MLGradientFiller<Gradient, Method, MLGlobal::SpreadTypePad> filler(gradient, &method);
-		fill(ras, filler);
-		break;
-	}
-	case MLGlobal::SpreadTypeRepeat:
-	{
-		MLGradientFiller<Gradient, Method, MLGlobal::SpreadTypeRepeat> filler(gradient, &method);
-		fill(ras, filler);
-		break;
-	}
-	case MLGlobal::SpreadTypeReflective:
-	{
-		MLGradientFiller<Gradient, Method, MLGlobal::SpreadTypeReflective> filler(gradient, &method);
-		fill(ras, filler);
-		break;
-	}
-	default:
-		break;
-	}
-}
-
-template <class Rasterizer, class Gradient, class Method>
-void MLImagePaintEngine::fillGradient(Rasterizer &ras, Gradient *gradient, const Method &method, MLGlobal::SpreadType spreadType, const QTransform &transform)
-{
-	switch (spreadType)
-	{
-	case MLGlobal::SpreadTypePad:
-	{
-		MLTransformedGradientFiller<Gradient, Method, MLGlobal::SpreadTypePad> filler(gradient, &method, transform);
-		fill(ras, filler);
-		break;
-	}
-	case MLGlobal::SpreadTypeRepeat:
-	{
-		MLTransformedGradientFiller<Gradient, Method, MLGlobal::SpreadTypeRepeat> filler(gradient, &method, transform);
-		fill(ras, filler);
-		break;
-	}
-	case MLGlobal::SpreadTypeReflective:
-	{
-		MLTransformedGradientFiller<Gradient, Method, MLGlobal::SpreadTypeReflective> filler(gradient, &method, transform);
-		fill(ras, filler);
-		break;
-	}
-	default:
-		break;
-	}
-}
+*/
 
 void MLImagePaintEngine::drawPath(const QPainterPath &path)
 {
-	agg::rasterizer_scanline_aa<> ras;
-	
-	QPainterPath_vs vs(path);
-	ras.add_path(vs);
-	
-	MLBrush brush = _state.brush;
-	QTransform transform = brush.transform().inverted() * _state.transform;
-	
-	switch (brush.type())
+	/*
+	switch (_state.brush.spreadType())
 	{
-	case MLGlobal::BrushTypeColor:
-	{
-		MLColorFiller filler(brush.argb(), _opacity);
-		fill(ras, filler);
+	case MLGlobal::SpreadTypePad:
+		drawPathReal<MLGlobal::SpreadTypePad>(path);
 		break;
-	}
-	case MLGlobal::BrushTypeImage:
-	{
-		fillImage(ras, brush.image(), brush.spreadType(), transform);
+	case MLGlobal::SpreadTypeReflective:
+		drawPathReal<MLGlobal::SpreadTypeReflective>(path);
 		break;
-	}
-	case MLGlobal::BrushTypeLinearGradient:
-	{
-		MLLinearGradientInfo info = brush.linearGradientInfo();
-		
-		if (mlTransformIsSimilar(transform))
-		{
-			MLLinearGradientMethod method(info.start() * transform, info.end() * transform);
-			fillGradient(ras, brush.gradientCache(), method, brush.spreadType());
-		}
-		else
-		{
-			MLLinearGradientMethod method(info.start(), info.end());
-			fillGradient(ras, brush.gradientCache(), method, brush.spreadType(), transform);
-		}
-		
+	case MLGlobal::SpreadTypeRepeat:
+		drawPathReal<MLGlobal::SpreadTypeRepeat>(path);
 		break;
-	}
-	case MLGlobal::BrushTypeRadialGradient:
-	{
-		MLRadialGradientInfo info = brush.radialGradientInfo();
-		
-		if (info.center() == info.focal())
-		{
-			// similar transform
-			if (mlTransformIsSimilar(transform))
-			{
-				MLRadialGradientMethod method(info.center() * transform, info.radius() * transform.m11());
-				fillGradient(ras, brush.gradientCache(), method, brush.spreadType());
-			}
-			else
-			{
-				MLRadialGradientMethod method(info.center(), info.radius());
-				fillGradient(ras, brush.gradientCache(), method, brush.spreadType(), transform);
-			}
-		}
-		else
-		{
-			// similar transform
-			if (mlTransformIsSimilar(transform))
-			{
-				MLFocalGradientMethod method(info.center() * transform, info.radius() * transform.m11(), info.focal() * transform);
-				fillGradient(ras, brush.gradientCache(), method, brush.spreadType());
-			}
-			else
-			{
-				MLFocalGradientMethod method(info.center(), info.radius(), info.focal());
-				fillGradient(ras, brush.gradientCache(), method, brush.spreadType(), transform);
-			}
-		}
-		break;
-	}
 	default:
 		break;
 	}
+	*/
+	
+	const MLBrush brush = _state.brush;
+	
+	const QTransform shapeTransform = _state.worldTransform.inverted();
+	const QTransform fillShapeTransform = brush.transform() * shapeTransform;
+	
+	QPainterPath newPath = shapeTransform.map(path);
+	
+	agg::rasterizer_scanline_aa<> ras;
+	
+	QPainterPath_vs vs(newPath);
+	ras.add_path(vs);
+	
+	MLFiller *filler = 0;
+	MLFillGenerator *generator = 0;
+	
+	if (brush.type() == MLGlobal::BrushTypeColor)
+	{
+		filler = new MLColorFiller(brush.argb(), _opacity);
+	}
+	else if (brush.type() == MLGlobal::BrushTypeImage)
+	{
+		QPoint offset(fillShapeTransform.dx(), fillShapeTransform.dy());
+		
+		if (fillShapeTransform.isAffine() && fillShapeTransform.m11() == 1 && fillShapeTransform.m12() == 0 && fillShapeTransform.m21() == 0 && fillShapeTransform.m22() == 1 && QPointF(fillShapeTransform.dx(), fillShapeTransform.dy()) == QPointF(offset))
+		{
+			switch (brush.spreadType())
+			{
+			case MLGlobal::SpreadTypePad:
+				filler = new MLPadImageFiller(brush.image().constBitmap(), offset);
+				break;
+			case MLGlobal::SpreadTypeRepeat:
+				filler = new MLRepeatImageFiller(brush.image().constBitmap(), offset);
+				break;
+			case MLGlobal::SpreadTypeReflective:
+				filler = new MLReflectiveImageFiller(brush.image().constBitmap(), offset);
+				break;
+			default:
+				return;
+			}
+		}
+		else
+		{
+			switch (_state.imageTransformType)
+			{
+			case MLGlobal::ImageTransformTypeNearestNeighbor:
+				generator = new MLScalingFilterNearestNeighbor<MLBitmap<MLArgb>, true>(brush.image().constBitmap());
+				break;
+			case MLGlobal::ImageTransformTypeBilinear:
+				generator = new MLScalingFilterBilinear<MLBitmap<MLArgb>, true>(brush.image().constBitmap());
+				break;
+			case MLGlobal::ImageTransformTypeBicubic:
+				generator = new MLScalingFilterBicubic<MLBitmap<MLArgb>, true>(brush.image().constBitmap());
+				break;
+			case MLGlobal::ImageTransformTypeLanczos2:
+				generator = new MLScalingFilterLanczos2<MLBitmap<MLArgb>, true>(brush.image().constBitmap());
+				break;
+			case MLGlobal::ImageTransformTypeLanczos2Hypot:
+				generator = new MLScalingFilterLanczos2Hypot<MLBitmap<MLArgb>, true>(brush.image().constBitmap());
+				break;
+			default:
+				return;
+			}
+			
+			filler = new MLGeneratedFiller(*generator, _opacity, fillShapeTransform.inverted());
+			generator->setSpreadType(brush.spreadType());
+		}
+	}
+	else
+	{
+		switch (brush.type())
+		{
+		case MLGlobal::BrushTypeLinearGradient:
+		{
+			MLLinearGradientInfo info = brush.linearGradientInfo();
+			
+			if (mlTransformIsSimilar(fillShapeTransform))
+			{
+				generator = new MLLinearGradientFillGenerator<MLColorGradientCache>(brush.gradientCache(), info.start() * fillShapeTransform, info.end() * fillShapeTransform);
+				filler = new MLGeneratedFiller(*generator, _opacity);
+			}
+			else
+			{
+				generator = new MLLinearGradientFillGenerator<MLColorGradientCache>(brush.gradientCache(), info.start(), info.end());
+				filler = new MLGeneratedFiller(*generator, _opacity, fillShapeTransform.inverted());
+			}
+			
+			break;
+		}
+		case MLGlobal::BrushTypeRadialGradient:
+		{
+			MLRadialGradientInfo info = brush.radialGradientInfo();
+			
+			if (info.center() == info.focal())
+			{
+				if (mlTransformIsSimilar(fillShapeTransform))
+				{
+					generator = new MLRadialGradientFillGenerator<MLColorGradientCache>(brush.gradientCache(), fillShapeTransform * info.center(), info.radius() * fillShapeTransform.m11());
+					filler = new MLGeneratedFiller(*generator, _opacity);
+				}
+				else
+				{
+					generator = new MLRadialGradientFillGenerator<MLColorGradientCache>(brush.gradientCache(), info.center(), info.radius());
+					filler = new MLGeneratedFiller(*generator, _opacity, fillShapeTransform.inverted());
+				}
+			}
+			else
+			{
+				if (mlTransformIsSimilar(fillShapeTransform))
+				{
+					generator = new MLFocalGradientFillGenerator<MLColorGradientCache>(brush.gradientCache(), info.center() * fillShapeTransform, info.radius() * fillShapeTransform.m11(), info.focal() * fillShapeTransform);
+					filler = new MLGeneratedFiller(*generator, _opacity);
+				}
+				else
+				{
+					generator = new MLFocalGradientFillGenerator<MLColorGradientCache>(brush.gradientCache(), info.center(), info.radius(), info.focal());
+					filler = new MLGeneratedFiller(*generator, _opacity, fillShapeTransform.inverted());
+				}
+			}
+			break;
+		}
+		default:
+			return;
+		}
+		generator->setSpreadType(brush.spreadType());
+	}
+	
+	agg::scanline_p8 sl;
+	MLImageBaseRenderer baseRen(_bitmap, _blendOp, *filler);
+	MLRenderer<MLImageBaseRenderer> ren(baseRen);
+	
+	agg::render_scanlines(ras, sl, ren);
+	
+	if (generator)
+		delete generator;
+	
+	if (filler)
+		delete filler;
 }
 
 void MLImagePaintEngine::drawImage(const QPoint &point, const MLImage &image)

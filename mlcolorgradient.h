@@ -63,6 +63,9 @@ public:
 	{
 		MLArgb color;
 		color.v = _cache.at(x);
+		
+		//color.v = _cache[round(x * _cache.size())];
+		
 		return color;
 	}
 	

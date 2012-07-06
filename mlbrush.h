@@ -136,7 +136,7 @@ public:
 	MLLinearGradientInfo linearGradientInfo() const { return d->type == MLGlobal::BrushTypeLinearGradient ? d->data.value<MLLinearGradientInfo>() : MLLinearGradientInfo(); }
 	MLRadialGradientInfo radialGradientInfo() const { return d->type == MLGlobal::BrushTypeRadialGradient ? d->data.value<MLRadialGradientInfo>() : MLRadialGradientInfo(); }
 	
-	const MLColorGradientCache *gradientCache() { return d->cache.data(); }
+	const MLColorGradientCache *gradientCache() const { return d->cache.data(); }
 	
 	void setTransform(const QTransform &transform) { d->transform = transform; }
 	QTransform transform() const { return d->transform; }

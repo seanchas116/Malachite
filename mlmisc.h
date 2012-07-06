@@ -7,6 +7,7 @@
 #include <QPoint>
 #include <QString>
 #include <QSize>
+#include <QTransform>
 #include <cmath>
 #include <cstring>
 #include "mlglobal.h"
@@ -58,11 +59,19 @@ inline T mlMin(const T &a, const T &b, const T &c)
 }
 
 
-
+inline QPointF operator*(const QTransform &transform, const QPointF &point)
+{
+	return transform.map(point);
+}
 
 inline QPointF mlPointFloor(const QPointF &p)
 {
 	return QPointF(floor(p.x()), floor(p.y()));
+}
+
+inline QPointF mlPointRound(const QPointF &p)
+{
+	return QPointF(round(p.x()), round(p.y()));
 }
 
 inline double mlPointDist(const QPointF &p1, const QPointF &p2)

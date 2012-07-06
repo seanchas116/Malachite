@@ -100,7 +100,7 @@ public:
 	{
 		Q_ASSERT(0 <= x && x <= 1);
 		x *= (Key)_size;
-		Key f = floor(x);
+		Key f = floorf(x);
 		
 		if (f == x)
 			return _data[(int)f];

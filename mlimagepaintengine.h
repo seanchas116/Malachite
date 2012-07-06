@@ -3,6 +3,8 @@
 
 #include "mlpaintengine.h"
 
+class MLFiller;
+
 class MLImagePaintEngine : public MLPaintEngine
 {
 public: 
@@ -14,16 +16,14 @@ public:
 	
 	void updateState(const MLPaintEngineState &state);
 	
+	//template <class Rasterizer, class Filler> inline void fill(Rasterizer &ras, Filler &filler);
+	//template <MLGlobal::SpreadType SpreadType> void drawPathReal(const QPainterPath &path);
 	void drawPath(const QPainterPath &path);
 	void drawImage(const QPoint &point, const MLImage &image);
 	
+	template <class Rasterizer> void fill(const Rasterizer &ras, const MLFiller &filler);
+	
 private:
-	
-	template <class Rasterizer, class Filler> void fill(Rasterizer &ras, Filler &filler);
-	
-	template <class Rasterizer> void fillImage(Rasterizer &ras, const MLImage &image, MLGlobal::SpreadType spreadType, const QTransform &transform);
-	template <class Rasterizer, class Gradient, class Method> void fillGradient(Rasterizer &ras, Gradient *gradient, const Method &method, MLGlobal::SpreadType spreadType, const QTransform &transform);
-	template <class Rasterizer, class Gradient, class Method> void fillGradient(Rasterizer &ras, Gradient *gradient, const Method &method, MLGlobal::SpreadType spreadType);
 	
 	MLBlendOp *_blendOp;
 	float _opacity;

@@ -8,9 +8,10 @@ MLPainter::MLPainter(MLPaintable *paintable) :
 	_state.blendMode = MLGlobal::BlendModeNormal;
 	_state.brush = MLBrush(MLColor::fromRgb(0, 0, 0));
 	_state.opacity = 1.0;
+	_state.imageTransformType = MLGlobal::ImageTransformTypeBicubic;
 	bool ok = begin(paintable);
 	if (!ok)
-		qDebug() << "MLPainter::MLPainter: cannot begin painting";
+		qDebug() << "MLPainter::MLPainter: could not begin painting";
 }
 
 MLPainter::~MLPainter()

@@ -39,14 +39,10 @@ void MLSurfacePaintEngine::drawPath(const QPainterPath &path)
 			MLPainter painter(_editor->tileRefForKey(key));
 			painter.setState(_state);
 			
-			MLBrush brush = _state.brush;
+			QPoint offset = key * MLSurface::TileSize;
+			painter.setWorldTransform(QTransform::fromTranslate(offset.x(), offset.y()) * painter.worldTransform());
 			
-			QPoint offset = -key * MLSurface::TileSize;
-			brush.setTransform(brush.transform() * QTransform::fromTranslate(offset.x(), offset.y()));
-			
-			painter.setBrush(brush);
-			
-			painter.drawPath(path.translated(-key * MLSurface::TileSize));
+			painter.drawPath(path);
 		}
 	}
 }
