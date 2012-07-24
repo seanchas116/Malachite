@@ -58,6 +58,9 @@ public:
 	QRect boundingKeyRect() const;
 	QRect boundingRect() const;
 	
+	static QRect keyToRect(int x, int y) { return QRect(TileSize * x, TileSize * y, TileSize, TileSize); }
+	static QRect keyToRect(const QPoint &point) { return keyToRect(point.x(), point.y()); }
+	
 	MLSurface section(const QPointSet &keys) const;
 	MLSurface exclusion(const QPointSet &keys) const;
 	

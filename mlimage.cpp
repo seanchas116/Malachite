@@ -1,7 +1,7 @@
 #include <QtCore>
 #include <FreeImage.h>
 
-#include "mlimagepaintengine.h"
+#include "private/mlimagepaintengine.h"
 #include "mlgenericwrapperimage.h"
 #include "mlimage.h"
 

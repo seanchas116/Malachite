@@ -1,7 +1,10 @@
 #include <QtGui>
 #include "mlimageio.h"
 
-MLImageIO::MLImageIO(const QString &filePath) :
+#include <FreeImage.h>
+
+MLImageIO::MLImageIO(const QString &filePath, QObject *parent) :
+	QObject(parent),
 	_bitmap(0)
 {
 	QFileInfo fileInfo(filePath);
@@ -24,16 +27,23 @@ MLImageIO::MLImageIO(const QString &filePath) :
 		flags = JPEG_ACCURATE;
 	
 	_bitmap = FreeImage_Load(format, filePath.toLocal8Bit(), flags);
+	
+	if (!_bitmap)
+		return;
+	
 	_size = QSize(FreeImage_GetWidth(_bitmap), FreeImage_GetHeight(_bitmap));
 }
 
 MLImageIO::~MLImageIO()
 {
-	FreeImage_Unload(_bitmap);
+	if (_bitmap) FreeImage_Unload(_bitmap);
 }
 
 MLImage MLImageIO::toImage() const
 {
+	if (!_bitmap)
+		return MLImage();
+	
 	MLImage image(size());
 	pasteToImage(QPoint(), &image);
 	return image;
@@ -41,6 +51,9 @@ MLImage MLImageIO::toImage() const
 
 MLSurface MLImageIO::toSurface(const QPoint &p) const
 {
+	if (!_bitmap)
+		return MLSurface();
+	
 	MLSurface surface;
 	pasteToImage(p, &surface);
 	return surface;

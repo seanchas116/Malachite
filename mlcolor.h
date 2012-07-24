@@ -134,6 +134,14 @@ public:
 		return argb8;
 	}
 	
+	QRgb toQRgb() const
+	{
+		MLFastArgb8 argb8 = toFastArgb8();
+		
+		QRgb rgb = *(reinterpret_cast<uint32_t *>(argb8.v));
+		return rgb;
+	}
+	
 	QColor toQColor() const
 	{
 		return QColor::fromRgbF(_r, _g, _b, _a);

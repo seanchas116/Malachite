@@ -2,6 +2,8 @@
 #define MLINTDIVISION_H
 
 #include "mlglobal.h"
+#include <QPoint>
+#include <cmath>
 
 // 余りが必ず正になる整数除算
 class MALACHITESHARED_EXPORT MLIntDivision

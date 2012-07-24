@@ -2,7 +2,7 @@
 
 #include "mlmisc.h"
 #include "mlpainter.h"
-#include "mlsurfacepaintengine.h"
+#include "private/mlsurfacepaintengine.h"
 #include "mlsurface.h"
 #include "mlintdivision.h"
 

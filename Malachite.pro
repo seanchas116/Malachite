@@ -15,24 +15,22 @@ SOURCES += \
     mlcolor.cpp \
     mlcurves.cpp \
     mlimage.cpp \
-    mlimagepaintengine.cpp \
     mlpaintengine.cpp \
     mlpainter.cpp \
     mlsurface.cpp \
-    mlsurfacepaintengine.cpp \
     mlsurfacepainter.cpp \
     mlsurfaceselection.cpp \
     mlmisc.cpp \
     mlbrush.cpp \
     mlimageio.cpp \
-    mlimagerenderer.cpp \
     mlcolorgradient.cpp \
-    mlfillgenerator.cpp
+    mlcurvesubdivision.cpp \
+    private/mlsurfacepaintengine.cpp \
+    private/mlimagerenderer.cpp \
+    private/mlimagepaintengine.cpp \
+    private/mlfillgenerator.cpp
 
 HEADERS += malachite.h\
-    agg_config.h \
-    agg_basics.h \
-    agg_array.h \
     mlglobal.h \
     mlblendmode.h \
     mlblendop.h \
@@ -40,35 +38,39 @@ HEADERS += malachite.h\
     mlcurves.h \
     mlgenericimage.h \
     mlimage.h \
-    mlimagepaintengine.h \
     mlintdivision.h \
     mlmisc.h \
     mlpaintable.h \
     mlpaintengine.h \
     mlpainter.h \
     mlsurface.h \
-    mlsurfacepaintengine.h \
     mlsurfacepainter.h \
     mlsurfaceselection.h \
-    agg_math.h \
-    agg_scanline_p.h \
-    agg_rasterizer_sl_clip.h \
-    agg_rasterizer_scanline_aa.h \
-    agg_rasterizer_cells_aa.h \
-    agg_gamma_functions.h \
     mlbrush.h \
-    agg_clip_liang_barsky.h \
     mlbitmap.h \
     mlsimdvector.h \
     mlargb.h \
     mlimageio.h \
     mlgenericwrapperimage.h \
     mlgenericsharedimage.h \
-    mlimagerenderer.h \
     mlgenericgradient.h \
     mlcolorgradient.h \
     mlpixelgenerator.h \
-    mlfillgenerator.h
+    mlcurvesubdivision.h \
+    private/mlsurfacepaintengine.h \
+    private/mlimagerenderer.h \
+    private/mlimagepaintengine.h \
+    private/mlfillgenerator.h \
+    private/agg_scanline_p.h \
+    private/agg_rasterizer_sl_clip.h \
+    private/agg_rasterizer_scanline_aa.h \
+    private/agg_rasterizer_cells_aa.h \
+    private/agg_math.h \
+    private/agg_gamma_functions.h \
+    private/agg_config.h \
+    private/agg_clip_liang_barsky.h \
+    private/agg_basics.h \
+    private/agg_array.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

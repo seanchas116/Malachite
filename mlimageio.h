@@ -2,15 +2,20 @@
 #define MLIMAGEIO_H
 
 #include <QDebug>
+#include <QObject>
 #include "mlsurface.h"
 #include "mlgenericwrapperimage.h"
 #include <FreeImage.h>
 
-class MALACHITESHARED_EXPORT MLImageIO
+class MALACHITESHARED_EXPORT MLImageIO : public QObject
 {
+	Q_OBJECT
+	
 public:
-	MLImageIO() :_bitmap(0) {}
-	MLImageIO(const QString &filePath);
+	
+	MLImageIO(QObject *parent = 0) :
+		QObject(parent), _bitmap(0) {}
+	MLImageIO(const QString &filePath, QObject *parent = 0);
 	~MLImageIO();
 	
 	bool isValid() const { return _bitmap; }
