@@ -357,9 +357,9 @@ public:
 	MLSurfaceInitializer()
 	{
 		MLSurface::DefaultTile = MLImage(MLSurface::TileSize, MLSurface::TileSize);
-		MLSurface::DefaultTile.fill(MLColor::fromRgb(0, 0, 0, 0).toArgb());
+		MLSurface::DefaultTile.fill(MLColor::fromRgbValue(0, 0, 0, 0).toArgb());
 		MLSurface::WhiteTile = MLImage(MLSurface::TileSize, MLSurface::TileSize);
-		MLSurface::WhiteTile.fill(MLColor::fromRgb(1, 1, 1, 1).toArgb());
+		MLSurface::WhiteTile.fill(MLColor::fromRgbValue(1, 1, 1, 1).toArgb());
 	}
 };
 

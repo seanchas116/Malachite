@@ -6,6 +6,7 @@
 
 TARGET = malachite
 TEMPLATE = lib
+QT += core gui opengl
 
 DEFINES += MALACHITE_LIBRARY
 
@@ -28,7 +29,9 @@ SOURCES += \
     private/mlsurfacepaintengine.cpp \
     private/mlimagerenderer.cpp \
     private/mlimagepaintengine.cpp \
-    private/mlfillgenerator.cpp
+    private/mlfillgenerator.cpp \
+    mlacceleratedimage.cpp \
+    mlacceleratedimagefilter.cpp
 
 HEADERS += malachite.h\
     mlglobal.h \
@@ -70,7 +73,9 @@ HEADERS += malachite.h\
     private/agg_config.h \
     private/agg_clip_liang_barsky.h \
     private/agg_basics.h \
-    private/agg_array.h
+    private/agg_array.h \
+    mlacceleratedimage.h \
+    mlacceleratedimagefilter.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
@@ -92,9 +97,16 @@ unix:!symbian {
 }
 
 OTHER_FILES += \
-    README.md
+    README.md \
+    resources/shader/default.vert \
+    resources/shader/blend/src_over.frag \
+    resources/shader/test.vert \
+    resources/shader/test.frag
 
 LIBS += -lfreeimage
 QMAKE_CXXFLAGS += -fpermissive
 #QMAKE_CXXFLAGS += -std=c++0x
+
+RESOURCES += \
+    resources.qrc
 

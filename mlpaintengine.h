@@ -28,6 +28,7 @@ public:
 	
 	virtual void drawPath(const QPainterPath &path);
 	virtual void drawEllipse(double x, double y, double rx, double ry);
+	virtual void drawRect(double x, double y, double width, double height);
 	virtual void drawImage(const QPoint &point, const MLImage &image);
 	virtual void drawSurface(const QPoint &point, const MLSurface &surface);
 	

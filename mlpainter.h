@@ -44,6 +44,8 @@ public:
 	void drawPath(const QPainterPath &path);
 	void drawEllipse(const QRectF &rect);
 	void drawEllipse(const QPointF &center, double rx, double ry);
+	void drawRect(const QRectF &rect);
+	void drawRect(double x, double y, double width, double height) { drawRect(QRectF(x, y, width, height)); }
 	void drawImage(const QPoint &point, const MLImage &image);
 	void drawImage(int x, int y, const MLImage &image) { drawImage(QPoint(x, y), image); }
 	void drawSurface(const QPoint &point, const MLSurface &surface);
@@ -56,8 +58,8 @@ public:
 	
 protected:
 	
-	MLPaintEngine *paintEngine() { return _paintEngine; }
-	const MLPaintEngine *paintEngine() const { return _paintEngine; }
+	MLPaintEngine *paintEngine() { return _paintEngine.data(); }
+	const MLPaintEngine *paintEngine() const { return _paintEngine.data(); }
 	
 private:
 	
@@ -65,7 +67,7 @@ private:
 	
 	MLPaintEngineState _state;
 	MLPaintable *_paintable;
-	MLPaintEngine *_paintEngine;
+	QScopedPointer<MLPaintEngine> _paintEngine;
 };
 
 #endif // MLPAINTER_H

@@ -12,6 +12,13 @@ void MLPaintEngine::drawEllipse(double x, double y, double rx, double ry)
 	drawPath(path);
 }
 
+void MLPaintEngine::drawRect(double x, double y, double width, double height)
+{
+	QPainterPath path;
+	path.addRect(x, y, width, height);
+	drawPath(path);
+}
+
 void MLPaintEngine::drawImage(const QPoint &point, const MLImage &image)
 {
 	Q_UNUSED(point);

@@ -99,7 +99,7 @@ public:
 	void setComponent(Component component, double x);
 	void setIntervaledComponent(Component component, double x);
 	
-	static MLColor fromRgb(double r, double g, double b, double a = 1.0)
+	static MLColor fromRgbValue(double r, double g, double b, double a = 1.0)
 	{
 		MLColor color;
 		color.setAlpha(a);
@@ -108,7 +108,7 @@ public:
 		return color;
 	}
 
-	static MLColor fromHsv(double h, double s, double v, double a = 1.0)
+	static MLColor fromHsvValue(double h, double s, double v, double a = 1.0)
 	{
 		MLColor color;
 		color.setAlpha(a);
@@ -142,16 +142,16 @@ public:
 		return rgb;
 	}
 	
-	QColor toQColor() const
-	{
-		return QColor::fromRgbF(_r, _g, _b, _a);
-	}
-	
+	QColor toQColor() const { return QColor::fromRgbF(_r, _g, _b, _a); }
 	QString toWebColor() const;
+	
+	static MLColor transparent() { return MLColor::fromRgbValue(0, 0, 0, 0); }
+	static MLColor white() { return MLColor::fromRgbValue(1, 1, 1, 1); }
+	static MLColor black() { return MLColor::fromRgbValue(0, 0, 0, 1); }
 	
 	static MLColor fromArgb(const MLArgb &argb)
 	{
-		return argb.a() == 0 ? MLColor::fromRgb(argb.r() / argb.a(), argb.g() / argb.a(), argb.b() / argb.a(), argb.a()) : MLColor();
+		return argb.a() == 0 ? MLColor::fromRgbValue(argb.r() / argb.a(), argb.g() / argb.a(), argb.b() / argb.a(), argb.a()) : MLColor();
 	}
 	
 	static MLColor fromFastArgb8(const MLFastArgb8 &argb)
@@ -163,7 +163,7 @@ public:
 	
 	static MLColor fromQColor(const QColor &qcolor)
 	{
-		return MLColor::fromRgb(qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF());
+		return MLColor::fromRgbValue(qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF());
 	}
 	
 	static MLColor fromWebColor(const QString &webColor, bool *ok = 0);
