@@ -30,7 +30,10 @@ MLImageIO::MLImageIO(const QString &filePath, QObject *parent) :
 	_bitmap = FreeImage_Load(format, filePath.toLocal8Bit(), flags);
 	
 	if (!_bitmap)
+	{
+		qDebug() << Q_FUNC_INFO << ": failed to load file";
 		return;
+	}
 	
 	_size = QSize(FreeImage_GetWidth(_bitmap), FreeImage_GetHeight(_bitmap));
 }

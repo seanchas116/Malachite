@@ -3,7 +3,7 @@
 #include "mlcurves.h"
 
 
-MLCurve4 MLCurve4::fromCatmullRom(const QPolygonF &polygon, int indexStart)
+MLCurve4 MLCurve4::fromCatmullRom(const MLPolygon &polygon, int indexStart)
 {
 	if (indexStart < 0 || polygon.size() - 1 <= indexStart) {
 		qWarning() << "MLCurve4::fromCatmullRom: index is invalid";

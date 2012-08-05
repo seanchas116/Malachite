@@ -29,7 +29,7 @@ public:
 	QPainterPath_vs(const QPainterPath &path) :
 		_path(path),
 		_index(0),
-		_curve4(0)
+		_subdIndex(0)
 	{}
 	
 	void rewind(unsigned index) { Q_UNUSED(index); _index = 0; }
@@ -38,7 +38,8 @@ public:
 private:
 	const QPainterPath _path;
 	int _index;
-	agg::curve4_div *_curve4;
+	MLPolygon _subdPolygon;
+	int _subdIndex;
 };
 
 template <class BaseRenderer>

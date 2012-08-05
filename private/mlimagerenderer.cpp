@@ -3,19 +3,22 @@
 
 unsigned QPainterPath_vs::vertex(double *x, double *y)
 {
-	forever {
-		
-		unsigned type;
-		if (_curve4) {	// curveの途中
-			type = _curve4->vertex(x, y);
-			if (type == agg::path_cmd_move_to)
-				continue;	// 最初の頂点なので無視
-			if (type != agg::path_cmd_stop)
-				return type;	// line_to
+	forever
+	{
+		if (_subdIndex)
+		{
+			if (_subdIndex == _subdPolygon.size())
+			{
+				_subdIndex = 0;
+				continue;
+			}
 			
-			// ポリゴン終了
-			delete _curve4;
-			_curve4 = 0;
+			const MLVec2D p = _subdPolygon.at(_subdIndex);
+			*x = p.x;
+			*y = p.y;
+			_subdIndex++;
+			
+			return agg::path_cmd_line_to;
 		}
 		
 		if (_index == _path.elementCount())	// path終わり
@@ -23,11 +26,16 @@ unsigned QPainterPath_vs::vertex(double *x, double *y)
 		
 		const QPainterPath::Element element = _path.elementAt(_index);
 		
-		if (element.type == QPainterPath::CurveToElement) {
-			_curve4 = new agg::curve4_div(_path.elementAt(_index - 1).x, _path.elementAt(_index - 1).y,
-									  _path.elementAt(_index).x, _path.elementAt(_index).y,
-									  _path.elementAt(_index + 1).x, _path.elementAt(_index + 1).y,
-									  _path.elementAt(_index + 2).x, _path.elementAt(_index + 2).y);
+		if (element.type == QPainterPath::CurveToElement)
+		{
+			QPainterPath::Element e1, e2, e3, e4;
+			e1 = _path.elementAt(_index - 1);
+			e2 = _path.elementAt(_index);
+			e3 = _path.elementAt(_index + 1);
+			e4 = _path.elementAt(_index + 2);
+			
+			_subdPolygon = MLCurveSubdivision(MLVec2D(e1.x, e1.y), MLVec2D(e2.x, e2.y), MLVec2D(e3.x, e3.y), MLVec2D(e4.x, e4.y)).polygon();
+			_subdIndex = 1;
 			_index += 3;
 			continue;
 		}
@@ -36,7 +44,8 @@ unsigned QPainterPath_vs::vertex(double *x, double *y)
 		*x = element.x;
 		*y = element.y;
 		
-		switch (element.type) {
+		switch (element.type)
+		{
 		case QPainterPath::MoveToElement:
 			return agg::path_cmd_move_to;
 		case QPainterPath::LineToElement:

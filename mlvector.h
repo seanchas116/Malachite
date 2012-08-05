@@ -8,6 +8,7 @@
 #include <QPointF>
 
 #include "mlglobal.h"
+#include "mlmisc.h"
 
 #define ML_ALIGN_16BYTE \
 public: \
@@ -42,7 +43,7 @@ public: \
 
 struct MLVec2I64
 {
-public:
+	ML_ALIGN_16BYTE
 	
 	MLVec2I64() {}
 	MLVec2I64(int64_t s)
@@ -92,7 +93,7 @@ public:
 
 struct MLVec4I32
 {
-public:
+	ML_ALIGN_16BYTE
 	
 	MLVec4I32() {}
 	MLVec4I32(int32_t s)
@@ -154,7 +155,7 @@ public:
 
 struct MLVec8I16
 {
-public:
+	ML_ALIGN_16BYTE
 	
 	MLVec8I16() {}
 	MLVec8I16(int16_t s)
@@ -216,6 +217,8 @@ public:
 
 struct MLVec16I8
 {
+	ML_ALIGN_16BYTE
+	
 	MLVec16I8() {}
 	MLVec16I8(int8_t s)
 	{
@@ -294,6 +297,8 @@ struct MLVec16I8
 
 struct MLVec16U8
 {
+	ML_ALIGN_16BYTE
+	
 	MLVec16U8() {}
 	MLVec16U8(uint8_t s)
 	{
@@ -357,7 +362,7 @@ struct MLVec16U8
 
 struct MLVec4F
 {
-public:
+	ML_ALIGN_16BYTE
 	
 	MLVec4F() {}
 	MLVec4F(float s) { e[0] = s; e[1] = s; e[2] = s; e[3] = s; }
@@ -414,17 +419,28 @@ public:
 	};
 };
 
+inline MLVec4F operator+(const MLVec4F &x, float s) { return x + MLVec4F(s); }
+inline MLVec4F operator-(const MLVec4F &x, float s) { return x - MLVec4F(s); }
+inline MLVec4F operator*(const MLVec4F &x, float s) { return x * MLVec4F(s); }
+inline MLVec4F operator/(const MLVec4F &x, float s) { return x / MLVec4F(s); }
+
+inline MLVec4F operator+(float s, const MLVec4F &x) { return x + MLVec4F(s); }
+inline MLVec4F operator-(float s, const MLVec4F &x) { return x - MLVec4F(s); }
+inline MLVec4F operator*(float s, const MLVec4F &x) { return x * MLVec4F(s); }
+inline MLVec4F operator/(float s, const MLVec4F &x) { return x / MLVec4F(s); }
+
 struct MLVec2D
 {
-public:
+	ML_ALIGN_16BYTE
 	
 	MLVec2D() {}
-	MLVec2D(double s) { x = s; y = s; }
-	MLVec2D(double x, double y) { x = x; y = y; }
-	MLVec2D(const QPointF &p) { x = p.x(); y = p.y(); }
+	MLVec2D(double s) : x(s), y(s) {}
+	MLVec2D(double x, double y) : x(x), y(y) {}
+	MLVec2D(const QPointF &p) : x(p.x()), y(p.y()) {}
 	MLVec2D(__v2df v) : v(v) {}
 	
-	
+	QPointF toQPointF() const { return QPointF(x, y); }
+	QPoint toQPoint() const { return QPoint(round(x), round(y)); }
 	
 	static MLVec2I64 equal(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64(__builtin_ia32_cmpeqpd(v0, v1)); }
 	static MLVec2I64 notEqual(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64(__builtin_ia32_cmpneqpd(v0, v1)); }
@@ -467,29 +483,63 @@ public:
 	};
 };
 
+inline MLVec2D operator+(const MLVec2D &x, float s) { return x + MLVec2D(s); }
+inline MLVec2D operator-(const MLVec2D &x, float s) { return x - MLVec2D(s); }
+inline MLVec2D operator*(const MLVec2D &x, float s) { return x * MLVec2D(s); }
+inline MLVec2D operator/(const MLVec2D &x, float s) { return x / MLVec2D(s); }
 
-inline MLVec4I32 round(const MLVec4F &v)
+inline MLVec2D operator+(float s, const MLVec2D &x) { return x + MLVec2D(s); }
+inline MLVec2D operator-(float s, const MLVec2D &x) { return x - MLVec2D(s); }
+inline MLVec2D operator*(float s, const MLVec2D &x) { return x * MLVec2D(s); }
+inline MLVec2D operator/(float s, const MLVec2D &x) { return x / MLVec2D(s); }
+
+inline MLVec2D operator*(const MLVec2D &v, const QTransform &transform)
+{
+	MLVec2D r;
+	transform.map(v.x, v.y, &(r.x), &(r.y));
+	return r;
+}
+
+inline MLVec4I32 mlRound(const MLVec4F &v)
 {
 	return MLVec4I32(__builtin_ia32_cvtps2dq(v));
 }
 
-inline MLVec4I32 round(const MLVec2D &v)
+inline MLVec4I32 mlRound(const MLVec2D &v)
 {
 	return MLVec4I32(__builtin_ia32_cvtpd2dq(v));
 }
 
-inline MLVec4F sqrt(const MLVec4F &v)
+inline MLVec4F mlSqrt(const MLVec4F &v)
 {
 	return MLVec4F(__builtin_ia32_sqrtps(v));
 }
 
-inline MLVec2D sqrt(const MLVec2D &v)
+inline MLVec2D mlSqrt(const MLVec2D &v)
 {
 	return MLVec2D(__builtin_ia32_sqrtpd(v));
 }
 
+inline double mlDot(const MLVec2D &v1, const MLVec2D & v2)
+{
+	MLVec2D v = v1 * v2;
+	return v.x + v.y;
+}
 
+inline double mlSqLength(const MLVec2D &v)
+{
+	return mlDot(v, v);
+}
 
+inline double mlLength(const MLVec2D &v)
+{
+	return sqrt(mlSqLength(v));
+}
+
+inline double mlArg(const MLVec2D &v)
+{
+	return atan2(v.x, v.y);
+}
 
 
 #endif // MLVECTOR_H

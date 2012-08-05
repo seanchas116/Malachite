@@ -33,7 +33,8 @@ SOURCES += \
     mlacceleratedimage.cpp \
     mlacceleratedimagefilter.cpp \
     mlargb.cpp \
-    mlvector.cpp
+    mlvector.cpp \
+    mlpolygon.cpp
 
 HEADERS += malachite.h\
     mlglobal.h \
@@ -79,7 +80,8 @@ HEADERS += malachite.h\
     mlacceleratedimage.h \
     mlacceleratedimagefilter.h \
     private/mlimageioprivate.h \
-    mlvector.h
+    mlvector.h \
+    mlpolygon.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

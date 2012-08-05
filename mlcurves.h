@@ -1,14 +1,15 @@
 #ifndef MLCURVES_H
 #define MLCURVES_H
 
-#include <QPolygonF>
+#include "mlpolygon.h"
 #include "mlglobal.h"
+#include "mlvector.h"
 
 class MALACHITESHARED_EXPORT MLCurve4
 {
 public:
 	MLCurve4() {}
-	MLCurve4(const QPointF &start, const QPointF &control1, const QPointF &control2, const QPointF &end)
+	MLCurve4(const MLVec2D &start, const MLVec2D &control1, const MLVec2D &control2, const MLVec2D &end)
 	{
 		this->start = start;
 		this->control1 = control1;
@@ -16,24 +17,24 @@ public:
 		this->end = end;
 	}
 	
-	static MLCurve4 fromCatmullRom(const QPointF &previous, const QPointF &start, const QPointF &end, const QPointF &next)
+	static MLCurve4 fromCatmullRom(const MLVec2D &previous, const MLVec2D &start, const MLVec2D &end, const MLVec2D &next)
 	{
 		return MLCurve4(start, start + (end - previous) / 6.0, end - (next - start) / 6.0, end);
 	}
 	
-	static MLCurve4 fromCatmullRomStart(const QPointF &start, const QPointF &end, const QPointF &next)
+	static MLCurve4 fromCatmullRomStart(const MLVec2D &start, const MLVec2D &end, const MLVec2D &next)
 	{
 		return MLCurve4(start, start + (end - start) / 3.0, end - (next - start) / 6.0, end);
 	}
 	
-	static MLCurve4 fromCatmullRomEnd(const QPointF &previous, const QPointF &start, const QPointF &end)
+	static MLCurve4 fromCatmullRomEnd(const MLVec2D &previous, const MLVec2D &start, const MLVec2D &end)
 	{
 		return MLCurve4(start, start + (end - previous) / 6.0, (end - start) / 3.0, end);
 	}
 	
-	static MLCurve4 fromCatmullRom(const QPolygonF &polygon, int indexStart);
+	static MLCurve4 fromCatmullRom(const MLPolygon &polygon, int indexStart);
 	
-	QPointF start, control1, control2, end;
+	MLVec2D start, control1, control2, end;
 };
 
 #endif // MLCURVES_H

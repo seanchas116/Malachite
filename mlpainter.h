@@ -5,6 +5,7 @@
 #include "mlpaintable.h"
 #include "mlsurface.h"
 #include "mlbrush.h"
+#include "mlvector.h"
 
 class MALACHITESHARED_EXPORT MLPainter
 {
@@ -43,7 +44,9 @@ public:
 	
 	void drawPath(const QPainterPath &path);
 	void drawEllipse(const QRectF &rect);
-	void drawEllipse(const QPointF &center, double rx, double ry);
+	void drawEllipse(double x, double y, double rx, double ry);
+	void drawEllipse(const QPointF &center, double rx, double ry) { drawEllipse(center.x(), center.y(), rx, ry); }
+	void drawEllipse(const MLVec2D &center, double rx, double ry) { drawEllipse(center.x, center.y, rx, ry); }
 	void drawRect(const QRectF &rect);
 	void drawRect(double x, double y, double width, double height) { drawRect(QRectF(x, y, width, height)); }
 	void drawImage(const QPoint &point, const MLImage &image);

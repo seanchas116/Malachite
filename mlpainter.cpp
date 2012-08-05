@@ -60,10 +60,10 @@ void MLPainter::drawEllipse(const QRectF &rect)
 	_paintEngine->drawEllipse(rect.x() + rect.width() / 2.0, rect.y() + rect.height() / 2.0, rect.width() / 2.0, rect.height() / 2.0);
 }
 
-void MLPainter::drawEllipse(const QPointF &center, double rx, double ry)
+void MLPainter::drawEllipse(double x, double y, double rx, double ry)
 {
 	if (!_paintEngine) return;
-	_paintEngine->drawEllipse(center.x(), center.y(), rx, ry);
+	_paintEngine->drawEllipse(x, y, rx, ry);
 }
 
 void MLPainter::drawRect(const QRectF &rect)
