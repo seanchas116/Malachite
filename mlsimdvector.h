@@ -71,6 +71,8 @@ public:
 	MLSimd32I4 operator*(const MLSimd32I4 &other) const { MLSimd32I4 r; r.v = v * other.v; return r; }
 	MLSimd32I4 operator/(const MLSimd32I4 &other) const { MLSimd32I4 r; r.v = v / other.v; return r; }
 	
+	operator __v4si() { return v; }
+	
 	union
 	{
 		int e[4];
@@ -117,6 +119,8 @@ public:
 	
 	MLSimdF4 &operator=(const MLSimd32I4 &iv) { v = __builtin_ia32_cvtdq2ps(iv.v); return *this; }
 	
+	operator __v4sf() { return v; }
+	
 	union
 	{
 		float e[4];
@@ -133,6 +137,9 @@ inline MLSimdF4 operator+(float s, const MLSimdF4 &x) { return x + MLSimdF4(s); 
 inline MLSimdF4 operator-(float s, const MLSimdF4 &x) { return x - MLSimdF4(s); }
 inline MLSimdF4 operator*(float s, const MLSimdF4 &x) { return x * MLSimdF4(s); }
 inline MLSimdF4 operator/(float s, const MLSimdF4 &x) { return x / MLSimdF4(s); }
+
+
+
 
 inline MLSimd32I4 mlSimdRound(const MLSimdF4 &fv) { return MLSimd32I4(__builtin_ia32_cvtps2dq(fv.v)); }
 
