@@ -46,6 +46,19 @@ enum BlendMode
 	BlendModePassThrough	// Group only
 };
 
+enum ImageBufferFormat
+{
+	Argb,
+	Rgb
+};
+
+enum ImageBufferType
+{
+	Float,
+	Uint8,
+	Uint16
+};
+
 enum ArgbPosition
 {
 	ArgbAlpha = 3,

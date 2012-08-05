@@ -31,6 +31,8 @@ public:
 	QSize size() const { return buffer.size(); }
 	ColorType *scanline(int y) { Q_ASSERT(0 <= y && y < height()); return buffer.scanline(y); }
 	const ColorType *constScanline(int y) const { Q_ASSERT(0 <= y && y < height()); return buffer.constScanline(y); }
+	ColorType *data() { return scanline(0); }
+	const ColorType *constData() const { return constScanline(0); }
 	
 	QRect rect() const { return QRect(QPoint(), size()); }
 	int width() const { return size().width(); }
@@ -97,13 +99,10 @@ public:
 		
 		for (int y = r.top(); y <= r.bottom(); ++y)
 		{
-			ColorType *sp = scanline(y) + r.left();
-			const OtherColorType *dp = image.constScanline(y - point.y()) + r.left() - point.x();
+			ColorType *dp = scanline(y) + r.left();
+			const OtherColorType *sp = image.constScanline(y - point.y()) + r.left() - point.x();
 			
-			for (int x = r.left(); x <= r.right(); ++x)
-			{
-				*sp++ = *dp++;
-			}
+			mlCopyColor(r.width(), dp, sp);
 		}
 	}
 	
@@ -115,6 +114,11 @@ protected:
 	Buffer buffer;
 };
 
+template <class ColorDst, class ColorSrc>
+void mlCopyColor(int count, ColorDst *dst, const ColorSrc *src)
+{
+	for (int i = 0; i < count; ++i) *dst++ = *src++;
+}
 
 
 #endif // MLGENERICIMAGE_H

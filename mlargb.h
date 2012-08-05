@@ -362,7 +362,6 @@ inline MLRgb16 &MLRgb16::operator =(const MLFastArgbF &fArgbF)
 	return *this;
 }
 
-
 typedef MLFastArgbF MLArgb;
 Q_DECLARE_METATYPE(MLArgb)
 

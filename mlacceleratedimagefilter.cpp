@@ -75,15 +75,11 @@ void MLAcceleratedImageFilter::render()
 	
 	glViewport(0, 0, _size.width(), _size.height());
 	
-	glClear(GL_COLOR_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT);
 	glBegin(GL_QUADS);
-	glColor3f(1, 0.5, 0.5);
 	glVertex2i(-1, -1);
-	glColor3f(0.5, 1, 0.5);
 	glVertex2i(1, -1);
-	glColor3f(1, 0.5, 0.5);
 	glVertex2i(1, 1);
-	glColor3f(0.5, 1, 0.5);
 	glVertex2i(-1, 1);
 	glEnd();
 	

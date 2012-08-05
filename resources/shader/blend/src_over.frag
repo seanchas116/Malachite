@@ -3,14 +3,16 @@
 //layout(origin_upper_left, pixel_center_integer) in vec4 gl_FragCoord;
 //out vec4 ml_FragColor;
 uniform sampler2D ml_InImage;
-uniform sampler2D ml_AuxImage;
 uniform float ml_Opacity;
 varying vec2 ml_Position;
 
 void main(void)
 {
-	vec4 src = texture2D(ml_AuxImage, ml_Position);
-	vec4 dst = texture2D(ml_InImage, ml_Position);
+	vec2 dstPos = vec2(ml_Position.x * 0.5, ml_Position.y);
+	vec2 srcPos = dstPos + vec2(0.5, 0);
+	
+	vec4 dst = texture2D(ml_InImage, dstPos);
+	vec4 src = texture2D(ml_InImage, srcPos);
 	
 	src *= vec4(ml_Opacity);
 	

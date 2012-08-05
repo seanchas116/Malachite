@@ -1,5 +1,6 @@
 #include <QtGui>
 #include "mlimageio.h"
+#include "private/mlimageioprivate.h"
 
 #include <FreeImage.h>
 
@@ -45,7 +46,8 @@ MLImage MLImageIO::toImage() const
 		return MLImage();
 	
 	MLImage image(size());
-	pasteToImage(QPoint(), &image);
+	
+	mlPasteFIBITMAPToImage(QPoint(), _bitmap, &image);
 	return image;
 }
 
@@ -55,7 +57,7 @@ MLSurface MLImageIO::toSurface(const QPoint &p) const
 		return MLSurface();
 	
 	MLSurface surface;
-	pasteToImage(p, &surface);
+	mlPasteFIBITMAPToImage(p, _bitmap, &surface);
 	return surface;
 }
 
