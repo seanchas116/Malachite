@@ -30,11 +30,11 @@ public:
 	void setOpacity(double opacity) { _state.opacity = opacity; updateState(); }
 	double opacity() const { return _state.opacity; }
 	
-	void setWorldTransform(const QTransform &transform) { _state.worldTransform = transform; updateState(); }
-	QTransform worldTransform() const { return _state.worldTransform; }
+	void setWorldTransform(const QTransform &transform) { _state.shapeTransform = transform.inverted(); updateState(); }
+	QTransform worldTransform() const { return _state.shapeTransform.inverted(); }
 	
-	void setShapeTransform(const QTransform &transform) { _state.worldTransform = transform.inverted(); updateState(); }
-	QTransform shapeTransform() const { return _state.worldTransform.inverted(); }
+	void setShapeTransform(const QTransform &transform) { _state.shapeTransform = transform; updateState(); }
+	QTransform shapeTransform() const { return _state.shapeTransform; }
 	
 	void setImageTransformType(MLGlobal::ImageTransformType type) { _state.imageTransformType = type; updateState(); }
 	MLGlobal::ImageTransformType imageTransformType() const { return _state.imageTransformType; }
@@ -54,10 +54,10 @@ public:
 	void drawSurface(const QPoint &point, const MLSurface &surface);
 	void drawSurface(int x, int y, const MLSurface &surface) { drawSurface(QPoint(x, y), surface); }
 	
-	void translate(double dx, double dy) { _state.worldTransform.translate(dx, dy); updateState(); }
-	void translate(const QPointF &d) { translate(d.x(), d.y()); }
-	void rotate(double angle) { _state.worldTransform.rotate(angle); updateState(); }
-	void scale(double sx, double sy) { _state.worldTransform.scale(sx, sy), updateState(); }
+	void translateShape(double dx, double dy) { _state.shapeTransform.translate(dx, dy); updateState(); }
+	void translateShape(const QPointF &d) { translateShape(d.x(), d.y()); }
+	void rotateShape(double angle) { _state.shapeTransform.rotate(angle); updateState(); }
+	void scaleShape(double sx, double sy) { _state.shapeTransform.scale(sx, sy), updateState(); }
 	
 protected:
 	

@@ -8,7 +8,6 @@
 #include "mlcolor.h"
 #include "mlcolorgradient.h"
 #include "mlcurves.h"
-#include "mlgenericgradient.h"
 #include "mlgenericimage.h"
 #include "mlgenericsharedimage.h"
 #include "mlgenericwrapperimage.h"

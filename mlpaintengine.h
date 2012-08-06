@@ -13,7 +13,7 @@ struct MLPaintEngineState
 	MLBlendMode blendMode;
 	MLBrush brush;
 	double opacity;
-	QTransform worldTransform;
+	QTransform shapeTransform;
 	MLGlobal::ImageTransformType imageTransformType;
 };
 

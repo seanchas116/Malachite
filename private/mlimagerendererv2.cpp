@@ -1,5 +1,5 @@
+#include "mlimagerendererv2.h"
 
-#include "mlimagerenderer.h"
 
 unsigned QPainterPath_vs::vertex(double *x, double *y)
 {
@@ -49,7 +49,6 @@ unsigned QPainterPath_vs::vertex(double *x, double *y)
 		case QPainterPath::MoveToElement:
 			return agg::path_cmd_move_to;
 		case QPainterPath::LineToElement:
-			return agg::path_cmd_line_to;
 		default:
 			return agg::path_cmd_line_to;
 		}

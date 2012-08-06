@@ -27,14 +27,13 @@ SOURCES += \
     mlcolorgradient.cpp \
     mlcurvesubdivision.cpp \
     private/mlsurfacepaintengine.cpp \
-    private/mlimagerenderer.cpp \
-    private/mlimagepaintengine.cpp \
-    private/mlfillgenerator.cpp \
     mlacceleratedimage.cpp \
     mlacceleratedimagefilter.cpp \
     mlargb.cpp \
     mlvector.cpp \
-    mlpolygon.cpp
+    mlpolygon.cpp \
+    private/mlimagepaintenginev2.cpp \
+    private/mlimagerendererv2.cpp
 
 HEADERS += malachite.h\
     mlglobal.h \
@@ -59,14 +58,10 @@ HEADERS += malachite.h\
     mlimageio.h \
     mlgenericwrapperimage.h \
     mlgenericsharedimage.h \
-    mlgenericgradient.h \
     mlcolorgradient.h \
     mlpixelgenerator.h \
     mlcurvesubdivision.h \
     private/mlsurfacepaintengine.h \
-    private/mlimagerenderer.h \
-    private/mlimagepaintengine.h \
-    private/mlfillgenerator.h \
     private/agg_scanline_p.h \
     private/agg_rasterizer_sl_clip.h \
     private/agg_rasterizer_scanline_aa.h \
@@ -81,7 +76,9 @@ HEADERS += malachite.h\
     mlacceleratedimagefilter.h \
     private/mlimageioprivate.h \
     mlvector.h \
-    mlpolygon.h
+    mlpolygon.h \
+    private/mlimagepaintenginev2.h \
+    private/mlimagerendererv2.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

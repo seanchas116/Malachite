@@ -116,6 +116,12 @@ enum ImageTransformType
 	ImageTransformTypeLanczos2Hypot
 };
 
+enum PixelFieldType
+{
+	PixelFieldImage,
+	PixelFieldSurface
+};
+
 }
 
 #endif // MLGLOBAL_H

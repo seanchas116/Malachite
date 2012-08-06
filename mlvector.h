@@ -469,8 +469,6 @@ struct MLVec2D
 	MLVec2D operator*(const MLVec2D &other) const { MLVec2D r; r.v = v * other.v; return r; }
 	MLVec2D operator/(const MLVec2D &other) const { MLVec2D r; r.v = v / other.v; return r; }
 	
-	MLVec2D &operator=(const MLVec4I32 &iv) { v = __builtin_ia32_cvtdq2pd(iv.v); return *this; }
-	
 	union
 	{
 		struct
@@ -482,6 +480,10 @@ struct MLVec2D
 		__v2df v;
 	};
 };
+
+inline bool operator==(const MLVec2D &v0, const MLVec2D &v1) { return v0.x == v1.x && v0.y == v1.y; }
+inline bool operator!=(const MLVec2D &v0, const MLVec2D &v1) { return v0.x != v1.x || v0.y != v1.y; }
+
 
 inline MLVec2D operator+(const MLVec2D &x, float s) { return x + MLVec2D(s); }
 inline MLVec2D operator-(const MLVec2D &x, float s) { return x - MLVec2D(s); }
