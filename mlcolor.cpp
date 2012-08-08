@@ -136,17 +136,17 @@ QString MLColor::toWebColor() const
 {
 	MLColor color = *this;
 	color.setAlpha(1.0);
-	MLFastArgb8 argb = color.toFastArgb8();
+	MLVec4U8 argb = color.toFastArgb8();
 	
-	QString rText = QString::number(argb.r(), 16).toUpper();
+	QString rText = QString::number(argb.r, 16).toUpper();
 	if (rText.size() == 1)
 		rText = "0" + rText;
 	
-	QString gText = QString::number(argb.g(), 16).toUpper();
+	QString gText = QString::number(argb.g, 16).toUpper();
 	if (gText.size() == 1)
 		gText = "0" + gText;
 	
-	QString bText = QString::number(argb.b(), 16).toUpper();
+	QString bText = QString::number(argb.b, 16).toUpper();
 	if (bText.size() == 1)
 		bText = "0" + bText;
 	
@@ -162,12 +162,12 @@ MLColor MLColor::fromWebColor(const QString &webColor, bool *ok)
 		return MLColor();
 	}
 	
-	MLFastArgb8 argb;
+	MLVec4U8 argb;
 	bool textOk;
 	
-	argb.a() = 0xFF;
+	argb.a = 0xFF;
 	
-	argb.r() = webColor.mid(1, 2).toInt(&textOk, 16);
+	argb.r = webColor.mid(1, 2).toInt(&textOk, 16);
 	if (!textOk)
 	{
 		if (ok)
@@ -175,7 +175,7 @@ MLColor MLColor::fromWebColor(const QString &webColor, bool *ok)
 		return MLColor();
 	}
 	
-	argb.g() = webColor.mid(3, 2).toInt(&textOk, 16);
+	argb.g = webColor.mid(3, 2).toInt(&textOk, 16);
 	if (!textOk)
 	{
 		if (ok)
@@ -183,7 +183,7 @@ MLColor MLColor::fromWebColor(const QString &webColor, bool *ok)
 		return MLColor();
 	}
 	
-	argb.b() = webColor.mid(5, 2).toInt(&textOk, 16);
+	argb.b = webColor.mid(5, 2).toInt(&textOk, 16);
 	if (!textOk)
 	{
 		if (ok)

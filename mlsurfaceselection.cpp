@@ -23,7 +23,7 @@ MLSurface MLSurfaceSelection::clip(const MLSurface &surface) const
 	
 	MLSurface result = surface;
 	MLSurfacePainter painter(&result);
-	painter.setBlendMode(MLGlobal::BlendModeDestinationIn);
+	painter.setBlendMode(ML::BlendModeDestinationIn);
 	
 	switch (_type)
 	{

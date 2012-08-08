@@ -53,11 +53,7 @@ HEADERS += malachite.h\
     mlsurfaceselection.h \
     mlbrush.h \
     mlbitmap.h \
-    mlsimdvector.h \
-    mlargb.h \
     mlimageio.h \
-    mlgenericwrapperimage.h \
-    mlgenericsharedimage.h \
     mlcolorgradient.h \
     mlpixelgenerator.h \
     mlcurvesubdivision.h \
@@ -78,7 +74,8 @@ HEADERS += malachite.h\
     mlvector.h \
     mlpolygon.h \
     private/mlimagepaintenginev2.h \
-    private/mlimagerendererv2.h
+    private/mlimagerendererv2.h \
+    mlpixelconversion.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

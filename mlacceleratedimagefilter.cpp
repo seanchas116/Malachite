@@ -58,6 +58,9 @@ void MLAcceleratedImageFilter::render()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, _fboId);
 	
+	glDisable(GL_ALPHA_TEST);
+	glDisable(GL_DEPTH_TEST);
+	
 	_program.bind();
 	
 	bindInTextures();
@@ -93,42 +96,45 @@ void MLAcceleratedImageFilter::render()
 void MLAcceleratedImageFilter::bindInTextures()
 {
 	int count = _inTexInfos.size();
+	if (!count) return;
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, count > 0 ? _inTexInfos.at(0).id : 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, _inTexInfos.at(0).id);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, count > 1 ? _inTexInfos.at(1).id : 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, _inTexInfos.at(1).id);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, count > 2 ? _inTexInfos.at(2).id : 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, _inTexInfos.at(2).id);
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, count > 3 ? _inTexInfos.at(3).id : 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, _inTexInfos.at(3).id);
 	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, count > 4 ? _inTexInfos.at(4).id : 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, _inTexInfos.at(4).id);
 	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, count > 5 ? _inTexInfos.at(5).id : 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, _inTexInfos.at(5).id);
 	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, count > 6 ? _inTexInfos.at(6).id : 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, _inTexInfos.at(6).id);
 	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, count > 7 ? _inTexInfos.at(7).id : 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, _inTexInfos.at(7).id);
 	glActiveTexture(GL_TEXTURE0);
 }
 
 void MLAcceleratedImageFilter::releaseInTextures()
 {
+	int count = _inTexInfos.size();
+	if (!count) return;
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	if(count--) glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE0);
 }

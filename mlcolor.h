@@ -6,7 +6,7 @@
 #include <QColor>
 
 #include "mlmisc.h"
-#include "mlargb.h"
+#include "mlgenericimage.h"
 
 class MALACHITESHARED_EXPORT MLColor
 {
@@ -117,28 +117,27 @@ public:
 		return color;
 	}
 	
-	MLArgb toArgb() const
+	MLVec4F toArgb() const
 	{
-		MLArgb argb;
-		argb.a() = _a;
-		argb.r() = _r * _a;
-		argb.g() = _g * _a;
-		argb.b() = _b * _a;
+		MLVec4F argb;
+		argb.a = _a;
+		argb.r = _r * _a;
+		argb.g = _g * _a;
+		argb.b = _b * _a;
 		return argb;
 	}
 	
-	MLFastArgb8 toFastArgb8() const
+	MLVec4U8 toFastArgb8() const
 	{
-		MLFastArgb8 argb8;
-		argb8 = toArgb();
+		MLVec4U8 argb8;
+		mlConvertPixel<ML::ImageFormatArgbFast, MLVec4U8, ML::ImageFormatArgbFast, MLVec4F>(argb8, toArgb());
 		return argb8;
 	}
 	
 	QRgb toQRgb() const
 	{
-		MLFastArgb8 argb8 = toFastArgb8();
-		
-		QRgb rgb = *(reinterpret_cast<uint32_t *>(argb8.v));
+		MLVec4U8 argb8 = toFastArgb8();
+		QRgb rgb = *(reinterpret_cast<uint32_t *>(&argb8));
 		return rgb;
 	}
 	
@@ -149,15 +148,15 @@ public:
 	static MLColor white() { return MLColor::fromRgbValue(1, 1, 1, 1); }
 	static MLColor black() { return MLColor::fromRgbValue(0, 0, 0, 1); }
 	
-	static MLColor fromArgb(const MLArgb &argb)
+	static MLColor fromArgb(const MLVec4F &argb)
 	{
-		return argb.a() == 0 ? MLColor::fromRgbValue(argb.r() / argb.a(), argb.g() / argb.a(), argb.b() / argb.a(), argb.a()) : MLColor();
+		return argb.a == 0 ? MLColor::fromRgbValue(argb.r / argb.a, argb.g / argb.a, argb.b / argb.a, argb.a) : MLColor();
 	}
 	
-	static MLColor fromFastArgb8(const MLFastArgb8 &argb)
+	static MLColor fromFastArgb8(const MLVec4U8 &argb)
 	{
-		MLArgb argbf;
-		argbf = argb;
+		MLVec4F argbf;
+		mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgbFast, MLVec4U8>(argbf, argb);
 		return MLColor::fromArgb(argbf);
 	}
 	

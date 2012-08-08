@@ -14,7 +14,7 @@ struct MLPaintEngineState
 	MLBrush brush;
 	double opacity;
 	QTransform shapeTransform;
-	MLGlobal::ImageTransformType imageTransformType;
+	ML::ImageTransformType imageTransformType;
 };
 
 class MLPaintEngine

@@ -19,7 +19,7 @@ public:
 	QPainter::CompositionMode qPainterMode(int index) const
 		{ return qtCompositionModeHash.value(index, QPainter::CompositionMode_SourceOver); }
 	int indexForName(const QString &name) const
-		{ return nameHash.key(name, MLGlobal::BlendModeSourceOver); }
+		{ return nameHash.key(name, ML::BlendModeSourceOver); }
 	
 private:
 	QHash<int, QString> nameHash;
@@ -30,7 +30,7 @@ class MALACHITESHARED_EXPORT MLBlendMode
 {
 public:
 	
-	MLBlendMode() : _index(MLGlobal::BlendModeNormal) {}
+	MLBlendMode() : _index(ML::BlendModeNormal) {}
 	MLBlendMode(int index) : _index(index) {}
 	MLBlendMode(const QString &modeName) : _index(_dict.indexForName(modeName)) {}
 	

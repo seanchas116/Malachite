@@ -11,8 +11,27 @@ public:
 	MLColorGradient() {}
 	virtual ~MLColorGradient() {}
 	
-	virtual MLArgb at(float x) const = 0;
+	virtual MLVec4F at(float x) const = 0;
 	virtual MLColorGradient *clone() const { return 0; }
+};
+
+class MALACHITESHARED_EXPORT MLColorGradientCache : public MLColorGradient
+{
+public:
+	
+	MLColorGradientCache(MLColorGradient *gradient, int sampleCount);
+	
+	MLVec4F at(float x) const
+	{
+		return _cache.at(roundf(x * _sampleCount));
+	}
+	
+	int sampleCount() const { return _sampleCount; }
+	
+private:
+	
+	int _sampleCount;
+	QVector<MLVec4F> _cache;
 };
 
 class MALACHITESHARED_EXPORT MLArgbGradient : public MLColorGradient
@@ -21,48 +40,17 @@ public:
 	
 	MLArgbGradient() : MLColorGradient() {}
 	
-	void addStop(float x, const MLArgb &y) { _stops.insert(x, y); }
+	void addStop(float x, const MLVec4F &y) { _stops.insert(x, y); }
 	void addStop(float x, const MLColor &color) { addStop(x, color.toArgb()); }
 	void clear() { _stops.clear(); }
 	
-	MLArgb at(float x) const
-	{
-		int count = _stops.size();
-		if (count == 0)
-			return MLArgb();
-		if (count == 1)
-			return _stops.value(0);
-		
-		QMapIterator<float, MLArgb> i(_stops);
-		
-		if (x <= i.peekNext().key()) return i.peekNext().value();
-		i.next();
-		
-		for (; i.hasNext(); i.next())
-		{
-			float x1 = i.peekNext().key();
-			MLArgb y1 = i.peekNext().value();
-			if (x < x1)
-			{
-				float x0 = i.peekPrevious().key();
-				MLArgb y0 = i.peekPrevious().value();
-				
-				MLArgb r;
-				r.v = y0.v + (x - x0) / (x1 - x0) * (y1.v - y0.v);
-				return r;
-			}
-			if (x == x1)
-				return y1;
-		}
-		
-		return _stops.values().at(0);
-	}
+	MLVec4F at(float x) const;
 	
 	MLColorGradient *clone() const { return new MLArgbGradient(*this); }
 	
 private:
 	
-	QMap<float, MLArgb> _stops;
+	QMap<float, MLVec4F> _stops;
 };
 
 class MLLinearGradientInfo

@@ -18,22 +18,22 @@ public:
 	
 	Q_DECLARE_FLAGS(TileStates, TileState)
 	
-	virtual void blend(int count, MLArgb *dst, const MLArgb *src) = 0;
-	virtual void blend(int count, MLArgb *dst, const MLArgb *src, const MLArgb *masks) = 0;
-	virtual void blend(int count, MLArgb *dst, const MLArgb *src, const float *opacities) = 0;
-	virtual void blend(int count, MLArgb *dst, const MLArgb *src, const MLArgb &mask) = 0;
-	virtual void blend(int count, MLArgb *dst, const MLArgb *src, float opacity) = 0;
-	virtual void blend(int count, MLArgb *dst, const MLArgb &src) = 0;
-	virtual void blend(int count, MLArgb *dst, const MLArgb &src, const MLArgb *masks) = 0;
-	virtual void blend(int count, MLArgb *dst, const MLArgb &src, const float *opacities) = 0;
-	virtual void blend(int count, MLArgb *dst, const MLArgb &src, const MLArgb &mask) = 0;
-	virtual void blend(int count, MLArgb *dst, const MLArgb &src, float opacity) = 0;
+	virtual void blend(int count, MLVec4F *dst, const MLVec4F *src) = 0;
+	virtual void blend(int count, MLVec4F *dst, const MLVec4F *src, const MLVec4F *masks) = 0;
+	virtual void blend(int count, MLVec4F *dst, const MLVec4F *src, const float *opacities) = 0;
+	virtual void blend(int count, MLVec4F *dst, const MLVec4F *src, const MLVec4F &mask) = 0;
+	virtual void blend(int count, MLVec4F *dst, const MLVec4F *src, float opacity) = 0;
+	virtual void blend(int count, MLVec4F *dst, const MLVec4F &src) = 0;
+	virtual void blend(int count, MLVec4F *dst, const MLVec4F &src, const MLVec4F *masks) = 0;
+	virtual void blend(int count, MLVec4F *dst, const MLVec4F &src, const float *opacities) = 0;
+	virtual void blend(int count, MLVec4F *dst, const MLVec4F &src, const MLVec4F &mask) = 0;
+	virtual void blend(int count, MLVec4F *dst, const MLVec4F &src, float opacity) = 0;
 	
-	virtual void blendReversed(int count, MLArgb *dst, const MLArgb *src) = 0;
-	virtual void blendReversed(int count, MLArgb *dst, const MLArgb *src, const MLArgb *masks) = 0;
-	virtual void blendReversed(int count, MLArgb *dst, const MLArgb *src, const float *opacities) = 0;
-	virtual void blendReversed(int count, MLArgb *dst, const MLArgb *src, const MLArgb &mask) = 0;
-	virtual void blendReversed(int count, MLArgb *dst, const MLArgb *src, float opacity) = 0;
+	virtual void blendReversed(int count, MLVec4F *dst, const MLVec4F *src) = 0;
+	virtual void blendReversed(int count, MLVec4F *dst, const MLVec4F *src, const MLVec4F *masks) = 0;
+	virtual void blendReversed(int count, MLVec4F *dst, const MLVec4F *src, const float *opacities) = 0;
+	virtual void blendReversed(int count, MLVec4F *dst, const MLVec4F *src, const MLVec4F &mask) = 0;
+	virtual void blendReversed(int count, MLVec4F *dst, const MLVec4F *src, float opacity) = 0;
 	
 	virtual TileStates tileOp(TileStates states) = 0;
 };
@@ -45,15 +45,11 @@ public:
 class BlendFunctions
 {
 public:
-	static void blendFunc(MLArgb *dst, const MLArgb *src)
-	{
-		
-	}
+	static void blendFunc(MLVec4F *dst, const MLVec4F *src)
+	{ some code }
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
-	{
-		
-	}
+	{ some code }
 };
 
 */
@@ -62,175 +58,109 @@ template <typename BlendFunctions>
 class MLTemplateBlendOp : public MLBlendOp
 {
 public:
-	void blend(int count, MLArgb *dst, const MLArgb *src)
+	void blend(int count, MLVec4F *dst, const MLVec4F *src)
 	{
 		for (int i = 0; i < count; ++i)
-		{
 			BlendFunctions::blendFunc(*dst++, *src++);
-		}
 	}
 	
-	void blend(int count, MLArgb *dst, const MLArgb *src, const MLArgb *masks)
+	void blend(int count, MLVec4F *dst, const MLVec4F *src, const MLVec4F *masks)
 	{
 		for (int i = 0; i < count; ++i)
-		{
-			MLArgb c;
-			c.v = src->v * masks->a();
-			src++;
-			masks++;
-			BlendFunctions::blendFunc(*dst++, c);
-		}
+			BlendFunctions::blendFunc(*dst++, *src++ * (masks++)->a);
 	}
 
-	void blend(int count, MLArgb *dst, const MLArgb *src, const float *opacities)
+	void blend(int count, MLVec4F *dst, const MLVec4F *src, const float *opacities)
 	{
 		for (int i = 0; i < count; ++i)
-		{
-			MLArgb c;
-			c.v = src->v * *opacities;
-			src++;
-			opacities++;
-			BlendFunctions::blendFunc(*dst++, c);
-		}
+			BlendFunctions::blendFunc(*dst++, *src++ * *opacities++);
 	}
 
-	void blend(int count, MLArgb *dst, const MLArgb *src, const MLArgb &mask)
+	void blend(int count, MLVec4F *dst, const MLVec4F *src, const MLVec4F &mask)
 	{
 		for (int i = 0; i < count; ++i)
-		{
-			MLArgb c;
-			c.v = src->v * mask.a();
-			src++;
-			BlendFunctions::blendFunc(*dst++, c);
-		}
+			BlendFunctions::blendFunc(*dst++, *src++ * mask.a);
 	}
 
-	void blend(int count, MLArgb *dst, const MLArgb *src, float opacity)
+	void blend(int count, MLVec4F *dst, const MLVec4F *src, float opacity)
 	{
 		for (int i = 0; i < count; ++i)
-		{
-			MLArgb c;
-			c.v = src->v * opacity;
-			src++;
-			BlendFunctions::blendFunc(*dst++, c);
-		}
+			BlendFunctions::blendFunc(*dst++, *src++ * opacity);
 	}
 	
-	void blend(int count, MLArgb *dst, const MLArgb &src)
+	void blend(int count, MLVec4F *dst, const MLVec4F &src)
 	{
 		for (int i = 0; i < count; ++i)
-		{
 			BlendFunctions::blendFunc(*dst++, src);
-		}
 	}
 	
-	void blend(int count, MLArgb *dst, const MLArgb &src, const MLArgb *masks)
+	void blend(int count, MLVec4F *dst, const MLVec4F &src, const MLVec4F *masks)
 	{
 		for (int i = 0; i < count; ++i)
-		{
-			MLArgb c;
-			c.v = src.v * (masks++)->a();
-			BlendFunctions::blendFunc(*dst++, c);
-		}
+			BlendFunctions::blendFunc(*dst++, src * (masks++)->a);
 	}
 	
-	void blend(int count, MLArgb *dst, const MLArgb &src, const float *opacities)
+	void blend(int count, MLVec4F *dst, const MLVec4F &src, const float *opacities)
 	{
 		for (int i = 0; i < count; ++i)
-		{
-			MLArgb c;
-			c.v = src.v * *opacities++;
-			BlendFunctions::blendFunc(*dst++, c);
-		}
+			BlendFunctions::blendFunc(*dst++, src * *opacities++);
 	} 
 	
-	void blend(int count, MLArgb *dst, const MLArgb &src, const MLArgb &mask)
+	void blend(int count, MLVec4F *dst, const MLVec4F &src, const MLVec4F &mask)
 	{
-		MLArgb c;
-		c.v = src.v * mask.a();
+		MLVec4F c = src * mask.a;
 		for (int i = 0; i < count; ++i)
-		{
 			BlendFunctions::blendFunc(*dst++, c);
-		}
 	}
 	
-	void blend(int count, MLArgb *dst, const MLArgb &src, float opacity)
+	void blend(int count, MLVec4F *dst, const MLVec4F &src, float opacity)
 	{
-		MLArgb c;
-		c.v = src.v * opacity;
+		MLVec4F c = src * opacity;
 		for (int i = 0; i < count; ++i)
-		{
 			BlendFunctions::blendFunc(*dst++, c);
-		}
 	}
 	
 	
 	
-	void blendReversed(int count, MLArgb *dst, const MLArgb *src)
+	void blendReversed(int count, MLVec4F *dst, const MLVec4F *src)
 	{
 		src += count - 1;
 		
 		for (int i = 0; i < count; ++i)
-		{
 			BlendFunctions::blendFunc(*dst++, *src--);
-		}
 	}
 	
-	void blendReversed(int count, MLArgb *dst, const MLArgb *src, const MLArgb *masks)
+	void blendReversed(int count, MLVec4F *dst, const MLVec4F *src, const MLVec4F *masks)
 	{
 		src += count - 1;
 		
 		for (int i = 0; i < count; ++i)
-		{
-			MLArgb c;
-			c.v = src->v * masks->a();
-			src--;
-			masks++;
-			BlendFunctions::blendFunc(*dst++, c);
-		}
+			BlendFunctions::blendFunc(*dst++, *src-- * (masks++)->a);
 	}
 
-	void blendReversed(int count, MLArgb *dst, const MLArgb *src, const float *opacities)
+	void blendReversed(int count, MLVec4F *dst, const MLVec4F *src, const float *opacities)
 	{
 		src += count - 1;
 		
 		for (int i = 0; i < count; ++i)
-		{
-			MLArgb c;
-			c.v = src->v * *opacities;
-			src--;
-			opacities++;
-			BlendFunctions::blendFunc(*dst++, c);
-		}
+			BlendFunctions::blendFunc(*dst++, *src-- * *opacities++);
 	}
 
-	void blendReversed(int count, MLArgb *dst, const MLArgb *src, const MLArgb &mask)
+	void blendReversed(int count, MLVec4F *dst, const MLVec4F *src, const MLVec4F &mask)
 	{
 		src += count - 1;
 		
 		for (int i = 0; i < count; ++i)
-		{
-			MLArgb c;
-			c.v = src->v * mask.a();
-			src--;
-			BlendFunctions::blendFunc(*dst++, c);
-		}
+			BlendFunctions::blendFunc(*dst++, *src-- * mask.a);
 	}
 
-	void blendReversed(int count, MLArgb *dst, const MLArgb *src, float opacity)
+	void blendReversed(int count, MLVec4F *dst, const MLVec4F *src, float opacity)
 	{
 		src += count - 1;
 		
 		for (int i = 0; i < count; ++i)
-		{
-			MLArgb c;
-			c.v = src->v * opacity;
-			src--;
-			BlendFunctions::blendFunc(*dst++, c);
-		}
+			BlendFunctions::blendFunc(*dst++, *src-- * opacity);
 	}
-	
-	
 	
 	TileStates tileOp(TileStates states)
 	{

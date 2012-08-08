@@ -4,10 +4,10 @@
 MLPainter::MLPainter(MLPaintable *paintable) :
 	_paintable(0)
 {
-	_state.blendMode = MLGlobal::BlendModeNormal;
+	_state.blendMode = ML::BlendModeNormal;
 	_state.brush = MLBrush(MLColor::fromRgbValue(0, 0, 0));
 	_state.opacity = 1.0;
-	_state.imageTransformType = MLGlobal::ImageTransformTypeBicubic;
+	_state.imageTransformType = ML::ImageTransformTypeBicubic;
 	bool ok = begin(paintable);
 	if (!ok)
 		qDebug() << "MLPainter::MLPainter: could not begin painting";

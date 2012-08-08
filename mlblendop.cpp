@@ -5,10 +5,10 @@
 class BlendFunctionsClear
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
 		Q_UNUSED(src);
-		dst.v = MLSimdF4(0);
+		dst = MLVec4F(0);
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -21,7 +21,7 @@ public:
 class BlendFunctionsSource
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = src;
 	}
@@ -45,7 +45,7 @@ public:
 class BlendFunctionsDestination
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
 		Q_UNUSED(dst); Q_UNUSED(src);
 	}
@@ -69,9 +69,9 @@ public:
 class BlendFunctionsSourceOver
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		dst.v = src.v + (1.0f - src.a()) * dst.v;
+		dst = src + (1.0f - src.a) * dst;
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -83,9 +83,9 @@ public:
 class BlendFunctionsDestinationOver
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		dst.v = dst.v + (1.0f - dst.a()) * src.v;
+		dst = dst + (1.0f - dst.a) * src;
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -97,9 +97,9 @@ public:
 class BlendFunctionsSourceIn
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		dst.v = dst.a() * src.v;
+		dst = dst.a * src;
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -121,9 +121,9 @@ public:
 class BlendFunctionsDestinationIn
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		dst.v = src.a() * dst.v;
+		dst = src.a * dst;
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -145,9 +145,9 @@ public:
 class BlendFunctionsSourceOut
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		dst.v = (1.0f - dst.a()) * src.v;
+		dst = (1.0f - dst.a) * src;
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -169,9 +169,9 @@ public:
 class BlendFunctionsDestinationOut
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		dst.v = (1.0f - src.a()) * dst.v;
+		dst = (1.0f - src.a) * dst;
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -193,9 +193,9 @@ public:
 class BlendFunctionsSourceAtop
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		dst.v = dst.a() * src.v + (1.0f - src.a()) * dst.v;
+		dst = dst.a * src + (1.0f - src.a) * dst;
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -217,9 +217,9 @@ public:
 class BlendFunctionsDestinationAtop
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		dst.v = src.a() * dst.v + (1.0f - dst.a()) * src.v;
+		dst = src.a * dst + (1.0f - dst.a) * src;
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -241,9 +241,9 @@ public:
 class BlendFunctionsXor
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		dst.v = (1.0f - dst.a()) * src.v + (1.0f - src.a()) * dst.v;
+		dst = (1.0f - dst.a) * src + (1.0f - src.a) * dst;
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -265,9 +265,9 @@ public:
 class BlendFunctionsPlus
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		dst.v = mlSimdBound(0, dst.v + src.v , 1);
+		dst = mlBound(0, dst + src , 1);
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -279,9 +279,9 @@ public:
 class BlendFunctionsMultiply
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		dst.v = src.v * dst.v + src.v * (1.0f - dst.a()) + dst.v * (1.0f - src.a());
+		dst = src * dst + src * (1.0f - dst.a) + dst * (1.0f - src.a);
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -295,9 +295,9 @@ public:
 class BlendFunctionsScreen
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		dst.v = src.v + dst.v - src.v * dst.v;
+		dst = src + dst - src * dst;
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -309,23 +309,23 @@ public:
 class BlendFunctionsOverlay
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
+		if (src.a == 0) return;
+		if (dst.a == 0) { dst = src; return; }
 		
-		MLArgb d, d1, d2;
+		MLVec4F d, d1, d2;
 		
-		d.v = src.v * (1.0f - dst.a()) + dst.v * (1.0f - src.a());
-		d1.v = 2.0f * src.v * dst.v;
-		d2.v = src.a() * dst.a() - 2.0f * (dst.a() - dst.v) * (src.a() - src.v);
+		d = src * (1.0f - dst.a) + dst * (1.0f - src.a);
+		d1 = 2.0f * src * dst;
+		d2 = src.a * dst.a - 2.0f * (dst.a - dst) * (src.a - src);
 		
-		MLSimd32I4 comp = mlSimdLessThanOrEqual(2.0f * dst.v, dst.a());
+		MLVec4I32 comp = MLVec4F::lessThanOrEqual(2.0f * dst, dst.a);
 		
-		d.r() += comp[MLGlobal::ArgbRed] ? d1.r() : d2.r();
-		d.g() += comp[MLGlobal::ArgbGreen] ? d1.g() : d2.g();
-		d.b() += comp[MLGlobal::ArgbBlue] ? d1.b() : d2.b();
-		d.a() += src.a() * dst.a();
+		d.r += comp.r ? d1.r : d2.r;
+		d.g += comp.g ? d1.g : d2.g;
+		d.b += comp.b ? d1.b : d2.b;
+		d.a += src.a * dst.a;
 		
 		dst = d;
 	}
@@ -339,20 +339,20 @@ public:
 class BlendFunctionsDarken
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
+		if (src.a == 0) return;
+		if (dst.a == 0) { dst = src; return; }
 		
-		MLArgb d, ds;
-		ds.v = src.v + (1.0f - src.a()) * dst.v;
-		d.v = dst.v + (1.0f - dst.a()) * src.v;
+		MLVec4F d, ds;
+		ds = src + (1.0f - src.a) * dst;
+		d = dst + (1.0f - dst.a) * src;
 		
-		MLSimd32I4 comp = mlSimdLessThan(src.v * dst.a(), dst.v * src.a());
+		MLVec4I32 comp = MLVec4F::lessThan(src * dst.a, dst * src.a);
 		
-		if (comp[MLGlobal::ArgbRed]) d.r() = ds.r();
-		if (comp[MLGlobal::ArgbGreen]) d.g() = ds.g();
-		if (comp[MLGlobal::ArgbBlue]) d.b() = ds.b();
+		if (comp.r) d.r = ds.r;
+		if (comp.g) d.g = ds.g;
+		if (comp.b) d.b = ds.b;
 		
 		dst = d;
 	}
@@ -366,20 +366,20 @@ public:
 class BlendFunctionsLighten
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
+		if (src.a == 0) return;
+		if (dst.a == 0) { dst = src; return; }
 		
-		MLArgb d, ds;
-		ds.v = src.v + (1.0f - src.a()) * dst.v;
-		d.v = dst.v + (1.0f - dst.a()) * src.v;
+		MLVec4F d, ds;
+		ds = src + (1.0f - src.a) * dst;
+		d = dst + (1.0f - dst.a) * src;
 		
-		MLSimd32I4 comp = mlSimdGreaterThan(src.v * dst.a(), dst.v * src.a());
+		MLVec4I32 comp = MLVec4F::greaterThan(src * dst.a, dst * src.a);
 		
-		if (comp[MLGlobal::ArgbRed]) d.r() = ds.r();
-		if (comp[MLGlobal::ArgbGreen]) d.g() = ds.g();
-		if (comp[MLGlobal::ArgbBlue]) d.b() = ds.b();
+		if (comp.r) d.r = ds.r;
+		if (comp.g) d.g = ds.g;
+		if (comp.b) d.b = ds.b;
 		
 		dst = d;
 	}
@@ -393,27 +393,27 @@ public:
 class BlendFunctionsColorDodge
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
+		if (src.a == 0) return;
+		if (dst.a == 0) { dst = src; return; }
 		
-		MLArgb d, d1, d2;
-		d1.v = src.v * (1.0f - dst.a());
-		d2.v = d1.v + (src.a() * dst.a()) + dst.v * (1.0f - src.a());
-		d.v = (src.a() * dst.a()) * mlSimdMin(1.0f, dst.v * src.a() / (dst.a() * (src.a() - src.v)));
+		MLVec4F d, d1, d2;
+		d1 = src * (1.0f - dst.a);
+		d2 = d1 + (src.a * dst.a) + dst * (1.0f - src.a);
+		d = (src.a * dst.a) * mlMin(1.0f, dst * src.a / (dst.a * (src.a - src)));
 		
-		MLSimd32I4 compS = mlSimdEqual(src.v, src.a());
-		MLSimd32I4 compD = mlSimdEqual(dst.v, 0.0f);
+		MLVec4I32 compS = MLVec4F::equal(src, src.a);
+		MLVec4I32 compD = MLVec4F::equal(dst, 0.0f);
 		
-		if (compS[MLGlobal::ArgbRed])
-			d.r() = compD[MLGlobal::ArgbRed] ? d1.r() : d2.r();
-		if (compS[MLGlobal::ArgbGreen])
-			d.g() = compD[MLGlobal::ArgbGreen] ? d1.g() : d2.g();
-		if (compS[MLGlobal::ArgbBlue])
-			d.b() = compD[MLGlobal::ArgbBlue] ? d1.b() : d2.b();
+		if (compS.r)
+			d.r = compD.r ? d1.r : d2.r;
+		if (compS.g)
+			d.g = compD.g ? d1.g : d2.g;
+		if (compS.b)
+			d.b = compD.b ? d1.b : d2.b;
 		
-		d.a() = src.a() + dst.a() - src.a() * dst.a();
+		d.a = src.a + dst.a - src.a * dst.a;
 		
 		dst = d;
 	}
@@ -427,28 +427,28 @@ public:
 class BlendFunctionsColorBurn
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
+		if (src.a == 0) return;
+		if (dst.a == 0) { dst = src; return; }
 		
-		MLArgb d, d1, d2;
+		MLVec4F d, d1, d2;
 		
-		d2.v = dst.v * (1.0f - src.a());
-		d1.v = (src.a() * dst.a()) + d2.v;
-		d.v = d1.v + (src.a() * dst.a()) * mlSimdMin(1.0f, (dst.a() * dst.v) * src.a() / (dst.a() * src.v)) + src.v * (1.0f - dst.a());
+		d2 = dst * (1.0f - src.a);
+		d1 = (src.a * dst.a) + d2;
+		d = d1 + (src.a * dst.a) * mlMin(1.0f, (dst.a * dst) * src.a / (dst.a * src)) + src * (1.0f - dst.a);
 		
-		MLSimd32I4 compS = mlSimdEqual(src.v, 0.0f);
-		MLSimd32I4 compD = mlSimdEqual(dst.v, dst.a());
+		MLVec4I32 compS = MLVec4F::equal(src, 0.0f);
+		MLVec4I32 compD = MLVec4F::equal(dst, dst.a);
 		
-		if (compS[MLGlobal::ArgbRed])
-			d.r() = compD[MLGlobal::ArgbRed] ? d1.r() : d2.r();
-		if (compS[MLGlobal::ArgbGreen])
-			d.g() = compD[MLGlobal::ArgbGreen] ? d1.g() : d2.g();
-		if (compS[MLGlobal::ArgbBlue])
-			d.b() = compD[MLGlobal::ArgbBlue] ? d1.b() : d2.b();
+		if (compS.r)
+			d.r = compD.r ? d1.r : d2.r;
+		if (compS.g)
+			d.g = compD.g ? d1.g : d2.g;
+		if (compS.b)
+			d.b = compD.b ? d1.b : d2.b;
 		
-		d.a() = src.a() + dst.a() - src.a() * dst.a();
+		d.a = src.a + dst.a - src.a * dst.a;
 		
 		dst = d;
 	}
@@ -462,23 +462,23 @@ public:
 class BlendFunctionsHardLight
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
+		if (src.a == 0) return;
+		if (dst.a == 0) { dst = src; return; }
 		
-		MLArgb d, d1, d2;
+		MLVec4F d, d1, d2;
 		
-		d.v = src.v * (1.0f - dst.a()) + dst.v * (1.0f - src.a());
-		d1.v = 2.0f * src.v;
-		d2.v = (src.a() * dst.a()) - 2.0f * (dst.a() - dst.v) * (src.a() - src.v);
+		d = src * (1.0f - dst.a) + dst * (1.0f - src.a);
+		d1 = 2.0f * src;
+		d2 = (src.a * dst.a) - 2.0f * (dst.a - dst) * (src.a - src);
 		
-		MLSimd32I4 comp = mlSimdLessThanOrEqual(2.0f * src.v, src.a());
+		MLVec4I32 comp = MLVec4F::lessThanOrEqual(2.0f * src, src.a);
 		
-		d.r() += comp[MLGlobal::ArgbRed] ? d1.r() : d2.r();
-		d.g() += comp[MLGlobal::ArgbGreen] ? d1.g() : d2.g();
-		d.b() += comp[MLGlobal::ArgbBlue] ? d1.b() : d2.b();
-		d.a() += src.a() * dst.a();
+		d.r += comp.r ? d1.r : d2.r;
+		d.g += comp.g ? d1.g : d2.g;
+		d.b += comp.b ? d1.b : d2.b;
+		d.a += src.a * dst.a;
 		
 		dst = d;
 	}
@@ -492,35 +492,35 @@ public:
 class BlendFunctionsSoftLight
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		MLArgb m, f, d0, d1, d2, d3;
-		m.v = dst.v / dst.a();
-		f.v = 2.0f * src.v - src.a();
-		d0.v = src.v * (1.0f - dst.a()) + dst.v;
-		d1.v = dst.v * f.v * (1 - m.v) + d0.v;
-		d2.v = dst.a() * f.v * (4.0f * m.v * (4.0f * m.v + 1.0f) * (m.v - 1.0f) + 7.0f * m.v) + d0.v;
-		d3.v = dst.a() * f.v * (mlSimdSqrt(m.v) - m.v) + d0.v;
+		MLVec4F m, f, d0, d1, d2, d3;
+		m = dst / dst.a;
+		f = 2.0f * src - src.a;
+		d0 = src * (1.0f - dst.a) + dst;
+		d1 = dst * f * (1 - m) + d0;
+		d2 = dst.a * f * (4.0f * m * (4.0f * m + 1.0f) * (m - 1.0f) + 7.0f * m) + d0;
+		d3 = dst.a * f * (mlSqrt(m) - m) + d0;
 		
-		MLSimd32I4 compS = mlSimdLessThanOrEqual(2.0f * src.v, src.a());
-		MLSimd32I4 compD = mlSimdLessThanOrEqual(4.0f * dst.v, dst.a());
+		MLVec4I32 compS = MLVec4F::lessThanOrEqual(2.0f * src, src.a);
+		MLVec4I32 compD = MLVec4F::lessThanOrEqual(4.0f * dst, dst.a);
 		
-		dst.a() = d0.a();
+		dst.a = d0.a;
 		
-		if (compS[MLGlobal::ArgbRed])
-			dst.r() = d1.r();
+		if (compS.r)
+			dst.r = d1.r;
 		else
-			dst.r() = compD[MLGlobal::ArgbRed] ? d2.r() : d3.r();
+			dst.r = compD.r ? d2.r : d3.r;
 		
-		if (compS[MLGlobal::ArgbGreen])
-			dst.g() = d1.g();
+		if (compS.g)
+			dst.g = d1.g;
 		else
-			dst.g() = compD[MLGlobal::ArgbGreen] ? d2.g() : d3.b();
+			dst.g = compD.g ? d2.g : d3.b;
 		
-		if (compS[MLGlobal::ArgbBlue])
-			dst.b() = d1.b();
+		if (compS.b)
+			dst.b = d1.b;
 		else
-			dst.b() = compD[MLGlobal::ArgbBlue] ? d2.b() : d3.b();
+			dst.b = compD.b ? d2.b : d3.b;
 	}
 	
 	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
@@ -532,11 +532,10 @@ public:
 class BlendFunctionsDifference
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		MLArgb d;
-		d.v = src.v + dst.v - 2.0f * mlSimdMin(src.v * dst.a(), dst.v * src.a());
-		d.a() += src.a() * dst.a();
+		MLVec4F d = src + dst - 2.0f * mlMin(src * dst.a, dst * src.a);
+		d.a += src.a * dst.a;
 		dst = d;
 	}
 	
@@ -549,11 +548,10 @@ public:
 class BlendFunctionsExclusion
 {
 public:
-	static void blendFunc(MLArgb &dst, const MLArgb &src)
+	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
 	{
-		MLArgb d;
-		d.v = (src.v * dst.a() + dst.v * src.a() - (2.0f * src.a() * dst.a())) + src.v * (1.0f - dst.a()) + dst.v * (1.0f - src.a());
-		d.a() += src.a() * dst.a();
+		MLVec4F d = (src * dst.a + dst * src.a - (2.0f * src.a * dst.a)) + src * (1.0f - dst.a) + dst * (1.0f - src.a);
+		d.a += src.a * dst.a;
 		dst = d;
 	}
 	
@@ -565,32 +563,32 @@ public:
 
 MLBlendOpDictionary::MLBlendOpDictionary()
 {
-	_blendOps[MLGlobal::BlendModeClear] = new MLTemplateBlendOp<BlendFunctionsClear>;
-	_blendOps[MLGlobal::BlendModeSource] = new MLTemplateBlendOp<BlendFunctionsSource>;
-	_blendOps[MLGlobal::BlendModeDestination] = new MLTemplateBlendOp<BlendFunctionsDestination>;
-	_blendOps[MLGlobal::BlendModeSourceOver] = new MLTemplateBlendOp<BlendFunctionsSourceOver>;
-	_blendOps[MLGlobal::BlendModeDestinationOver] = new MLTemplateBlendOp<BlendFunctionsDestinationOver>;
-	_blendOps[MLGlobal::BlendModeSourceIn] = new MLTemplateBlendOp<BlendFunctionsSourceIn>;
-	_blendOps[MLGlobal::BlendModeDestinationIn] = new MLTemplateBlendOp<BlendFunctionsDestinationIn>;
-	_blendOps[MLGlobal::BlendModeSourceOut] = new MLTemplateBlendOp<BlendFunctionsSourceOut>;
-	_blendOps[MLGlobal::BlendModeDestinationOut] = new MLTemplateBlendOp<BlendFunctionsDestinationOut>;
-	_blendOps[MLGlobal::BlendModeSourceAtop] = new MLTemplateBlendOp<BlendFunctionsSourceAtop>;
-	_blendOps[MLGlobal::BlendModeDestinationAtop] = new MLTemplateBlendOp<BlendFunctionsDestinationAtop>;
-	_blendOps[MLGlobal::BlendModeXor] = new MLTemplateBlendOp<BlendFunctionsXor>;
+	_blendOps[ML::BlendModeClear] = new MLTemplateBlendOp<BlendFunctionsClear>;
+	_blendOps[ML::BlendModeSource] = new MLTemplateBlendOp<BlendFunctionsSource>;
+	_blendOps[ML::BlendModeDestination] = new MLTemplateBlendOp<BlendFunctionsDestination>;
+	_blendOps[ML::BlendModeSourceOver] = new MLTemplateBlendOp<BlendFunctionsSourceOver>;
+	_blendOps[ML::BlendModeDestinationOver] = new MLTemplateBlendOp<BlendFunctionsDestinationOver>;
+	_blendOps[ML::BlendModeSourceIn] = new MLTemplateBlendOp<BlendFunctionsSourceIn>;
+	_blendOps[ML::BlendModeDestinationIn] = new MLTemplateBlendOp<BlendFunctionsDestinationIn>;
+	_blendOps[ML::BlendModeSourceOut] = new MLTemplateBlendOp<BlendFunctionsSourceOut>;
+	_blendOps[ML::BlendModeDestinationOut] = new MLTemplateBlendOp<BlendFunctionsDestinationOut>;
+	_blendOps[ML::BlendModeSourceAtop] = new MLTemplateBlendOp<BlendFunctionsSourceAtop>;
+	_blendOps[ML::BlendModeDestinationAtop] = new MLTemplateBlendOp<BlendFunctionsDestinationAtop>;
+	_blendOps[ML::BlendModeXor] = new MLTemplateBlendOp<BlendFunctionsXor>;
 	
-	_blendOps[MLGlobal::BlendModeNormal] = _blendOps.value(MLGlobal::BlendModeSourceOver);
-	_blendOps[MLGlobal::BlendModePlus] = new MLTemplateBlendOp<BlendFunctionsPlus>;
-	_blendOps[MLGlobal::BlendModeMultiply] = new MLTemplateBlendOp<BlendFunctionsMultiply>;
-	_blendOps[MLGlobal::BlendModeScreen] = new MLTemplateBlendOp<BlendFunctionsScreen>;
-	_blendOps[MLGlobal::BlendModeOverlay] = new MLTemplateBlendOp<BlendFunctionsOverlay>;
-	_blendOps[MLGlobal::BlendModeDarken] = new MLTemplateBlendOp<BlendFunctionsDarken>;
-	_blendOps[MLGlobal::BlendModeLighten] = new MLTemplateBlendOp<BlendFunctionsLighten>;
-	_blendOps[MLGlobal::BlendModeColorDodge] = new MLTemplateBlendOp<BlendFunctionsColorDodge>;
-	_blendOps[MLGlobal::BlendModeColorBurn] = new MLTemplateBlendOp<BlendFunctionsColorBurn>;
-	_blendOps[MLGlobal::BlendModeHardLight] = new MLTemplateBlendOp<BlendFunctionsHardLight>;
-	_blendOps[MLGlobal::BlendModeSoftLight] = new MLTemplateBlendOp<BlendFunctionsSoftLight>;
-	_blendOps[MLGlobal::BlendModeDifference] = new MLTemplateBlendOp<BlendFunctionsDifference>;
-	_blendOps[MLGlobal::BlendModeExclusion] = new MLTemplateBlendOp<BlendFunctionsExclusion>;
+	_blendOps[ML::BlendModeNormal] = _blendOps.value(ML::BlendModeSourceOver);
+	_blendOps[ML::BlendModePlus] = new MLTemplateBlendOp<BlendFunctionsPlus>;
+	_blendOps[ML::BlendModeMultiply] = new MLTemplateBlendOp<BlendFunctionsMultiply>;
+	_blendOps[ML::BlendModeScreen] = new MLTemplateBlendOp<BlendFunctionsScreen>;
+	_blendOps[ML::BlendModeOverlay] = new MLTemplateBlendOp<BlendFunctionsOverlay>;
+	_blendOps[ML::BlendModeDarken] = new MLTemplateBlendOp<BlendFunctionsDarken>;
+	_blendOps[ML::BlendModeLighten] = new MLTemplateBlendOp<BlendFunctionsLighten>;
+	_blendOps[ML::BlendModeColorDodge] = new MLTemplateBlendOp<BlendFunctionsColorDodge>;
+	_blendOps[ML::BlendModeColorBurn] = new MLTemplateBlendOp<BlendFunctionsColorBurn>;
+	_blendOps[ML::BlendModeHardLight] = new MLTemplateBlendOp<BlendFunctionsHardLight>;
+	_blendOps[ML::BlendModeSoftLight] = new MLTemplateBlendOp<BlendFunctionsSoftLight>;
+	_blendOps[ML::BlendModeDifference] = new MLTemplateBlendOp<BlendFunctionsDifference>;
+	_blendOps[ML::BlendModeExclusion] = new MLTemplateBlendOp<BlendFunctionsExclusion>;
 }
 
 MLBlendOpDictionary BlendOpDictionary;

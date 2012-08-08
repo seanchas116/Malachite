@@ -11,7 +11,7 @@
 #  define MALACHITESHARED_EXPORT Q_DECL_IMPORT
 #endif
 
-namespace MLGlobal
+namespace ML
 {
 
 enum BlendMode
@@ -46,17 +46,18 @@ enum BlendMode
 	BlendModePassThrough	// Group only
 };
 
-enum ImageBufferFormat
+enum ImageFormat
 {
-	Argb,
-	Rgb
+	ImageFormatArgb,
+	ImageFormatArgbFast,
+	ImageFormatRgb
 };
 
-enum ImageBufferType
+enum ImageComponentType
 {
-	Float,
-	Uint8,
-	Uint16
+	ImageComponentTypeFloat,
+	ImageComponentTypeUint16,
+	ImageComponentTypeUint8
 };
 
 enum ArgbPosition

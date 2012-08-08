@@ -18,6 +18,7 @@ public:
 	void flush();
 	void end();
 	
+	void setBlendMode(int modeIndex) { _state.blendMode = MLBlendMode(modeIndex); updateState(); }
 	void setBlendMode(const MLBlendMode &mode) { _state.blendMode = mode; updateState(); }
 	MLBlendMode blendMode() const { return _state.blendMode; }
 	
@@ -25,7 +26,7 @@ public:
 	MLBrush brush() const { return _state.brush; }
 	
 	void setColor(const MLColor &color) { setBrush(MLBrush(color)); updateState(); }
-	void setArgb(const MLArgb &argb) { setBrush(MLBrush(argb)); updateState(); }
+	void setArgb(const MLVec4F &argb) { setBrush(MLBrush(argb)); updateState(); }
 	
 	void setOpacity(double opacity) { _state.opacity = opacity; updateState(); }
 	double opacity() const { return _state.opacity; }
@@ -36,8 +37,8 @@ public:
 	void setShapeTransform(const QTransform &transform) { _state.shapeTransform = transform; updateState(); }
 	QTransform shapeTransform() const { return _state.shapeTransform; }
 	
-	void setImageTransformType(MLGlobal::ImageTransformType type) { _state.imageTransformType = type; updateState(); }
-	MLGlobal::ImageTransformType imageTransformType() const { return _state.imageTransformType; }
+	void setImageTransformType(ML::ImageTransformType type) { _state.imageTransformType = type; updateState(); }
+	ML::ImageTransformType imageTransformType() const { return _state.imageTransformType; }
 	
 	void setState(const MLPaintEngineState &state) { _state = state; updateState(); }
 	MLPaintEngineState state() { return _state; }

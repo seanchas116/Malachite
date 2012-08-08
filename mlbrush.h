@@ -14,39 +14,39 @@ class MLBrushData : public QSharedData
 {
 public:
 	MLBrushData() :
-		type(MLGlobal::BrushTypeNull),
-		spreadType(MLGlobal::SpreadTypeRepeat)
+		type(ML::BrushTypeNull),
+		spreadType(ML::SpreadTypeRepeat)
 	{}
 	
-	MLBrushData(const MLArgb &argb) :
-		type(MLGlobal::BrushTypeColor),
-		spreadType(MLGlobal::SpreadTypeRepeat),
+	MLBrushData(const MLVec4F &argb) :
+		type(ML::BrushTypeColor),
+		spreadType(ML::SpreadTypeRepeat),
 		data(QVariant::fromValue(argb))
 	{}
 	
 	MLBrushData(const MLImage &image) :
-		type(MLGlobal::BrushTypeImage),
-		spreadType(MLGlobal::SpreadTypeRepeat),
+		type(ML::BrushTypeImage),
+		spreadType(ML::SpreadTypeRepeat),
 		data(QVariant::fromValue(image))
 	{}
 	
 	MLBrushData(const MLColorGradient &gradient, const MLLinearGradientInfo &info) :
-		type(MLGlobal::BrushTypeLinearGradient),
-		spreadType(MLGlobal::SpreadTypeRepeat),
+		type(ML::BrushTypeLinearGradient),
+		spreadType(ML::SpreadTypeRepeat),
 		data(QVariant::fromValue(info)),
 		gradient(gradient.clone())
 	{}
 	
 	MLBrushData(const MLColorGradient &gradient, const MLRadialGradientInfo &info) :
-		type(MLGlobal::BrushTypeRadialGradient),
-		spreadType(MLGlobal::SpreadTypeRepeat),
+		type(ML::BrushTypeRadialGradient),
+		spreadType(ML::SpreadTypeRepeat),
 		data(QVariant::fromValue(info)),
 		gradient(gradient.clone())
 	{}
 	
 	MLBrushData(const MLSurface &surface) :
-		type(MLGlobal::BrushTypeSurface),
-		spreadType(MLGlobal::SpreadTypeRepeat),
+		type(ML::BrushTypeSurface),
+		spreadType(ML::SpreadTypeRepeat),
 		data(QVariant::fromValue(surface))
 	{}
 	
@@ -59,8 +59,8 @@ public:
 		gradient(gradient->clone())
 	{}
 	
-	MLGlobal::BrushType type;
-	MLGlobal::SpreadType spreadType;
+	ML::BrushType type;
+	ML::SpreadType spreadType;
 	QVariant data;
 	QTransform transform;
 	QScopedPointer<MLColorGradient> gradient;
@@ -78,7 +78,7 @@ public:
 		d = new MLBrushData(color.toArgb());
 	}
 	
-	MLBrush(const MLArgb &argb)
+	MLBrush(const MLVec4F &argb)
 	{
 		d = new MLBrushData(argb);
 	}
@@ -118,17 +118,17 @@ public:
 		return MLBrush(gradient, MLRadialGradientInfo(center, radius));
 	}
 	
-	MLGlobal::BrushType type() const { return d->type; }
+	ML::BrushType type() const { return d->type; }
 	
-	void setSpreadType(MLGlobal::SpreadType type) { d->spreadType = type; }
-	MLGlobal::SpreadType spreadType() const { return d->spreadType; }
+	void setSpreadType(ML::SpreadType type) { d->spreadType = type; }
+	ML::SpreadType spreadType() const { return d->spreadType; }
 	
-	MLArgb argb() const { return d->type == MLGlobal::BrushTypeColor ? d->data.value<MLArgb>() : MLArgb(); }
-	MLImage image() const { return d->type == MLGlobal::BrushTypeImage ? d->data.value<MLImage>() : MLImage(); }
-	MLSurface surface() const { return d->type == MLGlobal::BrushTypeSurface ? d->data.value<MLSurface>() : MLSurface(); }
+	MLVec4F argb() const { return d->type == ML::BrushTypeColor ? d->data.value<MLVec4F>() : MLVec4F(0); }
+	MLImage image() const { return d->type == ML::BrushTypeImage ? d->data.value<MLImage>() : MLImage(); }
+	MLSurface surface() const { return d->type == ML::BrushTypeSurface ? d->data.value<MLSurface>() : MLSurface(); }
 	
-	MLLinearGradientInfo linearGradientInfo() const { return d->type == MLGlobal::BrushTypeLinearGradient ? d->data.value<MLLinearGradientInfo>() : MLLinearGradientInfo(); }
-	MLRadialGradientInfo radialGradientInfo() const { return d->type == MLGlobal::BrushTypeRadialGradient ? d->data.value<MLRadialGradientInfo>() : MLRadialGradientInfo(); }
+	MLLinearGradientInfo linearGradientInfo() const { return d->type == ML::BrushTypeLinearGradient ? d->data.value<MLLinearGradientInfo>() : MLLinearGradientInfo(); }
+	MLRadialGradientInfo radialGradientInfo() const { return d->type == ML::BrushTypeRadialGradient ? d->data.value<MLRadialGradientInfo>() : MLRadialGradientInfo(); }
 	
 	const MLColorGradient *gradient() const { return d->gradient.data(); }
 	

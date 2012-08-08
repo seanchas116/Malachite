@@ -45,13 +45,13 @@ bool MLSurface::save(QIODevice *device) const
 		QDataStream tileStream(&tileArray, QIODevice::WriteOnly);
 		
 		for (int y = 0; y < TileSize; ++y) {
-			const MLArgb *p = tile->constScanline(y);
+			const MLVec4F *p = tile->constScanline(y);
 			for (int x = 0; x < TileSize; ++x)
 			{
-				tileStream << p->a();
-				tileStream << p->r();
-				tileStream << p->g();
-				tileStream << p->b();
+				tileStream << p->a;
+				tileStream << p->r;
+				tileStream << p->g;
+				tileStream << p->b;
 				++p;
 			}
 		}
@@ -85,13 +85,13 @@ MLSurface MLSurface::loaded(QIODevice *device)
 		
 		for (int y = 0; y < TileSize; ++y)
 		{
-			MLArgb *p = tile->scanline(y);
+			MLVec4F *p = tile->scanline(y);
 			for (int x = 0; x < TileSize; ++x) 
 			{
-				tileStream >> p->a();
-				tileStream >> p->r();
-				tileStream >> p->g();
-				tileStream >> p->b();
+				tileStream >> p->a;
+				tileStream >> p->r;
+				tileStream >> p->g;
+				tileStream >> p->b;
 				++p;
 			}
 		}
@@ -287,7 +287,7 @@ int MLSurface::commonLeftBound(const QPointSet &keys) const
 			const MLImage image = tileForKey(key);
 			for (int y = 0; y < MLSurface::TileSize; ++y)
 			{
-				if (image.pixel(x, y).a())
+				if (image.pixel(x, y).a)
 					return x;
 			}
 		}
@@ -304,7 +304,7 @@ int MLSurface::commonRightBound(const QPointSet &keys) const
 			const MLImage image = tileForKey(key);
 			for (int y = 0; y < MLSurface::TileSize; ++y)
 			{
-				if (image.pixel(x, y).a())
+				if (image.pixel(x, y).a)
 					return x;
 			}
 		}
@@ -318,10 +318,10 @@ int MLSurface::commonTopBound(const QPointSet &keys) const
 	{
 		foreach (const QPoint &key, keys)
 		{
-			const MLArgb *scanline = tileForKey(key).scanline(y);
+			const MLVec4F *scanline = tileForKey(key).scanline(y);
 			for (int x = 0; x < MLSurface::TileSize; ++x)
 			{
-				if (scanline->a())
+				if (scanline->a)
 					return y;
 				scanline++;
 			}
@@ -336,10 +336,10 @@ int MLSurface::commonBottomBound(const QPointSet &keys) const
 	{
 		foreach (const QPoint &key, keys)
 		{
-			const MLArgb *scanline = tileForKey(key).scanline(y);
+			const MLVec4F *scanline = tileForKey(key).scanline(y);
 			for (int x = 0; x < MLSurface::TileSize; ++x)
 			{
-				if (scanline->a())
+				if (scanline->a)
 					return y;
 				scanline++;
 			}

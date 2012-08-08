@@ -4,7 +4,6 @@
 #include <QDebug>
 #include <QObject>
 #include "mlsurface.h"
-#include "mlgenericwrapperimage.h"
 
 struct FIBITMAP;
 

@@ -3,17 +3,24 @@
 
 #include "mlpaintable.h"
 #include "mlcolor.h"
-#include "mlgenericsharedimage.h"
+#include "mlgenericimage.h"
 
-class MALACHITESHARED_EXPORT MLImage : public MLGenericSharedImage<MLArgb>, public MLPaintable
+typedef MLGenericImage<ML::ImageFormatArgbFast, MLVec3U8> MLImage32;
+
+class MALACHITESHARED_EXPORT MLImage : public MLGenericImage<ML::ImageFormatArgbFast, MLVec4F>, public MLPaintable
 {
 public:
-	MLImage() : MLGenericSharedImage<MLArgb>() {}
-	MLImage(const MLGenericSharedImage<MLArgb> &other) : MLGenericSharedImage<MLArgb>(other) {}
-	MLImage(const QSize &size) : MLGenericSharedImage<MLArgb>(size) {}
-	MLImage(int width, int height) : MLGenericSharedImage<MLArgb>(width, height) {}
+	MLImage() : MLGenericImage<ML::ImageFormatArgbFast, MLVec4F>() {}
+	MLImage(const MLGenericImage<ML::ImageFormatArgbFast, MLVec4F> &other) : MLGenericImage<ML::ImageFormatArgbFast, MLVec4F>(other) {}
+	MLImage(const QSize &size) : MLGenericImage<ML::ImageFormatArgbFast, MLVec4F>(size) {}
+	MLImage(int width, int height) : MLGenericImage<ML::ImageFormatArgbFast, MLVec4F>(width, height) {}
+	
+	void clear() { fill(MLVec4F(0)); }
 	
 	bool isBlank() const;
+	
+	//MLArgb colorSummation() const;
+	MLVec4F colorSummation(const QPoint &maskOffset, const MLImage &mask) const;
 	
 	MLPaintEngine *createPaintEngine();
 	

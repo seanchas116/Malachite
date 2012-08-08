@@ -9,7 +9,7 @@
 #include "mlblendop.h"
 #include "mlintdivision.h"
 
-typedef MLBitmap<MLArgb> MLArgbBitmap;
+typedef MLBitmap<MLVec4F> MLArgbBitmap;
 
 class QPainterPath_vs
 {
@@ -83,7 +83,7 @@ template <class Filler>
 class MLImageBaseRenderer
 {
 public:
-	MLImageBaseRenderer(const MLBitmap<MLArgb> &bitmap, MLBlendOp *blendOp, Filler *filler) :
+	MLImageBaseRenderer(const MLArgbBitmap &bitmap, MLBlendOp *blendOp, Filler *filler) :
 		_bitmap(bitmap),
 		_blendOp(blendOp),
 		_filler(filler)
@@ -129,7 +129,7 @@ public:
 	}
 	
 private:
-	MLBitmap<MLArgb> _bitmap;
+	MLArgbBitmap _bitmap;
 	MLBlendOp *_blendOp;
 	Filler *_filler;
 };
@@ -137,31 +137,27 @@ private:
 class MLColorFiller
 {
 public:
-	MLColorFiller(const MLArgb &argb, double opacity) :
-		_argb(argb)
-	{
-		_argb.v *= opacity;
-	}
+	MLColorFiller(const MLVec4F &argb, double opacity) :
+		_argb(argb * opacity)
+	{}
 	
-	void fill(const QPoint &pos, int count, MLArgb *dst, float *covers, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
 	{
 		Q_UNUSED(pos);
 		blendOp->blend(count, dst, _argb, covers);
 	}
 	
-	void fill(const QPoint &pos, int count, MLArgb *dst, float cover, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, MLVec4F *dst, float cover, MLBlendOp *blendOp)
 	{
 		Q_UNUSED(pos);
-		MLArgb actualArgb = _argb;
-		actualArgb.v *= cover;
-		blendOp->blend(count, dst, _argb);
+		blendOp->blend(count, dst, _argb * cover);
 	}
 	
 private:
-	MLArgb _argb;
+	MLVec4F _argb;
 };
 
-template <MLGlobal::SpreadType SpreadType>
+template <ML::SpreadType SpreadType>
 class MLImageFiller
 {
 public:
@@ -169,12 +165,12 @@ public:
 	MLImageFiller(const MLArgbBitmap &bitmap, const QPoint &offset) :
 		_srcBitmap(bitmap), _offset(offset) {}
 	
-	void fill(const QPoint &pos, int count, MLArgb *dst, float *covers, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
 	{
 		fillTemplate<false>(pos, count, dst, covers, blendOp);
 	}
 	
-	void fill(const QPoint &pos, int count, MLArgb *dst, float cover, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, MLVec4F *dst, float cover, MLBlendOp *blendOp)
 	{
 		fillTemplate<true>(pos, count, dst, &cover, blendOp);
 	}
@@ -182,24 +178,24 @@ public:
 private:
 	
 	template <bool CoverSingle>
-	void fillTemplate(const QPoint &pos, int count, MLArgb *dst, float *covers, MLBlendOp *blendOp)
+	void fillTemplate(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
 	{
 		switch (SpreadType)
 		{
-		case MLGlobal::SpreadTypePad:
+		case ML::SpreadTypePad:
 			fillTemplatePad<CoverSingle>(pos, count, dst, covers, blendOp);
 			return;
-		case MLGlobal::SpreadTypeRepeat:
+		case ML::SpreadTypeRepeat:
 			fillTemplateRepeat<CoverSingle>(pos, count, dst, covers, blendOp);
 			return;
-		case MLGlobal::SpreadTypeReflective:
+		case ML::SpreadTypeReflective:
 			fillTemplateReflective<CoverSingle>(pos, count, dst, covers, blendOp);
 			return;
 		}
 	}
 	
 	template <bool CoverSingle>
-	void fillTemplatePad(const QPoint &pos, int count, MLArgb *dst, float *covers, MLBlendOp *blendOp)
+	void fillTemplatePad(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
 		int imageY = qBound(0, srcPos.y(), _srcBitmap.height() - 1);
@@ -242,7 +238,7 @@ private:
 	}
 	
 	template <bool CoverSingle>
-	void fillTemplateRepeat(const QPoint &pos, int count, MLArgb *dst, float *covers, MLBlendOp *blendOp)
+	void fillTemplateRepeat(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
 		MLIntDivision divX(srcPos.x(), _srcBitmap.width());
@@ -285,7 +281,7 @@ private:
 	}
 	
 	template <bool CoverSingle>
-	void fillTemplateReflective(const QPoint &pos, int count, MLArgb *dst, float *covers, MLBlendOp *blendOp)
+	void fillTemplateReflective(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
 		MLIntDivision divX(srcPos.x(), _srcBitmap.width());
@@ -327,7 +323,7 @@ private:
 			blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
 	}
 	
-	const MLBitmap<MLArgb> _srcBitmap;
+	const MLBitmap<MLVec4F> _srcBitmap;
 	QPoint _offset;
 };
 
@@ -341,7 +337,7 @@ public:
 		_transform(worldTransform)
 	{}
 	
-	void fill(const QPoint &pos, int count, MLArgb *dst, float *covers, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
 	{
 		if (_opacity != 1)
 		{
@@ -349,7 +345,7 @@ public:
 				covers[i] *= _opacity;
 		}
 		
-		QScopedArrayPointer<MLArgb> fill(new MLArgb[count]);
+		QScopedArrayPointer<MLVec4F> fill(new MLVec4F[count]);
 		
 		MLVec2D centerPos(pos.x(), pos.y());
 		centerPos += MLVec2D(0.5, 0.5);
@@ -363,11 +359,11 @@ public:
 		blendOp->blend(count, dst, fill.data(), covers);
 	}
 	
-	void fill(const QPoint &pos, int count, MLArgb *dst, float cover, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, MLVec4F *dst, float cover, MLBlendOp *blendOp)
 	{
 		cover *= _opacity;
 		
-		QScopedArrayPointer<MLArgb> fill(new MLArgb[count]);
+		QScopedArrayPointer<MLVec4F> fill(new MLVec4F[count]);
 		
 		MLVec2D centerPos(pos.x(), pos.y());
 		centerPos += MLVec2D(0.5, 0.5);
@@ -387,7 +383,7 @@ private:
 	QTransform _transform;
 };
 
-template <class Gradient, class Method, MLGlobal::SpreadType SpreadType>
+template <class Gradient, class Method, ML::SpreadType SpreadType>
 class MLGradientGenerator
 {
 public:
@@ -396,7 +392,7 @@ public:
 		_method(method)
 	{}
 	
-	MLArgb at(const MLVec2D &p)
+	MLVec4F at(const MLVec2D &p)
 	{
 		return _gradient->at(actualPosition(_method->position(p)));
 	}
@@ -408,11 +404,11 @@ private:
 		switch (SpreadType)
 		{
 		default:
-		case MLGlobal::SpreadTypePad:
+		case ML::SpreadTypePad:
 			return qBound(0.f, x, 1.f);
-		case MLGlobal::SpreadTypeRepeat:
+		case ML::SpreadTypeRepeat:
 			return x - floorf(x);
-		case MLGlobal::SpreadTypeReflective:
+		case ML::SpreadTypeReflective:
 		{
 			float f = floorf(x);
 			float r = x - f;
@@ -497,26 +493,26 @@ private:
 	double r, c;
 };
 
-template <MLGlobal::SpreadType SpreadType>
+template <ML::SpreadType SpreadType>
 QPoint mlActualImagePos(const QPoint &p, const QSize &size)
 {
 	QPoint r;
 	
 	switch (SpreadType)
 	{
-	case MLGlobal::SpreadTypePad:
+	case ML::SpreadTypePad:
 	{
 		r.rx() = qBound(0, p.x(), size.width() - 1);
 		r.ry() = qBound(0, p.y(), size.height() - 1);
 		break;
 	}
-	case MLGlobal::SpreadTypeRepeat:
+	case ML::SpreadTypeRepeat:
 	{
 		r.rx() = MLIntDivision(p.x(), size.width()).rem();
 		r.ry() = MLIntDivision(p.y(), size.height()).rem();
 		break;
 	}
-	case MLGlobal::SpreadTypeReflective:
+	case ML::SpreadTypeReflective:
 	{
 		MLIntDivision divX(p.x(), size.width());
 		MLIntDivision divY(p.y(), size.height());
@@ -531,7 +527,7 @@ QPoint mlActualImagePos(const QPoint &p, const QSize &size)
 	return r;
 }
 
-template <class Source, MLGlobal::PixelFieldType SourceType, MLGlobal::SpreadType SpreadType>
+template <class Source, ML::PixelFieldType SourceType, ML::SpreadType SpreadType>
 class MLScalingGeneratorNearestNeighbor
 {
 public:
@@ -539,9 +535,9 @@ public:
 		_source(source)
 	{}
 	
-	MLArgb at(const MLVec2D &p)
+	MLVec4F at(const MLVec2D &p)
 	{
-		if (SourceType == MLGlobal::PixelFieldImage)
+		if (SourceType == ML::PixelFieldImage)
 			return _source->pixel(mlActualImagePos<SpreadType>(p.toQPoint(), _source->size()));
 		else
 			return _source->pixel(p.toQPoint());
@@ -551,7 +547,7 @@ private:
 	const Source *_source;
 };
 
-template <class Source, MLGlobal::PixelFieldType SourceType, MLGlobal::SpreadType SpreadType>
+template <class Source, ML::PixelFieldType SourceType, ML::SpreadType SpreadType>
 class MLScalingGeneratorBilinear
 {
 public:
@@ -559,7 +555,7 @@ public:
 		_source(source)
 	{}
 	
-	MLArgb at(const MLVec2D &p)
+	MLVec4F at(const MLVec2D &p)
 	{
 		MLVec2D rp(round(p.x), round(p.y));
 		MLVec2D d = p - rp + MLVec2D(0.5, 0.5);
@@ -567,9 +563,9 @@ public:
 		float dy = d.y;
 		QPoint irp = rp.toQPoint();
 		
-		MLArgb c11, c12, c21, c22;
+		MLVec4F c11, c12, c21, c22;
 		
-		if (SourceType == MLGlobal::PixelFieldImage)
+		if (SourceType == ML::PixelFieldImage)
 		{
 			c11 = _source->pixel(mlActualImagePos<SpreadType>(irp + QPoint(-1, -1), _source->size()));
 			c12 = _source->pixel(mlActualImagePos<SpreadType>(irp + QPoint(-1, 0), _source->size()));
@@ -582,8 +578,8 @@ public:
 			c21 = _source->pixel(irp + QPoint(0, -1));
 			c22 = _source->pixel(irp);
 		
-		MLArgb result;
-		result.v = (c11.v * (1.f - dx) + c21.v * dx) * (1.f - dy) + (c12.v * (1.f - dx) + c22.v * dx) * dy;
+		MLVec4F result;
+		result.v = (c11 * (1.f - dx) + c21 * dx) * (1.f - dy) + (c12 * (1.f - dx) + c22 * dx) * dy;
 		
 		return result;
 	}
@@ -592,7 +588,7 @@ private:
 	const Source *_source;
 };
 
-template <class Source, MLGlobal::PixelFieldType SourceType, MLGlobal::SpreadType SpreadType, class WeightMethod>
+template <class Source, ML::PixelFieldType SourceType, ML::SpreadType SpreadType, class WeightMethod>
 class MLScalingGenerator2
 {
 public:
@@ -600,15 +596,15 @@ public:
 		_source(source)
 	{}
 	
-	MLArgb at(const MLVec2D &p)
+	MLVec4F at(const MLVec2D &p)
 	{
 		reset(p);
 		
 		QPoint fp(round(p.x), round(p.y));
 		
-		if (SourceType != MLGlobal::PixelFieldImage ||  pointIsInSafeZone(fp))
+		if (SourceType != ML::PixelFieldImage ||  pointIsInSafeZone(fp))
 		{
-			if (SourceType == MLGlobal::PixelFieldImage)
+			if (SourceType == ML::PixelFieldImage)
 				fp = mlActualImagePos<SpreadType>(fp, _source->size());
 			
 			addPixelEasy(fp + QPoint(-2, -2));
@@ -652,16 +648,16 @@ public:
 			addPixel(fp + QPoint(0, 0));
 		}
 		
-		MLArgb result = _argb;
+		MLVec4F result = _argb;
 		
 		if (_divisor == 0)
 		{
-			result.v = MLSimdF4(0);
+			result = MLVec4F(0);
 		}
 		else
 		{
-			result.v /= _divisor;
-			result.clamp();
+			result /= _divisor;
+			result = mlBound(0, result, 1);
 		}
 		
 		return result;
@@ -678,20 +674,20 @@ private:
 	{
 		float w = WeightMethod::weight(MLVec2D(p) + MLVec2D(0.5, 0.5) - _p);
 		_divisor += w;
-		_argb.v += _source->pixel(mlActualImagePos<SpreadType>(p, _source->size())).v * w;
+		_argb += _source->pixel(mlActualImagePos<SpreadType>(p, _source->size())) * w;
 	}
 	
 	void addPixelEasy(const QPoint &p)
 	{
 		float w = WeightMethod::weight(MLVec2D(p) + MLVec2D(0.5, 0.5) - _p);
 		_divisor += w;
-		_argb.v += _source->pixel(p).v * w;
+		_argb += _source->pixel(p) * w;
 	}
 	
 	void reset()
 	{
 		_divisor = 0;
-		_argb.v = MLSimdF4(0);
+		_argb = MLVec4F(0);
 	}
 	
 	void reset(const MLVec2D &p)
@@ -702,7 +698,7 @@ private:
 
 	MLVec2D _p;
 	float _divisor;
-	MLArgb _argb;
+	MLVec4F _argb;
 	const Source *_source;
 };
 
