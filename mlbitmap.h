@@ -4,45 +4,54 @@
 #include <QSize>
 #include <QRect>
 #include "mlmisc.h"
+#include "mlmemory.h"
 
 template <typename Color>
 class MLBitmap
 {
 public:
 	MLBitmap() :
-		_bits(0)
+		_bits(MLPointer<Color>())
 	{}
 	
-	MLBitmap(Color *bits, const QSize &size) :
+	MLBitmap(MLPointer<Color> bits, const QSize &size, int bytesPerLine) :
 		_bits(bits),
-		_size(size)
+		_size(size),
+		_bytesPerLine(bytesPerLine)
 	{}
 	
-	void setBits(Color *bits) { _bits = bits; }
-	Color *bits() { return _bits; }
-	const Color *constBits() const { return _bits; }
+	void setBits(MLPointer<Color> *bits) { _bits = bits; }
+	void setBits(void *data, int byteCount) { _bits = MLPointer<Color>(reinterpret_cast<Color *>(data), byteCount); }
+	
+	MLPointer<Color> bits() { return _bits; }
+	const MLPointer<const Color> constBits() const { return _bits; }
 	QSize size() const { return _size; }
 	int width() const { return _size.width(); }
 	int height() const { return _size.height(); }
-	int byteCount() const { return area() * sizeof(Color); }
+	int byteCount() const { return _bytesPerLine * _size.height(); }
+	int bytesPerLine() const { return _bytesPerLine; }
 	int area() const { return _size.height() * _size.width(); }
 	QRect rect() const { return QRect(QPoint(), _size); }
 	
-	Color *scanline(int y) { return _bits + _size.width() * y; }
-	const Color *constScanline(int y) const { return _bits + _size.width() * y; }
+	MLPointer<Color> scanline(int y) { return _bits.byteOffset(_bytesPerLine * y); }
+	MLPointer<const Color> constScanline(int y) const { return _bits.byteOffset(_bytesPerLine * y); }
 	
-	Color *pixelPointer(int x, int y) { return _bits + _size.width() * y + x; }
-	Color *pixelPointer(const QPoint &p) { return pixelPointer(p.x(), p.y()); }
+	MLPointer<Color> invertedScanline(int invertedY) { return scanline(height() - invertedY - 1); }
+	MLPointer<const Color> invertedConstScanline(int invertedY) const { return constScanline(height() - invertedY - 1); }
 	
-	const Color *constPixelPointer(int x, int y) const { return _bits + _size.width() * y + x; }
-	const Color *constPixelPointer(const QPoint &p) const { return constPixelPointer((p.x(), p.y())); }
+	MLPointer<Color> pixelPointer(int x, int y) { return scanline(y) + x; }
+	MLPointer<Color> pixelPointer(const QPoint &p) { return pixelPointer(p.x(), p.y()); }
+	
+	MLPointer<const Color> constPixelPointer(int x, int y) const { return constScanline(y) + x; }
+	MLPointer<const Color> constPixelPointer(const QPoint &p) const { return constPixelPointer((p.x(), p.y())); }
 	
 	Color pixel(int x, int y) const { return *constPixelPointer(x, y); }
 	Color pixel(const QPoint &p) const { return pixel(p.x(), p.y()); }
 	
 private:
-	Color *_bits;
+	MLPointer<Color> _bits;
 	QSize _size;
+	int _bytesPerLine;
 };
 
 #endif // MLBITMAP_H

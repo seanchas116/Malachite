@@ -50,7 +50,7 @@ MLImage MLImageIO::toImage() const
 	
 	MLImage image(size());
 	
-	mlPasteFIBITMAPToImage(QPoint(), _bitmap, &image);
+	mlPasteFIBITMAPToImage(QPoint(), &image, _bitmap);
 	return image;
 }
 
@@ -60,7 +60,7 @@ MLSurface MLImageIO::toSurface(const QPoint &p) const
 		return MLSurface();
 	
 	MLSurface surface;
-	mlPasteFIBITMAPToImage(p, _bitmap, &surface);
+	mlPasteFIBITMAPToImage(p, &surface, _bitmap);
 	return surface;
 }
 

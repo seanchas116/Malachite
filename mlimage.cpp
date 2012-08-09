@@ -53,7 +53,7 @@ static MLVec4F mlColorSummation(int count, const MLVec4F *data)
 	return r;
 }
 
-static MLVec4F mlColorSummation(int count, const MLVec4F *data, const MLVec4F *mask)
+static MLVec4F mlColorSummation(int count, MLPointer<const MLVec4F> data, MLPointer<const MLVec4F> mask)
 {
 	MLVec4F r(0);
 	
@@ -88,8 +88,8 @@ MLVec4F MLImage::colorSummation(const QPoint &maskOffset, const MLImage &mask) c
 	{
 		QPoint p(targetRect.left(), y);
 		
-		const MLVec4F *pointer = constPixelPointer(p);
-		const MLVec4F *maskPointer = mask.constPixelPointer(p - maskOffset);
+		MLPointer<const MLVec4F> pointer = constPixelPointer(p);
+		MLPointer<const MLVec4F> maskPointer = mask.constPixelPointer(p - maskOffset);
 		
 		int rx = targetRect.width();
 		int x = 0;

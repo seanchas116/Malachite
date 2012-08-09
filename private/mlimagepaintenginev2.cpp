@@ -21,12 +21,12 @@ bool mlTransformIsSimilar(const QTransform &transform)
 	return transform.isIdentity() || (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22());
 }
 
-template <class Rasterizer, MLGlobal::SpreadType SpreadType, class Source, MLGlobal::PixelFieldType SourceType>
-void mlDrawTransformedImageBrush(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blendOp, const Source &source, float opacity, const QTransform &worldTransform, MLGlobal::ImageTransformType transformType)
+template <class Rasterizer, ML::SpreadType SpreadType, class Source, ML::PixelFieldType SourceType>
+void mlDrawTransformedImageBrush(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blendOp, const Source &source, float opacity, const QTransform &worldTransform, ML::ImageTransformType transformType)
 {
 	switch (transformType)
 	{
-	case MLGlobal::ImageTransformTypeNearestNeighbor:
+	case ML::ImageTransformTypeNearestNeighbor:
 	{
 		typedef MLScalingGeneratorNearestNeighbor<Source, SourceType, SpreadType> Generator;
 		Generator gen(&source);
@@ -34,7 +34,7 @@ void mlDrawTransformedImageBrush(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendO
 		mlFill(ras, bitmap, blendOp, &filler);
 		return;
 	}
-	case MLGlobal::ImageTransformTypeBilinear:
+	case ML::ImageTransformTypeBilinear:
 	{
 		typedef MLScalingGeneratorBilinear<Source, SourceType, SpreadType> Generator;
 		Generator gen(&source);
@@ -42,7 +42,7 @@ void mlDrawTransformedImageBrush(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendO
 		mlFill(ras, bitmap, blendOp, &filler);
 		return;
 	}
-	case MLGlobal::ImageTransformTypeBicubic:
+	case ML::ImageTransformTypeBicubic:
 	{
 		typedef MLScalingGenerator2<Source, SourceType, SpreadType, MLScalingWeightMethodBicubic> Generator;
 		Generator gen(&source);
@@ -50,7 +50,7 @@ void mlDrawTransformedImageBrush(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendO
 		mlFill(ras, bitmap, blendOp, &filler);
 		return;
 	}
-	case MLGlobal::ImageTransformTypeLanczos2:
+	case ML::ImageTransformTypeLanczos2:
 	{
 		typedef MLScalingGenerator2<Source, SourceType, SpreadType, MLScalingWeightMethodLanczos2> Generator;
 		Generator gen(&source);
@@ -58,7 +58,7 @@ void mlDrawTransformedImageBrush(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendO
 		mlFill(ras, bitmap, blendOp, &filler);
 		return;
 	}
-	case MLGlobal::ImageTransformTypeLanczos2Hypot:
+	case ML::ImageTransformTypeLanczos2Hypot:
 	{
 		typedef MLScalingGenerator2<Source, SourceType, SpreadType, MLScalingWeightMethodLanczos2Hypot> Generator;
 		Generator gen(&source);
@@ -71,13 +71,13 @@ void mlDrawTransformedImageBrush(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendO
 	}
 }
 
-template <class Rasterizer, MLGlobal::SpreadType SpreadType>
+template <class Rasterizer, ML::SpreadType SpreadType>
 void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blendOp, const MLPaintEngineState &state)
 {
 	const MLBrush brush = state.brush;
 	const float opacity = state.opacity;
 	
-	if (brush.type() == MLGlobal::BrushTypeColor)
+	if (brush.type() == ML::BrushTypeColor)
 	{
 		MLColorFiller filler(brush.argb(), opacity);
 		mlFill(ras, bitmap, blendOp, &filler);
@@ -86,7 +86,7 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 	
 	const QTransform fillShapeTransform = brush.transform() * state.shapeTransform;
 	
-	if (brush.type() == MLGlobal::BrushTypeImage)
+	if (brush.type() == ML::BrushTypeImage)
 	{
 		if (mlTransformIsIntegerTranslating(fillShapeTransform))
 		{
@@ -98,11 +98,11 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 		}
 		else
 		{
-			mlDrawTransformedImageBrush<Rasterizer, SpreadType, MLArgbBitmap, MLGlobal::PixelFieldImage>(ras, bitmap, blendOp, brush.image().constBitmap(), opacity, fillShapeTransform.inverted(), state.imageTransformType);
+			mlDrawTransformedImageBrush<Rasterizer, SpreadType, MLArgbBitmap, ML::PixelFieldImage>(ras, bitmap, blendOp, brush.image().constBitmap(), opacity, fillShapeTransform.inverted(), state.imageTransformType);
 			return;
 		}
 	}
-	else if (brush.type() == MLGlobal::BrushTypeLinearGradient)
+	else if (brush.type() == ML::BrushTypeLinearGradient)
 	{
 		MLLinearGradientInfo info = brush.linearGradientInfo();
 		
@@ -123,7 +123,7 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 			return;
 		}
 	}
-	else if (brush.type() == MLGlobal::BrushTypeRadialGradient)
+	else if (brush.type() == ML::BrushTypeRadialGradient)
 	{
 		MLRadialGradientInfo info = brush.radialGradientInfo();
 		
@@ -209,14 +209,14 @@ void MLImagePaintEngine::drawPath(const QPainterPath &path)
 	
 	switch (_state.brush.spreadType())
 	{
-	case MLGlobal::SpreadTypePad:
-		mlDrawWithSpreadType<agg::rasterizer_scanline_aa<>, MLGlobal::SpreadTypePad>(&ras, &_bitmap, _blendOp, _state);
+	case ML::SpreadTypePad:
+		mlDrawWithSpreadType<agg::rasterizer_scanline_aa<>, ML::SpreadTypePad>(&ras, &_bitmap, _blendOp, _state);
 		return;
-	case MLGlobal::SpreadTypeRepeat:
-		mlDrawWithSpreadType<agg::rasterizer_scanline_aa<>, MLGlobal::SpreadTypeRepeat>(&ras, &_bitmap, _blendOp, _state);
+	case ML::SpreadTypeRepeat:
+		mlDrawWithSpreadType<agg::rasterizer_scanline_aa<>, ML::SpreadTypeRepeat>(&ras, &_bitmap, _blendOp, _state);
 		return;
-	case MLGlobal::SpreadTypeReflective:
-		mlDrawWithSpreadType<agg::rasterizer_scanline_aa<>, MLGlobal::SpreadTypeReflective>(&ras, &_bitmap, _blendOp, _state);
+	case ML::SpreadTypeReflective:
+		mlDrawWithSpreadType<agg::rasterizer_scanline_aa<>, ML::SpreadTypeReflective>(&ras, &_bitmap, _blendOp, _state);
 		return;
 	default:
 		return;

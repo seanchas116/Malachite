@@ -5,7 +5,7 @@
 #include "mlcolor.h"
 #include "mlgenericimage.h"
 
-typedef MLGenericImage<ML::ImageFormatArgbFast, MLVec3U8> MLImage32;
+typedef MLGenericImage<ML::ImageFormatArgbFast, MLVec4U8> MLImage32;
 
 class MALACHITESHARED_EXPORT MLImage : public MLGenericImage<ML::ImageFormatArgbFast, MLVec4F>, public MLPaintable
 {

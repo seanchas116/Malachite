@@ -101,45 +101,6 @@ inline float mlLanczos2WeightF(float d)
 	return mlSincF(d) * mlSincF(d * 0.5f);
 }
 
-
-
-inline void *mlAllocateAlignedMemory(size_t size, size_t alignment)
-{
-	void *p;
-	posix_memalign(&p, alignment, size);
-	return p;
-}
-
-inline void mlFreeAlignedMemory(void *p)
-{
-	free(p);
-}
-
-template <typename T> inline bool mlCopyArray (
-    T *dest,
-    const T *src,
-    int count
-    )
-{
-	Q_CHECK_PTR(dest);
-	Q_CHECK_PTR(src);
-	void *p = memcpy(dest, src, count * sizeof(T));
-	return p ? true : false;
-}
-
-template <typename T> inline void mlFillArray (
-    T *dest,
-    const T &data,
-    int count
-    )
-{
-	Q_CHECK_PTR(dest);
-	Q_ASSERT(count >= 0);
-	for (int i = 0; i < count; ++i) {
-		*dest++ = data;
-	}
-}
-
 template <typename T>
 QList<const T *> mlConstList(const QList<T *> &list) {
 	QList<const T *> result;

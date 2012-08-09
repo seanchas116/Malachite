@@ -13,35 +13,38 @@ public:
 	
 	typedef Color ColorType;
 	
-	MLGenericImageData(const QSize &size) :
-		_bitmap(0, size),
-		_ownsData(true)
+	MLGenericImageData(const QSize &size, int bytesPerLine) :
+		bitmap(MLPointer<Color>(), size, bytesPerLine),
+		ownsData(true)
 	{
-		_bitmap.setBits(reinterpret_cast<Color *>(mlAllocateAlignedMemory(_bitmap.byteCount(), 16)));
+		bitmap.setBits(mlAllocateAlignedMemory(bitmap.byteCount(), 16), bitmap.byteCount());
 	}
 	
-	MLGenericImageData(void *bits, const QSize &size) :
-		_bitmap(reinterpret_cast<Color *>(bits), size),
-		_ownsData(false)
-	{}
+	MLGenericImageData(void *bits, const QSize &size, int bytesPerLine) :
+		bitmap(MLPointer<Color>(), size, bytesPerLine),
+		ownsData(false)
+	{
+		bitmap.setBits(bits, bitmap.byteCount());
+	}
 	
 	MLGenericImageData(const MLGenericImageData &other) :
 		QSharedData(other),
-		_bitmap(other._bitmap),
-		_ownsData(true)
+		bitmap(other.bitmap),
+		ownsData(true)
 	{
-		_bitmap.setBits(reinterpret_cast<Color *>(mlAllocateAlignedMemory(_bitmap.byteCount(), 16)));
-		mlCopyArray(_bitmap.bits(), other._bitmap.constBits(), other._bitmap.byteCount());
+		bitmap.setBits(mlAllocateAlignedMemory(bitmap.byteCount(), 16), bitmap.byteCount());
+		
+		bitmap.bits().pasteByte(other.bitmap.constBits(), other.bitmap.byteCount());
 	}
 	
 	~MLGenericImageData()
 	{
-		if (_ownsData)
-			mlFreeAlignedMemory(_bitmap.bits());
+		if (ownsData)
+			mlFreeAlignedMemory(bitmap.bits());
 	}
 	
-	MLBitmap<Color> _bitmap;
-	bool _ownsData;
+	MLBitmap<Color> bitmap;
+	const bool ownsData;
 };
 
 template <ML::ImageFormat Format, class Color>
@@ -52,62 +55,90 @@ public:
 	typedef Color ColorType;
 	
 	MLGenericImage() {}
+	MLGenericImage(const QSize &size, int bytesPerLine)
+	{
+		if (!size.isEmpty())
+			p = new MLGenericImageData<Color>(size, bytesPerLine);
+	}
+	
 	MLGenericImage(const QSize &size)
 	{
 		if (!size.isEmpty())
-			p = new MLGenericImageData<Color>(size);
+			p = new MLGenericImageData<Color>(size, size.width() * sizeof(Color));
+	}
+	
+	MLGenericImage(int width, int height, int bytesPerLine)
+	{
+		if (width && height)
+			p = new MLGenericImageData<Color>(QSize(width, height), bytesPerLine);
 	}
 	
 	MLGenericImage(int width, int height)
 	{
 		if (width && height)
-			p = new MLGenericImageData<Color>(QSize(width, height));
+			p = new MLGenericImageData<Color>(QSize(width, height), width * sizeof(Color));
 	}
 	
-	static MLGenericImage wrap(void *data, const QSize &size)
+	static MLGenericImage wrap(void *data, const QSize &size, int bytesPerLine)
 	{
 		MLGenericImage result;
 		if (!size.isEmpty())
-			result.p = new MLGenericImageData<Color>(data, size);
+			result.p = new MLGenericImageData<Color>(data, size, bytesPerLine);
 		
 		return result;
 	}
 	
-	static const MLGenericImage wrap(const void *data, const QSize &size)
+	static MLGenericImage wrap(void *data, const QSize &size) { return wrap(data, size, size.width() * sizeof(Color)); }
+	
+	static const MLGenericImage wrap(const void *data, const QSize &size, int bytesPerLine)
 	{
 		MLGenericImage result;
 		if (!size.isEmpty())
-			result.p = new MLGenericImageData<Color>(const_cast<void *>(data), size);
+			result.p = new MLGenericImageData<Color>(const_cast<void *>(data), size, bytesPerLine);
 		
 		return result;
 	}
 	
-	QSize size() const { return p ? p->_bitmap.size() : QSize(); }
+	static const MLGenericImage wrap(const void *data, const QSize &size) { return wrap(data, size, size.width() * sizeof(Color)); }
+	
+	QSize size() const { return p ? p->bitmap.size() : QSize(); }
 	QRect rect() const { return QRect(QPoint(), size()); }
-	int width() const { return p ? p->_bitmap.width() : 0; }
-	int height() const { return p ? p->_bitmap.height() : 0; }
-	int bytesPerLine() const { return p ? p->_bitmap.bytesPerLine() : 0; }
-	int area() const { return p ? p->_bitmap.area() : 0; }
+	int width() const { return p ? p->bitmap.width() : 0; }
+	int height() const { return p ? p->bitmap.height() : 0; }
+	int bytesPerLine() const { return p ? p->bitmap.bytesPerLine() : 0; }
+	int area() const { return p ? p->bitmap.area() : 0; }
 	
-	MLBitmap<Color> bitmap() { return p ? p->_bitmap : MLBitmap<Color>(); }
-	const MLBitmap<Color> bitmap() const { return p ? p->_bitmap : MLBitmap<Color>(); }
+	MLBitmap<Color> bitmap() { return p ? p->bitmap : MLBitmap<Color>(); }
+	const MLBitmap<Color> constBitmap() const { return p ? p->bitmap : MLBitmap<Color>(); }
 	
-	Color *bits() { return p->_bitmap.bits(); }
-	const Color *constBits() const { return p->_bitmap.constBits(); }
+	MLPointer<Color> bits() { return p->bitmap.bits(); }
+	const Color *constBits() const { return p->bitmap.constBits(); }
 	
-	Color *scanline(int y) { return p->_bitmap.scanline(y); }
-	const Color *constScanline(int y) const { return p->_bitmap.constScanline(y); }
+	MLPointer<Color> scanline(int y) { return p->bitmap.scanline(y); }
+	MLPointer<const Color> constScanline(int y) const { return p->bitmap.constScanline(y); }
 	
-	ColorType *pixelPointer(int x, int y) { return p->_bitmap.pixelPointer(x, y); }
-	ColorType *pixelPointer(const QPoint &point) { return pixelPointer(point.x(), point.y()); }
+	MLPointer<Color> invertedScanline(int invertedY) { return p->bitmap.invertedScanline(invertedY); }
+	MLPointer<const Color> invertedConstScanline(int invertedY) const { return p->bitmap.invertedConstScanline(invertedY); }
 	
-	const ColorType *constPixelPointer(int x, int y) const { return p->_bitmap.constPixelPointer(x, y); }
-	const ColorType *constPixelPointer(const QPoint &point) const { return constPixelPointer(point.x(), point.y()); }
+	MLPointer<Color> pixelPointer(int x, int y) { return p->bitmap.pixelPointer(x, y); }
+	MLPointer<Color> pixelPointer(const QPoint &point) { return pixelPointer(point.x(), point.y()); }
+	
+	MLPointer<const Color> constPixelPointer(int x, int y) const { return p->bitmap.constPixelPointer(x, y); }
+	MLPointer<const Color> constPixelPointer(const QPoint &point) const { return constPixelPointer(point.x(), point.y()); }
 	
 	ColorType pixel(int x, int y) const { return *constPixelPointer(x, y); }
 	ColorType pixel(const QPoint &point) const { return pixel(point.x(), point.y()); }
 	
-	void fill(const ColorType &c) { mlFillArray(scanline(0), c, area()); }
+	void fill(const ColorType &c)
+	{
+		if (!p) return;
+		
+		QSize s = size();
+		for (int y = 0; y < s.height(); ++y)
+		{
+			scanline(y).fill(c, s.width());
+		}
+	}
 	
 	template <ML::ImageFormat NewFormat, class NewColor>
 	MLGenericImage<NewFormat, NewColor> convert()
@@ -115,25 +146,28 @@ public:
 		if (!p)
 			return MLGenericImage<NewFormat, NewColor>();
 		
-		MLGenericImage<NewFormat, NewColor> newImage(size());
+		QSize s = size();
+		MLGenericImage<NewFormat, NewColor> newImage(s);
 		
-		int count = area();
-		NewColor *dp = newImage.bits();
-		Color *sp = constBits();
-		
-		for (int i = 0; i < count; ++i)
-			mlConvertPixel<NewFormat, NewColor, Format, Color>(*dp++, *sp++);
+		for (int y = 0; y < s.height(); ++y)
+		{
+			NewColor *dp = newImage.scanline(y);
+			Color *sp = constScanline(y);
+			
+			for (int x = 0; x < s.width(); ++x)
+				mlConvertPixel<NewFormat, NewColor, Format, Color>(*dp++, *sp++);
+		}
 	}
 	
 	template <ML::ImageFormat SrcFormat, class SrcColor>
-	void paste(const MLGenericImage<SrcFormat, SrcColor> &image, const QPoint &point = QPoint())
+	void paste(const MLGenericImage<SrcFormat, SrcColor> &image, bool inverted = false, const QPoint &point = QPoint())
 	{
 		QRect r = rect() & QRect(point, image.size());
 		
 		for (int y = r.top(); y <= r.bottom(); ++y)
 		{
 			ColorType *dp = scanline(y) + r.left();
-			const SrcColor *sp = image.constScanline(y - point.y()) + r.left() - point.x();
+			const SrcColor *sp = (inverted ? image.invertedConstScanline(y - point.y()) : image.constScanline(y - point.y())) + r.left() - point.x();
 			
 			for (int x = 0; x < r.width(); ++x)
 				mlConvertPixel<Format, Color, SrcFormat, SrcColor>(*dp++, *sp++);

@@ -4,12 +4,14 @@
 #include <stdint.h>
 #include <emmintrin.h>
 #include <cstdlib>
+#include <cmath>
 #include <new>
 #include <QPointF>
 #include <QMetaType>
+#include <QTransform>
 
 #include "mlglobal.h"
-#include "mlmisc.h"
+#include "mlmemory.h"
 
 #define ML_ALIGN_16BYTE \
 public: \

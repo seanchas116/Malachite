@@ -101,7 +101,7 @@ public:
 		if (newCount <= 0)
 			return;
 		
-		QScopedArrayPointer<float> newCovers(new float[newCount]);
+		MLArray<float> newCovers(newCount);
 		
 		for (int i = 0; i < newCount; ++i)
 		{
@@ -141,13 +141,13 @@ public:
 		_argb(argb * opacity)
 	{}
 	
-	void fill(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
 	{
 		Q_UNUSED(pos);
 		blendOp->blend(count, dst, _argb, covers);
 	}
 	
-	void fill(const QPoint &pos, int count, MLVec4F *dst, float cover, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, MLPointer<MLVec4F> dst, float cover, MLBlendOp *blendOp)
 	{
 		Q_UNUSED(pos);
 		blendOp->blend(count, dst, _argb * cover);
@@ -165,20 +165,20 @@ public:
 	MLImageFiller(const MLArgbBitmap &bitmap, const QPoint &offset) :
 		_srcBitmap(bitmap), _offset(offset) {}
 	
-	void fill(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
 	{
 		fillTemplate<false>(pos, count, dst, covers, blendOp);
 	}
 	
-	void fill(const QPoint &pos, int count, MLVec4F *dst, float cover, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, MLPointer<MLVec4F> dst, float cover, MLBlendOp *blendOp)
 	{
-		fillTemplate<true>(pos, count, dst, &cover, blendOp);
+		fillTemplate<true>(pos, count, dst, MLPointer<float>(cover), blendOp);
 	}
 	
 private:
 	
 	template <bool CoverSingle>
-	void fillTemplate(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
+	void fillTemplate(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
 	{
 		switch (SpreadType)
 		{
@@ -195,7 +195,7 @@ private:
 	}
 	
 	template <bool CoverSingle>
-	void fillTemplatePad(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
+	void fillTemplatePad(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
 		int imageY = qBound(0, srcPos.y(), _srcBitmap.height() - 1);
@@ -238,7 +238,7 @@ private:
 	}
 	
 	template <bool CoverSingle>
-	void fillTemplateRepeat(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
+	void fillTemplateRepeat(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
 		MLIntDivision divX(srcPos.x(), _srcBitmap.width());
@@ -281,7 +281,7 @@ private:
 	}
 	
 	template <bool CoverSingle>
-	void fillTemplateReflective(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
+	void fillTemplateReflective(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
 		MLIntDivision divX(srcPos.x(), _srcBitmap.width());
@@ -337,7 +337,7 @@ public:
 		_transform(worldTransform)
 	{}
 	
-	void fill(const QPoint &pos, int count, MLVec4F *dst, float *covers, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
 	{
 		if (_opacity != 1)
 		{
@@ -345,7 +345,7 @@ public:
 				covers[i] *= _opacity;
 		}
 		
-		QScopedArrayPointer<MLVec4F> fill(new MLVec4F[count]);
+		MLArray<MLVec4F> fill(count);
 		
 		MLVec2D centerPos(pos.x(), pos.y());
 		centerPos += MLVec2D(0.5, 0.5);
@@ -359,11 +359,11 @@ public:
 		blendOp->blend(count, dst, fill.data(), covers);
 	}
 	
-	void fill(const QPoint &pos, int count, MLVec4F *dst, float cover, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, MLPointer<MLVec4F> dst, float cover, MLBlendOp *blendOp)
 	{
 		cover *= _opacity;
 		
-		QScopedArrayPointer<MLVec4F> fill(new MLVec4F[count]);
+		MLArray<MLVec4F> fill(count);
 		
 		MLVec2D centerPos(pos.x(), pos.y());
 		centerPos += MLVec2D(0.5, 0.5);

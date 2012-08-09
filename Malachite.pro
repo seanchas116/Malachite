@@ -6,7 +6,7 @@
 
 TARGET = malachite
 TEMPLATE = lib
-QT += core gui opengl
+QT += core gui
 
 DEFINES += MALACHITE_LIBRARY
 
@@ -27,15 +27,14 @@ SOURCES += \
     mlcolorgradient.cpp \
     mlcurvesubdivision.cpp \
     private/mlsurfacepaintengine.cpp \
-    mlacceleratedimage.cpp \
-    mlacceleratedimagefilter.cpp \
-    mlargb.cpp \
+    #mlacceleratedimage.cpp \
+    #mlacceleratedimagefilter.cpp \
     mlvector.cpp \
     mlpolygon.cpp \
     private/mlimagepaintenginev2.cpp \
     private/mlimagerendererv2.cpp
 
-HEADERS += malachite.h\
+HEADERS +=\
     mlglobal.h \
     mlblendmode.h \
     mlblendop.h \
@@ -68,14 +67,15 @@ HEADERS += malachite.h\
     private/agg_clip_liang_barsky.h \
     private/agg_basics.h \
     private/agg_array.h \
-    mlacceleratedimage.h \
-    mlacceleratedimagefilter.h \
+    #mlacceleratedimage.h \
+    #mlacceleratedimagefilter.h \
     private/mlimageioprivate.h \
     mlvector.h \
     mlpolygon.h \
     private/mlimagepaintenginev2.h \
     private/mlimagerendererv2.h \
-    mlpixelconversion.h
+    mlpixelconversion.h \
+    mlmemory.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
@@ -103,10 +103,18 @@ OTHER_FILES += \
     resources/shader/test.vert \
     resources/shader/test.frag
 
-LIBS += -lfreeimage
-QMAKE_CXXFLAGS += -fpermissive
-#QMAKE_CXXFLAGS += -std=c++0x
-
 RESOURCES += \
     resources.qrc
+
+CONFIG(debug, debug|release) {
+	DEFINES += QT_DEBUG
+} else {
+	DEFINES += QT_NO_DEBUG
+}
+
+LIBS += -lfreeimage
+#QMAKE_CXXFLAGS += -fpermissive
+#QMAKE_CXXFLAGS += -std=c++0x
+
+CONFIG += sse2
 

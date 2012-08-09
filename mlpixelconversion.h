@@ -6,7 +6,7 @@
 #include <QDebug>
 
 template <ML::ImageFormat DstFormat, class DstColor, ML::ImageFormat SrcFormat, class SrcColor>
-void mlConvertPixel(DstColor &dst, const SrcColor &src)
+inline void mlConvertPixel(DstColor &dst, const SrcColor &src)
 {
 	Q_UNUSED(dst); Q_UNUSED(src);
 	qWarning() << "uninplemented image format / type conversion";
@@ -14,7 +14,7 @@ void mlConvertPixel(DstColor &dst, const SrcColor &src)
 
 // 8bit unsigned rgb -> 32bit float argb premultiplied
 template < >
-void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatRgb, MLVec3U8>(MLVec4F &dst, const MLVec3U8 &src)
+inline void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatRgb, MLVec3U8>(MLVec4F &dst, const MLVec3U8 &src)
 {
 	dst.a = 0xFF;
 	dst.r = src.r;
@@ -25,7 +25,7 @@ void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatRgb, MLVec3
 
 // 16bit unsigned rgb -> 32bit float argb premultiplied
 template < >
-void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatRgb, MLVec3U16>(MLVec4F &dst, const MLVec3U16 &src)
+inline void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatRgb, MLVec3U16>(MLVec4F &dst, const MLVec3U16 &src)
 {
 	dst.a = 0xFFFF;
 	dst.r = src.r;
@@ -36,7 +36,7 @@ void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatRgb, MLVec3
 
 // 8bit unsigned argb -> 32bit float argb premultiplied
 template < >
-void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgb, MLVec4U8>(MLVec4F &dst, const MLVec4U8 &src)
+inline void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgb, MLVec4U8>(MLVec4F &dst, const MLVec4U8 &src)
 {
 	dst.a = src.a;
 	dst.r = src.r;
@@ -50,7 +50,7 @@ void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgb, MLVec
 
 // 16bit unsigned argb -> 32bit float argb premultiplied
 template < >
-void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgb, MLVec4U16>(MLVec4F &dst, const MLVec4U16 &src)
+inline void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgb, MLVec4U16>(MLVec4F &dst, const MLVec4U16 &src)
 {
 	dst.a = src.a;
 	dst.r = src.r;
@@ -64,7 +64,7 @@ void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgb, MLVec
 
 // 8bit unsigned argb premultiplied -> 32bit float argb premultiplied
 template < >
-void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgbFast, MLVec4U8>(MLVec4F &dst, const MLVec4U8 &src)
+inline void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgbFast, MLVec4U8>(MLVec4F &dst, const MLVec4U8 &src)
 {
 	dst.a = src.a;
 	dst.r = src.r;
@@ -75,7 +75,7 @@ void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgbFast, M
 
 // 16bit unsigned argb premultiplied -> 32bit float argb premultiplied
 template < >
-void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgbFast, MLVec4U16>(MLVec4F &dst, const MLVec4U16 &src)
+inline void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgbFast, MLVec4U16>(MLVec4F &dst, const MLVec4U16 &src)
 {
 	dst.a = src.a;
 	dst.r = src.r;
@@ -86,7 +86,7 @@ void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgbFast, M
 
 // 32bit float argb premultiplied -> 8bit unsigned rgb
 template < >
-void mlConvertPixel<ML::ImageFormatRgb, MLVec3U8, ML::ImageFormatArgbFast, MLVec4F>(MLVec3U8 &dst, const MLVec4F &src)
+inline void mlConvertPixel<ML::ImageFormatRgb, MLVec3U8, ML::ImageFormatArgbFast, MLVec4F>(MLVec3U8 &dst, const MLVec4F &src)
 {
 	MLVec4F v = src * 0xFF;
 	MLVec4I32 iv = mlRound(v);
@@ -98,7 +98,7 @@ void mlConvertPixel<ML::ImageFormatRgb, MLVec3U8, ML::ImageFormatArgbFast, MLVec
 
 // 32bit float argb premultiplied -> 16bit unsigned rgb
 template < >
-void mlConvertPixel<ML::ImageFormatRgb, MLVec3U16, ML::ImageFormatArgbFast, MLVec4F>(MLVec3U16 &dst, const MLVec4F &src)
+inline void mlConvertPixel<ML::ImageFormatRgb, MLVec3U16, ML::ImageFormatArgbFast, MLVec4F>(MLVec3U16 &dst, const MLVec4F &src)
 {
 	MLVec4F v = src * 0xFFFF;
 	MLVec4I32 iv = mlRound(v);
@@ -110,7 +110,7 @@ void mlConvertPixel<ML::ImageFormatRgb, MLVec3U16, ML::ImageFormatArgbFast, MLVe
 
 // 32bit float argb premultiplied -> 8bit unsigned argb
 template < >
-void mlConvertPixel<ML::ImageFormatArgb, MLVec4U8, ML::ImageFormatArgbFast, MLVec4F>(MLVec4U8 &dst, const MLVec4F &src)
+inline void mlConvertPixel<ML::ImageFormatArgb, MLVec4U8, ML::ImageFormatArgbFast, MLVec4F>(MLVec4U8 &dst, const MLVec4F &src)
 {
 	MLVec4F v = src;
 	v.r *= v.a;
@@ -129,7 +129,7 @@ void mlConvertPixel<ML::ImageFormatArgb, MLVec4U8, ML::ImageFormatArgbFast, MLVe
 
 // 32bit float argb premultiplied -> 16bit unsigned argb
 template < >
-void mlConvertPixel<ML::ImageFormatArgb, MLVec4U16, ML::ImageFormatArgbFast, MLVec4F>(MLVec4U16 &dst, const MLVec4F &src)
+inline void mlConvertPixel<ML::ImageFormatArgb, MLVec4U16, ML::ImageFormatArgbFast, MLVec4F>(MLVec4U16 &dst, const MLVec4F &src)
 {
 	MLVec4F v = src;
 	v.r *= v.a;
@@ -148,7 +148,7 @@ void mlConvertPixel<ML::ImageFormatArgb, MLVec4U16, ML::ImageFormatArgbFast, MLV
 
 // 32bit float argb premultiplied -> 8bit unsigned argb premultiplied
 template < >
-void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4U8, ML::ImageFormatArgbFast, MLVec4F>(MLVec4U8 &dst, const MLVec4F &src)
+inline void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4U8, ML::ImageFormatArgbFast, MLVec4F>(MLVec4U8 &dst, const MLVec4F &src)
 {
 	MLVec4F v = src * 0xFF;
 	MLVec4I32 iv = mlRound(v);
@@ -161,7 +161,7 @@ void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4U8, ML::ImageFormatArgbFast, 
 
 // 32bit float argb premultiplied -> 16bit unsigned argb premultiplied
 template < >
-void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4U16, ML::ImageFormatArgbFast, MLVec4F>(MLVec4U16 &dst, const MLVec4F &src)
+inline void mlConvertPixel<ML::ImageFormatArgbFast, MLVec4U16, ML::ImageFormatArgbFast, MLVec4F>(MLVec4U16 &dst, const MLVec4F &src)
 {
 	MLVec4F v = src * 0xFFFF;
 	MLVec4I32 iv = mlRound(v);
