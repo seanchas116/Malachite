@@ -53,48 +53,71 @@ private:
 	QMap<float, MLVec4F> _stops;
 };
 
-class MLLinearGradientInfo
+struct MLLinearGradientInfo
 {
-public:
-	
 	MLLinearGradientInfo() {}
 	
 	MLLinearGradientInfo(const MLVec2D &start, const MLVec2D &end) :
-		_start(start), _end(end) {}
+		start(start), end(end) {}
 	
-	MLVec2D start() const { return _start; }
-	MLVec2D end() const { return _end; }
-	void setStart(const MLVec2D &p) { _start = p; }
-	void setEnd(const MLVec2D &p) { _end = p; }
+	bool transformable(const QTransform &transform) const
+	{
+		if (transform.isIdentity())
+			return true;
+		
+		if (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22())
+			return true;
+		
+		return false;
+	}
 	
-private:
+	void transform(const QTransform &transform)
+	{
+		start *= transform;
+		end *= transform;
+	}
 	
-	MLVec2D _start, _end;
+	MLVec2D start, end;
 };
 
-class MLRadialGradientInfo
+struct MLRadialGradientInfo
 {
-public:
-	
 	MLRadialGradientInfo() {}
 	
 	MLRadialGradientInfo(const MLVec2D &center, double radius, const MLVec2D &focal) :
-		_center(center), _focal(focal), _radius(radius) {}
+		center(center), focal(focal), radius(radius) {}
+	
+	MLRadialGradientInfo(const MLVec2D &center, const MLVec2D &radius, const MLVec2D &focal) :
+		center(center), focal(focal), radius(radius) {}
 	
 	MLRadialGradientInfo(const MLVec2D &center, double radius) :
-		_center(center), _focal(center), _radius(radius) {}
+		center(center), focal(center), radius(radius) {}
 	
-	MLVec2D center() const { return _center; }
-	MLVec2D focal() const { return _focal; }
-	double radius() const { return _radius; }
-	void setCenter(const MLVec2D &p) { _center = p; }
-	void setFocal(const MLVec2D &p) { _focal = p; }
-	void setRadius(double r) { _radius = r; }
+	MLRadialGradientInfo(const MLVec2D &center, const MLVec2D &radius) :
+		center(center), focal(center), radius(radius) {}
 	
-private:
+	bool transformable(const QTransform &transform) const
+	{
+		if (transform.isIdentity())
+			return true;
+		
+		if (transform.isRotating() && radius.x == radius.y)
+			return true;
+		
+		if (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0)
+			return true;
+		
+		return false;
+	}
 	
-	MLVec2D _center, _focal;
-	double _radius;
+	void transform(const QTransform &transform)
+	{
+		center *= transform;
+		focal *= transform;
+		radius *= MLVec2D(transform.m11(), transform.m22());
+	}
+	
+	MLVec2D center, focal, radius;
 };
 
 Q_DECLARE_METATYPE(MLLinearGradientInfo)

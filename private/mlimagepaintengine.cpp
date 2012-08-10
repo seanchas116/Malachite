@@ -1,5 +1,7 @@
-#include "mlimagepaintenginev2.h"
-#include "mlimagerendererv2.h"
+#include "mlimagepaintengine.h"
+#include "mlfiller.h"
+#include "mlgradientgenerator.h"
+#include "mlscalinggenerator.h"
 
 template <class Rasterizer, class Filler>
 void mlFill(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blendOp, Filler *filler)
@@ -84,7 +86,7 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 		return;
 	}
 	
-	const QTransform fillShapeTransform = brush.transform() * state.shapeTransform;
+	QTransform fillShapeTransform = brush.transform() * state.shapeTransform;
 	
 	if (brush.type() == ML::BrushTypeImage)
 	{
@@ -106,9 +108,15 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 	{
 		MLLinearGradientInfo info = brush.linearGradientInfo();
 		
-		if (mlTransformIsSimilar(fillShapeTransform))
+		if (info.transformable(fillShapeTransform))
 		{
-			MLLinearGradientMethod method(info.start() * fillShapeTransform, info.end() * fillShapeTransform);
+			info.transform(fillShapeTransform);
+			fillShapeTransform = QTransform();
+		}
+		
+		if (fillShapeTransform.isIdentity())
+		{
+			MLLinearGradientMethod method(info.start, info.end);
 			MLGradientGenerator<MLColorGradient, MLLinearGradientMethod, SpreadType> gen(brush.gradient(), &method);
 			MLFiller<MLGradientGenerator<MLColorGradient, MLLinearGradientMethod, SpreadType>, false> filler(&gen, opacity);
 			mlFill(ras, bitmap, blendOp, &filler);
@@ -116,7 +124,7 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 		}
 		else
 		{
-			MLLinearGradientMethod method(info.start(), info.end());
+			MLLinearGradientMethod method(info.start, info.end);
 			MLGradientGenerator<MLColorGradient, MLLinearGradientMethod, SpreadType> gen(brush.gradient(), &method);
 			MLFiller<MLGradientGenerator<MLColorGradient, MLLinearGradientMethod, SpreadType>, true> filler(&gen, opacity, fillShapeTransform.inverted());
 			mlFill(ras, bitmap, blendOp, &filler);
@@ -127,11 +135,17 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 	{
 		MLRadialGradientInfo info = brush.radialGradientInfo();
 		
-		if (info.center() == info.focal())
+		if (info.transformable(fillShapeTransform))
 		{
-			if (mlTransformIsSimilar(fillShapeTransform))
+			info.transform(fillShapeTransform);
+			fillShapeTransform = QTransform();
+		}
+		
+		if (info.center == info.focal)
+		{
+			if (fillShapeTransform.isIdentity())
 			{
-				MLRadialGradientMethod method(info.center() * fillShapeTransform, info.radius() * fillShapeTransform.m11());
+				MLRadialGradientMethod method(info.center, info.radius);
 				MLGradientGenerator<MLColorGradient, MLRadialGradientMethod, SpreadType> gen(brush.gradient(), &method);
 				MLFiller<MLGradientGenerator<MLColorGradient, MLRadialGradientMethod, SpreadType>, false> filler(&gen, opacity);
 				mlFill(ras, bitmap, blendOp, &filler);
@@ -139,7 +153,7 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 			}
 			else
 			{
-				MLRadialGradientMethod method(info.center(), info.radius());
+				MLRadialGradientMethod method(info.center, info.radius);
 				MLGradientGenerator<MLColorGradient, MLRadialGradientMethod, SpreadType> gen(brush.gradient(), &method);
 				MLFiller<MLGradientGenerator<MLColorGradient, MLRadialGradientMethod, SpreadType>, true> filler(&gen, opacity, fillShapeTransform.inverted());
 				mlFill(ras, bitmap, blendOp, &filler);
@@ -148,9 +162,9 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 		}
 		else
 		{
-			if (mlTransformIsSimilar(fillShapeTransform))
+			if (fillShapeTransform.isIdentity())
 			{
-				MLFocalGradientMethod method(info.center() * fillShapeTransform, info.radius() * fillShapeTransform.m11(), info.focal() * fillShapeTransform);
+				MLFocalGradientMethod method(info.center, info.radius, info.focal);
 				MLGradientGenerator<MLColorGradient, MLFocalGradientMethod, SpreadType> gen(brush.gradient(), &method);
 				MLFiller<MLGradientGenerator<MLColorGradient, MLFocalGradientMethod, SpreadType>, false> filler(&gen, opacity);
 				mlFill(ras, bitmap, blendOp, &filler);
@@ -158,7 +172,7 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 			}
 			else
 			{
-				MLFocalGradientMethod method(info.center(), info.radius(), info.focal());
+				MLFocalGradientMethod method(info.center, info.radius, info.focal);
 				MLGradientGenerator<MLColorGradient, MLFocalGradientMethod, SpreadType> gen(brush.gradient(), &method);
 				MLFiller<MLGradientGenerator<MLColorGradient, MLFocalGradientMethod, SpreadType>, true> filler(&gen, opacity, fillShapeTransform.inverted());
 				mlFill(ras, bitmap, blendOp, &filler);

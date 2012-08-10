@@ -595,10 +595,10 @@ inline const MLVec4F operator-(const MLVec4F &x, float s) { return x - MLVec4F(s
 inline const MLVec4F operator*(const MLVec4F &x, float s) { return x * MLVec4F(s); }
 inline const MLVec4F operator/(const MLVec4F &x, float s) { return x / MLVec4F(s); }
 
-inline const MLVec4F operator+(float s, const MLVec4F &x) { return x + MLVec4F(s); }
-inline const MLVec4F operator-(float s, const MLVec4F &x) { return x - MLVec4F(s); }
-inline const MLVec4F operator*(float s, const MLVec4F &x) { return x * MLVec4F(s); }
-inline const MLVec4F operator/(float s, const MLVec4F &x) { return x / MLVec4F(s); }
+inline const MLVec4F operator+(float s, const MLVec4F &x) { return MLVec4F(s) + x; }
+inline const MLVec4F operator-(float s, const MLVec4F &x) { return MLVec4F(s) - x; }
+inline const MLVec4F operator*(float s, const MLVec4F &x) { return MLVec4F(s) * x; }
+inline const MLVec4F operator/(float s, const MLVec4F &x) { return MLVec4F(s) / x; }
 
 struct MLVec2D
 {
@@ -614,7 +614,6 @@ struct MLVec2D
 	
 	operator const QPointF&() const { return *reinterpret_cast<const QPointF *>(this); }
 	operator const QSizeF&() const { return *reinterpret_cast<const QSizeF *>(this); }
-	operator const QVector2D&() const { return *reinterpret_cast<const QVector2D *>(this); }
 	
 	static MLVec2I64 equal(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64(__builtin_ia32_cmpeqpd(v0, v1)); }
 	static MLVec2I64 notEqual(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64(__builtin_ia32_cmpneqpd(v0, v1)); }
@@ -643,6 +642,8 @@ struct MLVec2D
 	const MLVec2D operator*(const MLVec2D &other) const { MLVec2D r; r.v = v * other.v; return r; }
 	const MLVec2D operator/(const MLVec2D &other) const { MLVec2D r; r.v = v / other.v; return r; }
 	
+	inline MLVec2D &operator*=(const QTransform &transform);
+	
 	union
 	{
 		struct
@@ -658,22 +659,26 @@ struct MLVec2D
 inline bool operator==(const MLVec2D &v0, const MLVec2D &v1) { return v0.x == v1.x && v0.y == v1.y; }
 inline bool operator!=(const MLVec2D &v0, const MLVec2D &v1) { return v0.x != v1.x || v0.y != v1.y; }
 
-
 inline const MLVec2D operator+(const MLVec2D &x, double s) { return x + MLVec2D(s); }
 inline const MLVec2D operator-(const MLVec2D &x, double s) { return x - MLVec2D(s); }
 inline const MLVec2D operator*(const MLVec2D &x, double s) { return x * MLVec2D(s); }
 inline const MLVec2D operator/(const MLVec2D &x, double s) { return x / MLVec2D(s); }
 
-inline const MLVec2D operator+(double s, const MLVec2D &x) { return x + MLVec2D(s); }
-inline const MLVec2D operator-(double s, const MLVec2D &x) { return x - MLVec2D(s); }
-inline const MLVec2D operator*(double s, const MLVec2D &x) { return x * MLVec2D(s); }
-inline const MLVec2D operator/(double s, const MLVec2D &x) { return x / MLVec2D(s); }
+inline const MLVec2D operator+(double s, const MLVec2D &x) { return MLVec2D(s) + x; }
+inline const MLVec2D operator-(double s, const MLVec2D &x) { return MLVec2D(s) - x; }
+inline const MLVec2D operator*(double s, const MLVec2D &x) { return MLVec2D(s) * x; }
+inline const MLVec2D operator/(double s, const MLVec2D &x) { return MLVec2D(s) / x; }
 
 inline MLVec2D operator*(const MLVec2D &v, const QTransform &transform)
 {
 	MLVec2D r;
 	transform.map(v.x, v.y, &(r.x), &(r.y));
 	return r;
+}
+
+inline MLVec2D &MLVec2D::operator*=(const QTransform &transform)
+{
+	return *this = *this * transform;
 }
 
 inline MLVec4F mlMax(const MLVec4F &v1, const MLVec4F &v2) { return MLVec4F(__builtin_ia32_maxps(v1, v2)); }

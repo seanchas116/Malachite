@@ -31,8 +31,8 @@ SOURCES += \
     #mlacceleratedimagefilter.cpp \
     mlvector.cpp \
     mlpolygon.cpp \
-    private/mlimagepaintenginev2.cpp \
-    private/mlimagerendererv2.cpp
+    private/mlrenderer.cpp \
+    private/mlimagepaintengine.cpp
 
 HEADERS +=\
     mlglobal.h \
@@ -72,10 +72,13 @@ HEADERS +=\
     private/mlimageioprivate.h \
     mlvector.h \
     mlpolygon.h \
-    private/mlimagepaintenginev2.h \
-    private/mlimagerendererv2.h \
     mlpixelconversion.h \
-    mlmemory.h
+    mlmemory.h \
+    private/mlscalinggenerator.h \
+    private/mlgradientgenerator.h \
+    private/mlfiller.h \
+    private/mlrenderer.h \
+    private/mlimagepaintengine.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
@@ -114,7 +117,7 @@ CONFIG(debug, debug|release) {
 
 LIBS += -lfreeimage
 #QMAKE_CXXFLAGS += -fpermissive
-#QMAKE_CXXFLAGS += -std=c++0x
+#QMAKE_CXXFLAGS += -std=c++0x -ffast-math
 
 CONFIG += sse2
 

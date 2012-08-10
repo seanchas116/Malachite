@@ -1,7 +1,7 @@
 #include <QtCore>
 #include <FreeImage.h>
 
-#include "private/mlimagepaintenginev2.h"
+#include "private/mlimagepaintengine.h"
 #include "mlimage.h"
 
 bool MLImage::isBlank() const
@@ -124,7 +124,7 @@ MLVec4F MLImage::colorSummation(const QPoint &maskOffset, const MLImage &mask) c
 
 MLPaintEngine *MLImage::createPaintEngine()
 {
-	return new MLImagePaintEngine();
+	return new MLImagePaintEngine;
 }
 
 QImage MLImage::toQImage() const

@@ -1,8 +1,8 @@
-#ifndef MLIMAGEPAINTENGINEV2_H
-#define MLIMAGEPAINTENGINEV2_H
+#ifndef MLIMAGEPAINTENGINE_H
+#define MLIMAGEPAINTENGINE_H
 
 #include "mlpaintengine.h"
-#include "mlimagerendererv2.h"
+#include "mlrenderer.h"
 
 class MLImagePaintEngine : public MLPaintEngine
 {
@@ -29,4 +29,4 @@ private:
 };
 
 
-#endif // MLIMAGEPAINTENGINEV2_H
+#endif // MLIMAGEPAINTENGINE_H
