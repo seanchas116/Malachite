@@ -144,7 +144,7 @@ public:
 	MLFocalGradientMethod(const MLVec2D &center, const MLVec2D &radius, const MLVec2D &focal) :
 		o(center)
 	{
-		Q_ASSERT(r.x > 0 && r.y > 0);
+		Q_ASSERT(radius.x > 0 && radius.y > 0);
 		rinv = 1 / radius;
 		
 		of = (focal - center) * rinv;

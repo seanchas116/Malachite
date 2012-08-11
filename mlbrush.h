@@ -103,27 +103,27 @@ public:
 		d = new MLBrushData(surface);
 	}
 	
-	static MLBrush fromLinearGradient(const MLColorGradient &gradient, const MLVec4F &start, const MLVec4F &end)
+	static MLBrush fromLinearGradient(const MLColorGradient &gradient, const MLVec2D &start, const MLVec2D &end)
 	{
 		return MLBrush(gradient, MLLinearGradientInfo(start, end));
 	}
 	
-	static MLBrush fromRadialGradient(const MLColorGradient &gradient, const MLVec4F &center, double radius, const MLVec4F &focal)
+	static MLBrush fromRadialGradient(const MLColorGradient &gradient, const MLVec2D &center, double radius, const MLVec2D &focal)
 	{
 		return MLBrush(gradient, MLRadialGradientInfo(center, radius, focal));
 	}
 	
-	static MLBrush fromRadialGradient(const MLColorGradient &gradient, const MLVec4F &center, const MLVec4F &radius, const MLVec4F &focal)
+	static MLBrush fromRadialGradient(const MLColorGradient &gradient, const MLVec2D &center, const MLVec2D &radius, const MLVec2D &focal)
 	{
 		return MLBrush(gradient, MLRadialGradientInfo(center, radius, focal));
 	}
 	
-	static MLBrush fromRadialGradient(const MLColorGradient &gradient, const MLVec4F &center, double radius)
+	static MLBrush fromRadialGradient(const MLColorGradient &gradient, const MLVec2D &center, double radius)
 	{
 		return MLBrush(gradient, MLRadialGradientInfo(center, radius));
 	}
 	
-	static MLBrush fromRadialGradient(const MLColorGradient &gradient, const MLVec4F &center, const MLVec4F &radius)
+	static MLBrush fromRadialGradient(const MLColorGradient &gradient, const MLVec2D &center, const MLVec2D &radius)
 	{
 		return MLBrush(gradient, MLRadialGradientInfo(center, radius));
 	}

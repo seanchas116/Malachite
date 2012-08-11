@@ -131,7 +131,7 @@ QImage MLImage::toQImage() const
 {
 	QImage image(size(), QImage::Format_ARGB32_Premultiplied);
 	
-	MLImage32 wrapper = MLImage32::wrap(image.bits(), image.size());
+	auto wrapper = MLImage32::wrap(image.bits(), image.size(), image.bytesPerLine());
 	wrapper.paste(*this);
 	return image;
 }
@@ -140,7 +140,7 @@ MLImage MLImage::fromQImage(const QImage &qimage)
 {
 	MLImage image(qimage.size());
 	
-	const MLImage32 wrapper = MLImage32::wrap(qimage.constBits(), qimage.size());
+	auto wrapper = MLImage32::wrap(qimage.constBits(), qimage.size(), qimage.bytesPerLine());
 	image.paste(wrapper);
 	return image;
 }

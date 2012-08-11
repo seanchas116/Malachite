@@ -80,25 +80,6 @@ HEADERS +=\
     private/mlrenderer.h \
     private/mlimagepaintengine.h
 
-symbian {
-    MMP_RULES += EXPORTUNFROZEN
-    TARGET.UID3 = 0xE0E95D76
-    TARGET.CAPABILITY = 
-    TARGET.EPOCALLOWDLLDATA = 1
-    addFiles.sources = Malachite.dll
-    addFiles.path = !:/sys/bin
-    DEPLOYMENT += addFiles
-}
-
-unix:!symbian {
-    maemo5 {
-        target.path = /opt/usr/lib
-    } else {
-        target.path = /usr/lib
-    }
-    INSTALLS += target
-}
-
 OTHER_FILES += \
     README.md \
     resources/shader/default.vert \
@@ -115,9 +96,16 @@ CONFIG(debug, debug|release) {
 	DEFINES += QT_NO_DEBUG
 }
 
-LIBS += -lfreeimage
-#QMAKE_CXXFLAGS += -fpermissive
-#QMAKE_CXXFLAGS += -std=c++0x -ffast-math
+QMAKE_CFLAGS_X86_64 = 
+QMAKE_CXXFLAGS_X86_64 = 
+QMAKE_OBJECTIVE_CFLAGS_X86_64 = 
+QMAKE_LFLAGS_X86_64 = 
 
+LIBS += -lfreeimage
+#QMAKE_CXXFLAGS += -fpermissive -ffast-math
+QMAKE_CXXFLAGS +=  -std=c++0x -m64
 CONFIG += sse2
+
+target.path = /usr/local/lib
+INSTALLS += target
 

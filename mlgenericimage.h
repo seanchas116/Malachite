@@ -33,7 +33,6 @@ public:
 		ownsData(true)
 	{
 		bitmap.setBits(mlAllocateAlignedMemory(bitmap.byteCount(), 16), bitmap.byteCount());
-		
 		bitmap.bits().pasteByte(other.bitmap.constBits(), other.bitmap.byteCount());
 	}
 	
@@ -61,45 +60,26 @@ public:
 			p = new MLGenericImageData<Color>(size, bytesPerLine);
 	}
 	
-	MLGenericImage(const QSize &size)
-	{
-		if (!size.isEmpty())
-			p = new MLGenericImageData<Color>(size, size.width() * sizeof(Color));
-	}
-	
-	MLGenericImage(int width, int height, int bytesPerLine)
-	{
-		if (width && height)
-			p = new MLGenericImageData<Color>(QSize(width, height), bytesPerLine);
-	}
-	
-	MLGenericImage(int width, int height)
-	{
-		if (width && height)
-			p = new MLGenericImageData<Color>(QSize(width, height), width * sizeof(Color));
-	}
+	MLGenericImage(const QSize &size) : MLGenericImage(size, size.width() * sizeof(Color)) {}
+	MLGenericImage(int width, int height, int bytesPerLine) : MLGenericImage(QSize(width, height), bytesPerLine) {}
+	MLGenericImage(int width, int height) : MLGenericImage(QSize(width, height), width * sizeof(Color)) {}
 	
 	static MLGenericImage wrap(void *data, const QSize &size, int bytesPerLine)
 	{
-		MLGenericImage result;
+		MLGenericImage r;
 		if (!size.isEmpty())
-			result.p = new MLGenericImageData<Color>(data, size, bytesPerLine);
-		
-		return result;
+			r.p = new MLGenericImageData<Color>(data, size, bytesPerLine);
+		return r;
 	}
 	
 	static MLGenericImage wrap(void *data, const QSize &size) { return wrap(data, size, size.width() * sizeof(Color)); }
 	
 	static const MLGenericImage wrap(const void *data, const QSize &size, int bytesPerLine)
 	{
-		MLGenericImage result;
-		if (!size.isEmpty())
-			result.p = new MLGenericImageData<Color>(const_cast<void *>(data), size, bytesPerLine);
-		
-		return result;
+		return wrap(const_cast<void *>(data), size, bytesPerLine);
 	}
 	
-	static const MLGenericImage wrap(const void *data, const QSize &size) { return wrap(data, size, size.width() * sizeof(Color)); }
+	static const MLGenericImage wrap(const void *data, const QSize &size) { wrap(data, size, size.width() * sizeof(Color)); }
 	
 	QSize size() const { return p ? p->bitmap.size() : QSize(); }
 	QRect rect() const { return QRect(QPoint(), size()); }

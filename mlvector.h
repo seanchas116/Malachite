@@ -540,12 +540,12 @@ struct MLVec4F
 	MLVec4F(float e0, float e1, float e2, float e3) { e[0] = e0; e[1] = e1; e[2] = e2; e[3] = e3; }
 	MLVec4F(__v4sf v) : v(v) {}
 	
-	static MLVec4I32 equal(const MLVec4F &v0, const MLVec4F &v1) { return MLVec4I32(__builtin_ia32_cmpeqps(v0, v1)); }
-	static MLVec4I32 notEqual(const MLVec4F &v0, const MLVec4F &v1) { return MLVec4I32(__builtin_ia32_cmpneqps(v0, v1)); }
-	static MLVec4I32 lessThan(const MLVec4F &v0, const MLVec4F &v1) { return MLVec4I32(__builtin_ia32_cmpltps(v0, v1)); }
-	static MLVec4I32 lessThanOrEqual(const MLVec4F &v0, const MLVec4F &v1) { return MLVec4I32(__builtin_ia32_cmpleps(v0, v1)); }
-	static MLVec4I32 greaterThan(const MLVec4F &v0, const MLVec4F &v1) { return MLVec4I32(__builtin_ia32_cmpltps(v1, v0)); }
-	static MLVec4I32 greaterThanOrEqual(const MLVec4F &v0, const MLVec4F &v1) { return MLVec4I32(__builtin_ia32_cmpleps(v1, v0)); }
+	static MLVec4I32 equal(const MLVec4F &v0, const MLVec4F &v1) { return MLVec4I32((__v4si)__builtin_ia32_cmpeqps(v0, v1)); }
+	static MLVec4I32 notEqual(const MLVec4F &v0, const MLVec4F &v1) { return MLVec4I32((__v4si)__builtin_ia32_cmpneqps(v0, v1)); }
+	static MLVec4I32 lessThan(const MLVec4F &v0, const MLVec4F &v1) { return MLVec4I32((__v4si)__builtin_ia32_cmpltps(v0, v1)); }
+	static MLVec4I32 lessThanOrEqual(const MLVec4F &v0, const MLVec4F &v1) { return MLVec4I32((__v4si)__builtin_ia32_cmpleps(v0, v1)); }
+	static MLVec4I32 greaterThan(const MLVec4F &v0, const MLVec4F &v1) { return MLVec4I32((__v4si)__builtin_ia32_cmpltps(v1, v0)); }
+	static MLVec4I32 greaterThanOrEqual(const MLVec4F &v0, const MLVec4F &v1) { return MLVec4I32((__v4si)__builtin_ia32_cmpleps(v1, v0)); }
 	
 	float &operator[](int i) { return e[i]; }
 	const float &operator[](int i) const { return e[i]; }
@@ -615,12 +615,12 @@ struct MLVec2D
 	operator const QPointF&() const { return *reinterpret_cast<const QPointF *>(this); }
 	operator const QSizeF&() const { return *reinterpret_cast<const QSizeF *>(this); }
 	
-	static MLVec2I64 equal(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64(__builtin_ia32_cmpeqpd(v0, v1)); }
-	static MLVec2I64 notEqual(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64(__builtin_ia32_cmpneqpd(v0, v1)); }
-	static MLVec2I64 lessThan(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64(__builtin_ia32_cmpltpd(v0, v1)); }
-	static MLVec2I64 lessThanOrEqual(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64(__builtin_ia32_cmplepd(v0, v1)); }
-	static MLVec2I64 greaterThan(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64(__builtin_ia32_cmpltpd(v1, v0)); }
-	static MLVec2I64 greaterThanOrEqual(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64(__builtin_ia32_cmplepd(v1, v0)); }
+	static MLVec2I64 equal(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64((__v2di)__builtin_ia32_cmpeqpd(v0, v1)); }
+	static MLVec2I64 notEqual(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64((__v2di)__builtin_ia32_cmpneqpd(v0, v1)); }
+	static MLVec2I64 lessThan(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64((__v2di)__builtin_ia32_cmpltpd(v0, v1)); }
+	static MLVec2I64 lessThanOrEqual(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64((__v2di)__builtin_ia32_cmplepd(v0, v1)); }
+	static MLVec2I64 greaterThan(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64((__v2di)__builtin_ia32_cmpltpd(v1, v0)); }
+	static MLVec2I64 greaterThanOrEqual(const MLVec2D &v0, const MLVec2D &v1) { return MLVec2I64((__v2di)__builtin_ia32_cmplepd(v1, v0)); }
 	
 	double &operator[](int i) { return e[i]; }
 	const double &operator[](int i) const { return e[i]; }
