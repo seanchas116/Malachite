@@ -12,37 +12,7 @@
 
 #include "mlglobal.h"
 #include "mlmemory.h"
-
-#define ML_ALIGN_16BYTE \
-public: \
-	static void *operator new(size_t size) { \
-		return mlAllocateAlignedMemory(size, 16); \
-	} \
-	static void operator delete(void *p) { \
-		mlFreeAlignedMemory(p); \
-	} \
-	static void *operator new(size_t size, void *buf) { \
-		Q_UNUSED(size); \
-		return buf; \
-	} \
-	static void operator delete(void *p, void *buf) { \
-		Q_UNUSED(p); \
-		Q_UNUSED(buf); \
-	} \
-	static void *operator new[](size_t size) { \
-		return mlAllocateAlignedMemory(size, 16); \
-	} \
-	static void operator delete[](void *p) { \
-		mlFreeAlignedMemory(p); \
-	} \
-	static void *operator new[](size_t size, void *buf) { \
-		Q_UNUSED(size); \
-		return buf; \
-	} \
-	static void operator delete[](void *p, void *buf) { \
-		Q_UNUSED(p); \
-		Q_UNUSED(buf); \
-	}
+#include "mlmisc.h"
 
 struct MLVec2I64
 {
@@ -717,6 +687,21 @@ inline double mlLength(const MLVec2D &v)
 inline double mlArg(const MLVec2D &v)
 {
 	return atan2(v.x, v.y);
+}
+
+inline MLVec2D mlRotate(double r, double arg)
+{
+	return MLVec2D(cos(arg), sin(arg)) * r;
+}
+
+inline MLVec2D mlPolarToCartesian(const MLVec2D &v)
+{
+	return MLVec2D(cos(v.y), sin(v.y)) * v.x;
+}
+
+inline MLVec2D mlCartesianToPolar(const MLVec2D &v)
+{
+	return MLVec2D(mlLength(v), mlArg(v));
 }
 
 Q_DECLARE_METATYPE(MLVec2I64)

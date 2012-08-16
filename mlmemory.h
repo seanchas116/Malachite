@@ -16,6 +16,37 @@ inline void mlFreeAlignedMemory(void *p)
 	free(p);
 }
 
+#define ML_ALIGN_16BYTE \
+public: \
+	static void *operator new(size_t size) { \
+		return mlAllocateAlignedMemory(size, 16); \
+	} \
+	static void operator delete(void *p) { \
+		mlFreeAlignedMemory(p); \
+	} \
+	static void *operator new(size_t size, void *buf) { \
+		Q_UNUSED(size); \
+		return buf; \
+	} \
+	static void operator delete(void *p, void *buf) { \
+		Q_UNUSED(p); \
+		Q_UNUSED(buf); \
+	} \
+	static void *operator new[](size_t size) { \
+		return mlAllocateAlignedMemory(size, 16); \
+	} \
+	static void operator delete[](void *p) { \
+		mlFreeAlignedMemory(p); \
+	} \
+	static void *operator new[](size_t size, void *buf) { \
+		Q_UNUSED(size); \
+		return buf; \
+	} \
+	static void operator delete[](void *p, void *buf) { \
+		Q_UNUSED(p); \
+		Q_UNUSED(buf); \
+	}
+
 //#define ML_DEBUG_MEMORY
 
 #ifdef ML_DEBUG_MEMORY

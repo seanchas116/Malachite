@@ -32,14 +32,14 @@ public:
 	
 	MLBrushData(const MLColorGradient &gradient, const MLLinearGradientInfo &info) :
 		type(ML::BrushTypeLinearGradient),
-		spreadType(ML::SpreadTypeRepeat),
+		spreadType(ML::SpreadTypePad),
 		data(QVariant::fromValue(info)),
 		gradient(gradient.clone())
 	{}
 	
 	MLBrushData(const MLColorGradient &gradient, const MLRadialGradientInfo &info) :
 		type(ML::BrushTypeRadialGradient),
-		spreadType(ML::SpreadTypeRepeat),
+		spreadType(ML::SpreadTypePad),
 		data(QVariant::fromValue(info)),
 		gradient(gradient.clone())
 	{}
