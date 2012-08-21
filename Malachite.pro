@@ -81,11 +81,11 @@ HEADERS +=\
     private/mlimagepaintengine.h
 
 OTHER_FILES += \
-    README.md \
     resources/shader/default.vert \
     resources/shader/blend/src_over.frag \
     resources/shader/test.vert \
-    resources/shader/test.frag
+    resources/shader/test.frag \
+    readme
 
 RESOURCES += \
     resources.qrc

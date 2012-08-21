@@ -621,6 +621,11 @@ struct MLVec2D
 			double x;
 			double y;
 		};
+		struct
+		{
+			double e1;
+			double e2;
+		};
 		double e[2];
 		__v2df v;
 	};

@@ -1,4 +1,5 @@
 #include <QtGui>
+#include "mlpolygon.h"
 #include "mlpainter.h"
 
 MLPainter::MLPainter(MLPaintable *paintable) :
@@ -52,6 +53,13 @@ void MLPainter::drawPath(const QPainterPath &path)
 {
 	if (!_paintEngine) return;
 	_paintEngine->drawPath(path);
+}
+
+void MLPainter::drawPolygon(const MLPolygon &polygon)
+{
+	QPainterPath path;
+	path.addPolygon(polygon.toQPolygonF());
+	drawPath(path);
 }
 
 void MLPainter::drawEllipse(const QRectF &rect)

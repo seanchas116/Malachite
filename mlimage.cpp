@@ -1,6 +1,7 @@
 #include <QtCore>
 #include <FreeImage.h>
 
+#include "mlpainter.h"
 #include "private/mlimagepaintengine.h"
 #include "mlimage.h"
 
@@ -29,6 +30,20 @@ bool MLImage::isBlank() const
 	return true;
 }
 
+MLImage MLImage::toOpaqueImage() const
+{
+	MLImage image = *this;
+	
+	MLPainter painter(&image);
+	painter.setColor(MLColor::white());
+	painter.setBlendMode(ML::BlendModeDestinationOver);
+	painter.drawRect(image.rect());
+	
+	painter.end();
+	
+	return image;
+}
+
 /*
 MLArgb MLImage::colorSummation()
 {
@@ -41,6 +56,7 @@ MLArgb MLImage::colorSummation()
 
 #define COLOR_SUM_MAX 1024
 
+/*
 static MLVec4F mlColorSummation(int count, const MLVec4F *data)
 {
 	MLVec4F r(0);
@@ -51,7 +67,7 @@ static MLVec4F mlColorSummation(int count, const MLVec4F *data)
 	}
 	
 	return r;
-}
+}*/
 
 static MLVec4F mlColorSummation(int count, MLPointer<const MLVec4F> data, MLPointer<const MLVec4F> mask)
 {

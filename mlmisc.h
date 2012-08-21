@@ -65,6 +65,14 @@ inline QPointF operator*(const QTransform &transform, const QPointF &point)
 }
 
 template <typename T>
+QList<T> mlListFromValue(const T &value)
+{
+	QList<T> list;
+	list << value;
+	return list;
+}
+
+template <typename T>
 QList<const T *> mlConstList(const QList<T *> &list) {
 	QList<const T *> result;
 	result.reserve(list.size());

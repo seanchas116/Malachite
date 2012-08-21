@@ -64,7 +64,8 @@ public:
 	MLSurface section(const QPointSet &keys) const;
 	MLSurface exclusion(const QPointSet &keys) const;
 	
-	template <typename Image> void paste(const Image &image, bool inverted = false, const QPoint &point = QPoint());
+	template <typename Image> void paste(const Image &image, const QPoint &point = QPoint(), bool dstInverted = false, bool srcInverted = false);
+	//template <typename Image> void paste(const Image &image, bool inverted = false, const QPoint &point = QPoint());
 	//template <typename Image> void paste(const Image &image) { fromImage(QPoint(), image); }
 	
 	static QPointSet keysForRect(const QRect &rect);
@@ -121,13 +122,13 @@ private:
 
 
 template <typename Image>
-void MLSurface::paste(const Image &image, bool inverted, const QPoint &point)
+void MLSurface::paste(const Image &image, const QPoint &point, bool dstInverted, bool srcInverted)
 {
 	MLSurfaceEditor editor(this);
 	QPointSet keys = keysForRect(QRect(point, image.size()));
 	
 	foreach (const QPoint &key, keys)
-		editor.tileRefForKey(key)->paste(image, inverted, point - key * MLSurface::TileSize);
+		editor.tileRefForKey(key)->paste(image, point - key * MLSurface::TileSize, dstInverted, srcInverted);
 }
 
 #endif // MLSURFACE_H

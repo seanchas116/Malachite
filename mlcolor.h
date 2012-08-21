@@ -150,7 +150,7 @@ public:
 	
 	static MLColor fromArgb(const MLVec4F &argb)
 	{
-		return argb.a == 0 ? MLColor::fromRgbValue(argb.r / argb.a, argb.g / argb.a, argb.b / argb.a, argb.a) : MLColor();
+		return argb.a ? MLColor::fromRgbValue(argb.r / argb.a, argb.g / argb.a, argb.b / argb.a, argb.a) : MLColor();
 	}
 	
 	static MLColor fromFastArgb8(const MLVec4U8 &argb)

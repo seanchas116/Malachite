@@ -11,10 +11,6 @@
 #  define MALACHITESHARED_EXPORT Q_DECL_IMPORT
 #endif
 
-#ifdef QT_DEBUG
-#warning QT_DEBUG enabled
-#endif
-
 namespace ML
 {
 

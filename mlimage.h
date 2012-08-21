@@ -24,6 +24,8 @@ public:
 	
 	MLPaintEngine *createPaintEngine();
 	
+	MLImage toOpaqueImage() const;
+	
 	QImage toQImage() const;
 	
 	static MLImage fromQImage(const QImage &qimage);

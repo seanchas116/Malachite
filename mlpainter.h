@@ -44,6 +44,7 @@ public:
 	MLPaintEngineState state() { return _state; }
 	
 	void drawPath(const QPainterPath &path);
+	void drawPolygon(const MLPolygon &polygon);
 	void drawEllipse(const QRectF &rect);
 	void drawEllipse(double x, double y, double rx, double ry);
 	void drawEllipse(const QPointF &center, double rx, double ry) { drawEllipse(center.x(), center.y(), rx, ry); }
