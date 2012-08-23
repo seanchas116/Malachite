@@ -2,7 +2,7 @@
 #define MLSCALINGGENERATOR_H
 
 #include "mlvector.h"
-#include "mlintdivision.h"
+#include "mldivision.h"
 
 template <ML::SpreadType SpreadType>
 QPoint mlActualImagePos(const QPoint &p, const QSize &size)

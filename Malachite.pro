@@ -42,7 +42,6 @@ HEADERS +=\
     mlcurves.h \
     mlgenericimage.h \
     mlimage.h \
-    mlintdivision.h \
     mlmisc.h \
     mlpaintable.h \
     mlpaintengine.h \
@@ -78,7 +77,8 @@ HEADERS +=\
     private/mlgradientgenerator.h \
     private/mlfiller.h \
     private/mlrenderer.h \
-    private/mlimagepaintengine.h
+    private/mlimagepaintengine.h \
+    mldivision.h
 
 OTHER_FILES += \
     resources/shader/default.vert \

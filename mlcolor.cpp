@@ -56,7 +56,7 @@ void MLColor::setComponent(Component component, double x)
 	}
 }
 
-void MLColor::setIntervaledComponent(Component component, double x)
+void MLColor::setNormalizedComponent(Component component, double x)
 {
 	setComponent(component, component == Hue ? x * 360.0 : x);
 }

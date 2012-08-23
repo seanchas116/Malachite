@@ -97,7 +97,7 @@ public:
 	}
 	
 	void setComponent(Component component, double x);
-	void setIntervaledComponent(Component component, double x);
+	void setNormalizedComponent(Component component, double x);
 	
 	static MLColor fromRgbValue(double r, double g, double b, double a = 1.0)
 	{

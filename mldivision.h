@@ -1,5 +1,5 @@
-#ifndef MLINTDIVISION_H
-#define MLINTDIVISION_H
+#ifndef MLDIVISION_H
+#define MLDIVISION_H
 
 #include "mlglobal.h"
 #include <QPoint>
@@ -20,14 +20,33 @@ public:
 	int quot() const { return result.quot; }
 	int rem() const { return result.rem; }
 	
-	static void dividePoint(const QPoint &point, int divisor, QPoint *quot, QPoint *rem);
-	static void dividePoint(const QPoint &point, int divisor, QPoint *quot);
-	
 private:
 	div_t result;
 };
 
-inline void MLIntDivision::dividePoint(const QPoint &point, int divisor, QPoint *quot, QPoint *rem)
+class MALACHITESHARED_EXPORT MLDivision
+{
+public:
+	MLDivision(double numerator, double denominator)
+	{
+		_quot = floor(numerator / denominator);
+		_rem = fmod(numerator, denominator);
+		
+		if (_rem < 0)
+		{
+			_rem += denominator;
+			_quot -= 1;
+		}
+	}
+	
+	double quot() const { return _quot; }
+	double rem() const { return _rem; }
+	
+private:
+	double _quot, _rem;
+};
+
+inline void mlDividePoint(const QPoint &point, int divisor, QPoint *quot, QPoint *rem)
 {
 	MLIntDivision divisionX(point.x(), divisor);
 	MLIntDivision divisionY(point.y(), divisor);
@@ -38,7 +57,7 @@ inline void MLIntDivision::dividePoint(const QPoint &point, int divisor, QPoint 
 	rem->ry() = divisionY.rem();
 }
 
-inline void MLIntDivision::dividePoint(const QPoint &point, int divisor, QPoint *quot)
+inline void mlDividePoint(const QPoint &point, int divisor, QPoint *quot)
 {
 	MLIntDivision divisionX(point.x(), divisor);
 	MLIntDivision divisionY(point.y(), divisor);
@@ -52,4 +71,4 @@ inline double mlAlign(double value, double unit)
 	return round(value / unit) * unit;
 }
 
-#endif // MLINTDIVISION_H
+#endif // MLDIVISION_H

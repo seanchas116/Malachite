@@ -4,7 +4,7 @@
 #include "mlpainter.h"
 #include "private/mlsurfacepaintengine.h"
 #include "mlsurface.h"
-#include "mlintdivision.h"
+#include "mldivision.h"
 
 MLSurfaceData::MLSurfaceData()
 {}
@@ -138,8 +138,8 @@ QPointSet MLSurface::keysForRect(const QRect &rect)
 	QPointSet set;
 	
 	QPoint topLeftKey, bottomRightKey;
-	MLIntDivision::dividePoint(rect.topLeft(), MLSurface::TileSize, &topLeftKey);
-	MLIntDivision::dividePoint(rect.bottomRight(), MLSurface::TileSize, &bottomRightKey);
+	mlDividePoint(rect.topLeft(), MLSurface::TileSize, &topLeftKey);
+	mlDividePoint(rect.bottomRight(), MLSurface::TileSize, &bottomRightKey);
 	
 	QRect keyRect(topLeftKey, bottomRightKey);
 	set.reserve(keyRect.width() * keyRect.height());
