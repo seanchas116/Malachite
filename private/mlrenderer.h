@@ -16,17 +16,21 @@ public:
 	QPainterPath_vs(const QPainterPath &path) :
 		_path(path),
 		_index(0),
-		_subdIndex(0)
+		_subdIndex(0),
+	    _totalCount(0)
 	{}
 	
 	void rewind(unsigned index) { Q_UNUSED(index); _index = 0; }
 	unsigned vertex(double *x, double *y);
+	
+	int totalCount() { return _totalCount; }
 	
 private:
 	const QPainterPath _path;
 	int _index;
 	MLPolygon _subdPolygon;
 	int _subdIndex;
+	int _totalCount;
 };
 
 template <class BaseRenderer>

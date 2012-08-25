@@ -191,5 +191,18 @@ private:
 	QVectorCountableIterator<T> i;
 };
 
+inline bool mlTransformIsIntegerTranslating(const QTransform &transform)
+{
+	if (transform.isIdentity())
+		return true;
+	
+	return transform.type() <= QTransform::TxTranslate && transform.dx() == floor(transform.dx()) && transform.dy() == floor(transform.dy());
+}
+
+inline bool mlTransformIsSimilar(const QTransform &transform)
+{
+	return transform.isIdentity() || (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22());
+}
+
 
 #endif // MLMISC_H

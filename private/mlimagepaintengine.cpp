@@ -2,6 +2,7 @@
 #include "mlfiller.h"
 #include "mlgradientgenerator.h"
 #include "mlscalinggenerator.h"
+#include "mlpainter.h"
 
 template <class Rasterizer, class Filler>
 void mlFill(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blendOp, Filler *filler)
@@ -11,16 +12,6 @@ void mlFill(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blendOp, Filler *f
 	MLRenderer<MLImageBaseRenderer<Filler> > ren(baseRen);
 	
 	mlRenderScanlines(*ras, sl, ren);
-}
-
-bool mlTransformIsIntegerTranslating(const QTransform &transform)
-{
-	return transform.isTranslating() && transform.dx() == int(transform.dx()) && transform.dy() == int(transform.dy());
-}
-
-bool mlTransformIsSimilar(const QTransform &transform)
-{
-	return transform.isIdentity() || (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22());
 }
 
 template <class Rasterizer, ML::SpreadType SpreadType, class Source, ML::PixelFieldType SourceType>
@@ -221,6 +212,10 @@ void MLImagePaintEngine::drawPath(const QPainterPath &path)
 	QPainterPath_vs vs(newPath);
 	ras.add_path(vs);
 	
+#ifdef QT_DEBUG
+	qDebug() << Q_FUNC_INFO << ": polygon count:" << vs.totalCount();
+#endif
+	
 	switch (_state.brush.spreadType())
 	{
 	case ML::SpreadTypePad:
@@ -239,8 +234,33 @@ void MLImagePaintEngine::drawPath(const QPainterPath &path)
 
 void MLImagePaintEngine::drawImage(const QPoint &point, const MLImage &image)
 {
+	QTransform transform = _state.shapeTransform;
+	
+	if (transform.isIdentity())
+	{
+		drawImageSimple(point, image);
+		return;
+	}
+	if (mlTransformIsIntegerTranslating(transform))
+	{
+		QPoint offset(transform.dx(), transform.dy());
+		drawImageSimple(point + offset, image);
+		return;
+	}
+	
+	MLBrush imageBrush(image);
+	imageBrush.setSpreadType(ML::SpreadTypeReflective);
+	
+	MLPainter painter(_image);
+	painter.setBrush(imageBrush);
+	painter.setShapeTransform(transform);
+	painter.drawRect(point.x(), point.y(), image.width(), image.height());
+}
+
+void MLImagePaintEngine::drawImageSimple(const QPoint &offset, const MLImage &image)
+{
 	QRect dstRect = QRect(QPoint(), _image->size());
-	QRect srcRect = QRect(point, image.size());
+	QRect srcRect = QRect(offset, image.size());
 	
 	QRect targetRect = dstRect & srcRect;
 	
@@ -252,9 +272,9 @@ void MLImagePaintEngine::drawImage(const QPoint &point, const MLImage &image)
 		QPoint p(targetRect.left(), y);
 		
 		if (_state.opacity == 1.0)
-			_blendOp->blend(targetRect.width(), _bitmap.pixelPointer(p), image.constPixelPointer(p - point));
+			_blendOp->blend(targetRect.width(), _bitmap.pixelPointer(p), image.constPixelPointer(p - offset));
 		else
-			_blendOp->blend(targetRect.width(), _bitmap.pixelPointer(p), image.constPixelPointer(p - point), _state.opacity);
+			_blendOp->blend(targetRect.width(), _bitmap.pixelPointer(p), image.constPixelPointer(p - offset), _state.opacity);
 	}
 }
 

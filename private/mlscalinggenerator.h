@@ -27,8 +27,8 @@ QPoint mlActualImagePos(const QPoint &p, const QSize &size)
 	{
 		MLIntDivision divX(p.x(), size.width());
 		MLIntDivision divY(p.y(), size.height());
-		r.rx() = divX.quot() % 2 ? size.width() - divX.rem() - 1 : divX.rem();
-		r.rx() = divY.quot() % 2 ? size.height() - divY.rem() - 1 : divY.rem();
+		r.rx() = (divX.quot() % 2) ? (size.width() - divX.rem() - 1) : divX.rem();
+		r.ry() = (divY.quot() % 2) ? (size.height() - divY.rem() - 1) : divY.rem();
 		break;
 	}
 	default:

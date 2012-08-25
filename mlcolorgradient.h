@@ -101,9 +101,6 @@ struct MLRadialGradientInfo
 		if (transform.isIdentity())
 			return true;
 		
-		if (transform.isRotating() && radius.x == radius.y)
-			return true;
-		
 		if (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0)
 			return true;
 		

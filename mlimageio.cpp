@@ -120,6 +120,11 @@ bool MLImageExporter::save(const QString &filePath, int quality)
 	{
 		fif = FIF_BMP;
 	}
+	else
+	{
+		qDebug() << Q_FUNC_INFO << ": unsupported format";
+		return false;
+	}
 	
 	return FreeImage_Save(fif, _bitmap, filePath.toLocal8Bit(), flags);
 }

@@ -20,6 +20,8 @@ public:
 	
 private:
 	
+	void drawImageSimple(const QPoint &offset, const MLImage &image);
+	
 	MLBlendOp *_blendOp;
 	
 	MLArgbBitmap _bitmap;

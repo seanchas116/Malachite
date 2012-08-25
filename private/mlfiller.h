@@ -48,24 +48,24 @@ public:
 	
 private:
 	
-	template <bool CoverSingle>
+	template <bool CoverIsNotArray>
 	void fillTemplate(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
 	{
 		switch (SpreadType)
 		{
 		case ML::SpreadTypePad:
-			fillTemplatePad<CoverSingle>(pos, count, dst, covers, blendOp);
+			fillTemplatePad<CoverIsNotArray>(pos, count, dst, covers, blendOp);
 			return;
 		case ML::SpreadTypeRepeat:
-			fillTemplateRepeat<CoverSingle>(pos, count, dst, covers, blendOp);
+			fillTemplateRepeat<CoverIsNotArray>(pos, count, dst, covers, blendOp);
 			return;
 		case ML::SpreadTypeReflective:
-			fillTemplateReflective<CoverSingle>(pos, count, dst, covers, blendOp);
+			fillTemplateReflective<CoverIsNotArray>(pos, count, dst, covers, blendOp);
 			return;
 		}
 	}
 	
-	template <bool CoverSingle>
+	template <bool CoverIsNotArray>
 	void fillTemplatePad(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
@@ -77,7 +77,7 @@ private:
 		
 		if (left > 0)
 		{
-			if (CoverSingle)
+			if (CoverIsNotArray)
 				blendOp->blend(left, dst, _srcBitmap.pixel(0, imageY), *covers);
 			else
 				blendOp->blend(left, dst, _srcBitmap.pixel(0, imageY), covers);
@@ -90,7 +90,7 @@ private:
 		
 		if (mid > 0)
 		{
-			if (CoverSingle)
+			if (CoverIsNotArray)
 				blendOp->blend(mid, dst + i, _srcBitmap.constPixelPointer(midStart, imageY), *covers);
 			else
 				blendOp->blend(mid, dst + i, _srcBitmap.constPixelPointer(midStart, imageY), covers + i);
@@ -101,14 +101,14 @@ private:
 		
 		if (right > 0)
 		{
-			if (CoverSingle)
+			if (CoverIsNotArray)
 				blendOp->blend(mid, dst + i, _srcBitmap.pixel(_srcBitmap.width() - 1, imageY), *covers);
 			else
 				blendOp->blend(mid, dst + i, _srcBitmap.pixel(_srcBitmap.width() - 1, imageY), covers + i);
 		}
 	}
 	
-	template <bool CoverSingle>
+	template <bool CoverIsNotArray>
 	void fillTemplateRepeat(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
@@ -121,14 +121,14 @@ private:
 		
 		if (i >= count)
 		{
-			if (CoverSingle)
+			if (CoverIsNotArray)
 				blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), *covers);
 			else
 				blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
 			return;
 		}
 		
-		if (CoverSingle)
+		if (CoverIsNotArray)
 			blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), *covers);
 		else
 			blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
@@ -137,7 +137,7 @@ private:
 		{
 			if (count - i < _srcBitmap.width()) break;
 			
-			if (CoverSingle)
+			if (CoverIsNotArray)
 				blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), *covers);
 			else
 				blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
@@ -145,53 +145,97 @@ private:
 			i += _srcBitmap.width();
 		}
 		
-		if (CoverSingle)
+		if (CoverIsNotArray)
 			blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), *covers);
 		else
 			blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
 	}
 	
-	template <bool CoverSingle>
+	template <bool CoverIsNotArray>
 	void fillTemplateReflective(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
-		MLIntDivision divX(srcPos.x(), _srcBitmap.width());
-		MLIntDivision divY(srcPos.y(), _srcBitmap.height());
+		MLIntDivision divX(srcPos.x(),  _srcBitmap.width());
+		MLIntDivision divY(srcPos.y(),  _srcBitmap.height());
 		
-		int imageY = divY.rem();
+		int imageY = divY.quot() % 2 ?  _srcBitmap.height() - divY.rem() - 1 : divY.rem();
 		
 		int i = _srcBitmap.width() - divX.rem();
 		
+		int q = divX.quot();
+		
 		if (i >= count)
 		{
-			if (CoverSingle)
-				blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), *covers);
+			if (q % 2)
+			{
+				if (CoverIsNotArray)
+					blendOp->blendReversed(count, dst, _srcBitmap.constPixelPointer( _srcBitmap.width() - divX.rem() - count, imageY), *covers);
+				else
+					blendOp->blendReversed(count, dst, _srcBitmap.constPixelPointer( _srcBitmap.width() - divX.rem() - count, imageY), covers);
+			}
 			else
-				blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
+			{
+				if (CoverIsNotArray)
+					blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), *covers);
+				else
+					blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
+			}
 			return;
 		}
 		
-		if (CoverSingle)
-			blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), *covers);
+		if (q % 2)
+		{
+			if (CoverIsNotArray)
+				blendOp->blendReversed(i, dst, _srcBitmap.constPixelPointer(0, imageY), *covers);
+			else
+				blendOp->blendReversed(i, dst, _srcBitmap.constPixelPointer(0, imageY), covers);
+		}
 		else
-			blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
+		{
+			if (CoverIsNotArray)
+				blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), *covers);
+			else
+				blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
+		}
+		
+		q++;
 		
 		forever
 		{
 			if (count - i < _srcBitmap.width()) break;
 			
-			if (CoverSingle)
-				blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), *covers);
+			if (q % 2)
+			{
+				if (CoverIsNotArray)
+					blendOp->blendReversed(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), *covers);
+				else
+					blendOp->blendReversed(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
+			}
 			else
-				blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
-			
+			{
+				if (CoverIsNotArray)
+					blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), *covers);
+				else
+					blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
+			}
 			i += _srcBitmap.width();
+			q++;
 		}
 		
-		if (CoverSingle)
-			blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), *covers);
+		if (q % 2)
+		{
+			if (CoverIsNotArray)
+				blendOp->blendReversed(count - i, dst + i, _srcBitmap.constPixelPointer(_srcBitmap.width() - count + i, imageY), *covers);
+			else
+				blendOp->blendReversed(count - i, dst + i, _srcBitmap.constPixelPointer(_srcBitmap.width() - count + i, imageY), covers + i);
+		}
 		else
-			blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
+		{
+			if (CoverIsNotArray)
+				blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), *covers);
+			else
+				blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
+		}
 	}
 	
 	const MLBitmap<MLVec4F> _srcBitmap;

@@ -17,6 +17,7 @@ unsigned QPainterPath_vs::vertex(double *x, double *y)
 			*y = p.y;
 			_subdIndex++;
 			
+			_totalCount++;
 			return agg::path_cmd_line_to;
 		}
 		
@@ -43,6 +44,7 @@ unsigned QPainterPath_vs::vertex(double *x, double *y)
 		*x = element.x;
 		*y = element.y;
 		
+		_totalCount++;
 		switch (element.type)
 		{
 		case QPainterPath::MoveToElement:
