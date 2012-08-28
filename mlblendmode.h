@@ -50,6 +50,11 @@ public:
 		return *this;
 	}
 	
+	bool operator==(int index)
+	{
+		return _index == index;
+	}
+	
 private:
 	
 	static MLBlendModeDictionary _dict;

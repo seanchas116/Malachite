@@ -81,6 +81,9 @@ public:
 	
 	static const MLGenericImage wrap(const void *data, const QSize &size) { wrap(data, size, size.width() * sizeof(Color)); }
 	
+	void detach() { p.detach(); }
+	bool isValid() const { return p; }
+	
 	QSize size() const { return p ? p->bitmap.size() : QSize(); }
 	QRect rect() const { return QRect(QPoint(), size()); }
 	int width() const { return p ? p->bitmap.width() : 0; }
@@ -152,6 +155,31 @@ public:
 			for (int x = 0; x < r.width(); ++x)
 				mlConvertPixel<Format, Color, SrcFormat, SrcColor>(*dp++, *sp++);
 		}
+	}
+	
+	bool operator==(const MLGenericImage<Format, Color> &other) const
+	{
+		if (p == other.p)
+			return true;
+		
+		if (isValid() != other.isValid())
+			return false;
+		
+		if (!isValid() && other.isValid())
+			return false;
+		
+		QSize size = p->bitmap.size();
+		
+		if (size != other.p->bitmap.size())
+			return false;
+		
+		for (int y = 0; y < size.height(); ++y)
+		{
+			if (memcmp(p->bitmap.constScanline(y), other.p->bitmap.constScanline(y), size.width() * sizeof(Color)))
+				return false;
+		}
+		
+		return true;
 	}
 	
 private:

@@ -29,7 +29,16 @@ public:
 	QImage toQImage() const;
 	
 	static MLImage fromQImage(const QImage &qimage);
+	
+	MLImage &operator*=(float factor);
 };
+
+inline MLImage operator*(const MLImage &image, float factor)
+{
+	MLImage result = image;
+	result *= factor;
+	return result;
+}
 
 Q_DECLARE_METATYPE(MLImage)
 

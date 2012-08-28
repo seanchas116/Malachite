@@ -161,4 +161,24 @@ MLImage MLImage::fromQImage(const QImage &qimage)
 	return image;
 }
 
+MLImage &MLImage::operator*=(float factor)
+{
+	factor = qBound(0.f, factor, 1.f);
+	if (factor == 1.f)
+		return *this;
+	
+	MLVec4F vfactor(factor);
+	QSize size = this->size();
+	
+	for (int y = 0; y < size.height(); ++y)
+	{
+		MLVec4F *p = scanline(y);
+		
+		for (int x = 0; x < size.width(); ++x)
+			*p++ *= vfactor;
+	}
+	
+	return *this;
+}
+
 

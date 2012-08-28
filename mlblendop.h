@@ -9,15 +9,15 @@ class MALACHITESHARED_EXPORT MLBlendOp
 {
 public:
 	
-	enum TileState
+	enum Tile
 	{
-		NoTiles = 0x0,
-		TileDestination = 0x1,
-		TileSource = 0x2,
-		TileBoth = 0x3
+		NoTile = 0b00,
+		TileDestination = 0b01,
+		TileSource = 0b10,
+		TileBoth = 0b11
 	};
 	
-	Q_DECLARE_FLAGS(TileStates, TileState)
+	Q_DECLARE_FLAGS(TileCombination, Tile)
 	
 	virtual void blend(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src) = 0;
 	virtual void blend(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src, MLPointer<const MLVec4F> masks) = 0;
@@ -36,7 +36,7 @@ public:
 	virtual void blendReversed(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src, const MLVec4F &mask) = 0;
 	virtual void blendReversed(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src, float opacity) = 0;
 	
-	virtual TileStates tileOp(TileStates states) = 0;
+	virtual TileCombination tileRequirement(TileCombination combination) = 0;
 };
 
 /*
@@ -62,63 +62,63 @@ public:
 	void blend(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src)
 	{
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, *src++);
+			BlendFunctions::blend(*dst++, *src++);
 	}
 	
 	void blend(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src, MLPointer<const MLVec4F> masks)
 	{
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, *src++ * (masks++)->a);
+			BlendFunctions::blend(*dst++, *src++ * (masks++)->a);
 	}
 
 	void blend(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src, MLPointer<const float> opacities)
 	{
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, *src++ * *opacities++);
+			BlendFunctions::blend(*dst++, *src++ * *opacities++);
 	}
 
 	void blend(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src, const MLVec4F &mask)
 	{
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, *src++ * mask.a);
+			BlendFunctions::blend(*dst++, *src++ * mask.a);
 	}
 
 	void blend(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src, float opacity)
 	{
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, *src++ * opacity);
+			BlendFunctions::blend(*dst++, *src++ * opacity);
 	}
 	
 	void blend(int count, MLPointer<MLVec4F> dst, const MLVec4F &src)
 	{
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, src);
+			BlendFunctions::blend(*dst++, src);
 	}
 	
 	void blend(int count, MLPointer<MLVec4F> dst, const MLVec4F &src, MLPointer<const MLVec4F> masks)
 	{
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, src * (masks++)->a);
+			BlendFunctions::blend(*dst++, src * (masks++)->a);
 	}
 	
 	void blend(int count, MLPointer<MLVec4F> dst, const MLVec4F &src, MLPointer<const float> opacities)
 	{
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, src * *opacities++);
+			BlendFunctions::blend(*dst++, src * *opacities++);
 	} 
 	
 	void blend(int count, MLPointer<MLVec4F> dst, const MLVec4F &src, const MLVec4F &mask)
 	{
 		MLVec4F c = src * mask.a;
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, c);
+			BlendFunctions::blend(*dst++, c);
 	}
 	
 	void blend(int count, MLPointer<MLVec4F> dst, const MLVec4F &src, float opacity)
 	{
 		MLVec4F c = src * opacity;
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, c);
+			BlendFunctions::blend(*dst++, c);
 	}
 	
 	
@@ -128,7 +128,7 @@ public:
 		src += count - 1;
 		
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, *src--);
+			BlendFunctions::blend(*dst++, *src--);
 	}
 	
 	void blendReversed(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src, MLPointer<const MLVec4F> masks)
@@ -136,7 +136,7 @@ public:
 		src += count - 1;
 		
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, *src-- * (masks++)->a);
+			BlendFunctions::blend(*dst++, *src-- * (masks++)->a);
 	}
 
 	void blendReversed(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src, MLPointer<const float> opacities)
@@ -144,7 +144,7 @@ public:
 		src += count - 1;
 		
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, *src-- * *opacities++);
+			BlendFunctions::blend(*dst++, *src-- * *opacities++);
 	}
 
 	void blendReversed(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src, const MLVec4F &mask)
@@ -152,7 +152,7 @@ public:
 		src += count - 1;
 		
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, *src-- * mask.a);
+			BlendFunctions::blend(*dst++, *src-- * mask.a);
 	}
 
 	void blendReversed(int count, MLPointer<MLVec4F> dst, MLPointer<const MLVec4F> src, float opacity)
@@ -160,12 +160,12 @@ public:
 		src += count - 1;
 		
 		for (int i = 0; i < count; ++i)
-			BlendFunctions::blendFunc(*dst++, *src-- * opacity);
+			BlendFunctions::blend(*dst++, *src-- * opacity);
 	}
 	
-	TileStates tileOp(TileStates states)
+	TileCombination tileRequirement(TileCombination combination)
 	{
-		return BlendFunctions::tileOpFunc(states);
+		return BlendFunctions::tileRequirement(combination);
 	}
 };
 

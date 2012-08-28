@@ -5,28 +5,28 @@
 class BlendFunctionsClear
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		Q_UNUSED(src);
 		dst = MLVec4F(0);
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		Q_UNUSED(states);
-		return MLBlendOp::NoTiles;
+		return MLBlendOp::NoTile;
 	}
 };
 
 class BlendFunctionsSource
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = src;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		switch (states)
 		{
@@ -35,9 +35,9 @@ public:
 		case MLBlendOp::TileSource:
 			return MLBlendOp::TileSource;
 		case MLBlendOp::TileDestination:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		default:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		}
 	}
 };
@@ -45,23 +45,23 @@ public:
 class BlendFunctionsDestination
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		Q_UNUSED(dst); Q_UNUSED(src);
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		switch (states)
 		{
 		case MLBlendOp::TileBoth:
 			return MLBlendOp::TileDestination;
 		case MLBlendOp::TileSource:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		case MLBlendOp::TileDestination:
 			return MLBlendOp::TileDestination;
 		default:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		}
 	}
 };
@@ -69,12 +69,12 @@ public:
 class BlendFunctionsSourceOver
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = src + (1.0f - src.a) * dst;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -83,12 +83,12 @@ public:
 class BlendFunctionsDestinationOver
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = dst + (1.0f - dst.a) * src;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -97,23 +97,23 @@ public:
 class BlendFunctionsSourceIn
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = dst.a * src;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		switch (states)
 		{
 		case MLBlendOp::TileBoth:
 			return MLBlendOp::TileBoth;
 		case MLBlendOp::TileSource:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		case MLBlendOp::TileDestination:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		default:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		}
 	}
 };
@@ -121,23 +121,23 @@ public:
 class BlendFunctionsDestinationIn
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = src.a * dst;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		switch (states)
 		{
 		case MLBlendOp::TileBoth:
 			return MLBlendOp::TileBoth;
 		case MLBlendOp::TileSource:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		case MLBlendOp::TileDestination:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		default:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		}
 	}
 };
@@ -145,12 +145,12 @@ public:
 class BlendFunctionsSourceOut
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = (1.0f - dst.a) * src;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		switch (states)
 		{
@@ -159,9 +159,9 @@ public:
 		case MLBlendOp::TileSource:
 			return MLBlendOp::TileSource;
 		case MLBlendOp::TileDestination:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		default:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		}
 	}
 };
@@ -169,23 +169,23 @@ public:
 class BlendFunctionsDestinationOut
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = (1.0f - src.a) * dst;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		switch (states)
 		{
 		case MLBlendOp::TileBoth:
 			return MLBlendOp::TileBoth;
 		case MLBlendOp::TileSource:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		case MLBlendOp::TileDestination:
 			return MLBlendOp::TileDestination;
 		default:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		}
 	}
 };
@@ -193,23 +193,23 @@ public:
 class BlendFunctionsSourceAtop
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = dst.a * src + (1.0f - src.a) * dst;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		switch (states)
 		{
 		case MLBlendOp::TileBoth:
 			return MLBlendOp::TileBoth;
 		case MLBlendOp::TileSource:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		case MLBlendOp::TileDestination:
 			return MLBlendOp::TileDestination;
 		default:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		}
 	}
 };
@@ -217,12 +217,12 @@ public:
 class BlendFunctionsDestinationAtop
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = src.a * dst + (1.0f - dst.a) * src;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		switch (states)
 		{
@@ -231,9 +231,9 @@ public:
 		case MLBlendOp::TileSource:
 			return MLBlendOp::TileSource;
 		case MLBlendOp::TileDestination:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		default:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		}
 	}
 };
@@ -241,12 +241,12 @@ public:
 class BlendFunctionsXor
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = (1.0f - dst.a) * src + (1.0f - src.a) * dst;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		switch (states)
 		{
@@ -257,7 +257,7 @@ public:
 		case MLBlendOp::TileDestination:
 			return MLBlendOp::TileDestination;
 		default:
-			return MLBlendOp::NoTiles;
+			return MLBlendOp::NoTile;
 		}
 	}
 };
@@ -265,12 +265,12 @@ public:
 class BlendFunctionsPlus
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = mlBound(0, dst + src , 1);
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -279,12 +279,12 @@ public:
 class BlendFunctionsMultiply
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = src * dst + src * (1.0f - dst.a) + dst * (1.0f - src.a);
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -295,12 +295,12 @@ public:
 class BlendFunctionsScreen
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		dst = src + dst - src * dst;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -309,7 +309,7 @@ public:
 class BlendFunctionsOverlay
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		if (src.a == 0) return;
 		if (dst.a == 0) { dst = src; return; }
@@ -330,7 +330,7 @@ public:
 		dst = d;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -339,7 +339,7 @@ public:
 class BlendFunctionsDarken
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		if (src.a == 0) return;
 		if (dst.a == 0) { dst = src; return; }
@@ -357,7 +357,7 @@ public:
 		dst = d;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -366,7 +366,7 @@ public:
 class BlendFunctionsLighten
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		if (src.a == 0) return;
 		if (dst.a == 0) { dst = src; return; }
@@ -384,7 +384,7 @@ public:
 		dst = d;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -393,7 +393,7 @@ public:
 class BlendFunctionsColorDodge
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		if (src.a == 0) return;
 		if (dst.a == 0) { dst = src; return; }
@@ -418,7 +418,7 @@ public:
 		dst = d;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -427,7 +427,7 @@ public:
 class BlendFunctionsColorBurn
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		if (src.a == 0) return;
 		if (dst.a == 0) { dst = src; return; }
@@ -453,7 +453,7 @@ public:
 		dst = d;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -462,7 +462,7 @@ public:
 class BlendFunctionsHardLight
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		if (src.a == 0) return;
 		if (dst.a == 0) { dst = src; return; }
@@ -483,7 +483,7 @@ public:
 		dst = d;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -492,7 +492,7 @@ public:
 class BlendFunctionsSoftLight
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		MLVec4F m, f, d0, d1, d2, d3;
 		m = dst / dst.a;
@@ -523,7 +523,7 @@ public:
 			dst.b = compD.b ? d2.b : d3.b;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -532,14 +532,14 @@ public:
 class BlendFunctionsDifference
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		MLVec4F d = src + dst - 2.0f * mlMin(src * dst.a, dst * src.a);
 		d.a += src.a * dst.a;
 		dst = d;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}
@@ -548,14 +548,14 @@ public:
 class BlendFunctionsExclusion
 {
 public:
-	static void blendFunc(MLVec4F &dst, const MLVec4F &src)
+	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
 		MLVec4F d = (src * dst.a + dst * src.a - (2.0f * src.a * dst.a)) + src * (1.0f - dst.a) + dst * (1.0f - src.a);
 		d.a += src.a * dst.a;
 		dst = d;
 	}
 	
-	static MLBlendOp::TileStates tileOpFunc(MLBlendOp::TileStates states)
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
 		return states;
 	}

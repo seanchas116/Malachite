@@ -61,14 +61,14 @@ public:
 	static QRect keyToRect(int x, int y) { return QRect(TileSize * x, TileSize * y, TileSize, TileSize); }
 	static QRect keyToRect(const QPoint &point) { return keyToRect(point.x(), point.y()); }
 	
+	static QPointSet keysForRect(const QRect &rect);
+	
 	MLSurface section(const QPointSet &keys) const;
 	MLSurface exclusion(const QPointSet &keys) const;
 	
 	template <typename Image> void paste(const Image &image, const QPoint &point = QPoint(), bool dstInverted = false, bool srcInverted = false);
 	//template <typename Image> void paste(const Image &image, bool inverted = false, const QPoint &point = QPoint());
 	//template <typename Image> void paste(const Image &image) { fromImage(QPoint(), image); }
-	
-	static QPointSet keysForRect(const QRect &rect);
 	
 	static MLImage DefaultTile;
 	static MLImage WhiteTile;
