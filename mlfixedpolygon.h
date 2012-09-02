@@ -94,6 +94,6 @@ public:
 MLFixedMultiPolygon operator|(const MLFixedMultiPolygon &polygons1, const MLFixedMultiPolygon &polygons2);
 MLFixedMultiPolygon operator&(const MLFixedMultiPolygon &polygons1, const MLFixedMultiPolygon &polygons2);
 MLFixedMultiPolygon operator^(const MLFixedMultiPolygon &polygons1, const MLFixedMultiPolygon &polygons2);
-
+MLFixedMultiPolygon operator-(const MLFixedMultiPolygon &polygons1, const MLFixedMultiPolygon &polygons2);
 
 #endif // MLFIXEDPOLYGON_H

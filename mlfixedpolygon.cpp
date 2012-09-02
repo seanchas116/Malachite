@@ -43,10 +43,21 @@ MLFixedMultiPolygon MLFixedMultiPolygon::fromMLPolygons(const MLMultiPolygon &po
 
 QRectF MLFixedMultiPolygon::boundingRect() const
 {
-	MLFixedPoint min, max;
-	min = max = at(0).at(0);
+	MLFixedMultiPolygon polys = *this;
 	
-	foreach (const MLFixedPolygon &poly, *this)
+	for (int i = 0; i < polys.size(); ++i)
+	{
+		if (polys.at(i).size() == 0)
+			polys.remove(i);
+	}
+	
+	if (polys.size() == 0)
+		return QRectF();
+	
+	MLFixedPoint min, max;
+	min = max = polys.at(0).at(0);
+	
+	foreach (const MLFixedPolygon &poly, polys)
 	{
 		foreach (const MLFixedPoint &p, poly)
 		{
@@ -102,6 +113,18 @@ MLFixedMultiPolygon operator^(const MLFixedMultiPolygon &polygons1, const MLFixe
 	clipper.AddPolygons(mlTransferCast<const Polygons>(polygons1), ptSubject);
 	clipper.AddPolygons(mlTransferCast<const Polygons>(polygons2), ptClip);
 	clipper.Execute(ctXor, mlTransferCast<Polygons>(result));
+	
+	return result;
+}
+
+MLFixedMultiPolygon operator-(const MLFixedMultiPolygon &polygons1, const MLFixedMultiPolygon &polygons2)
+{
+	MLFixedMultiPolygon result;
+	
+	Clipper clipper;
+	clipper.AddPolygons(mlTransferCast<const Polygons>(polygons1), ptSubject);
+	clipper.AddPolygons(mlTransferCast<const Polygons>(polygons2), ptClip);
+	clipper.Execute(ctDifference, mlTransferCast<Polygons>(result));
 	
 	return result;
 }

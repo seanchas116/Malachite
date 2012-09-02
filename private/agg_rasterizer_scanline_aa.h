@@ -33,6 +33,7 @@
 #include "agg_rasterizer_sl_clip.h"
 #include "agg_gamma_functions.h"
 
+#include <QDebug>
 
 namespace agg
 {
@@ -213,6 +214,7 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE unsigned calculate_alpha(int area) const
         {
+			qDebug() << "area:" << area;
             int cover = area >> (poly_subpixel_shift*2 + 1 - aa_shift);
 
             if(cover < 0) cover = -cover;
@@ -227,6 +229,21 @@ namespace agg
             if(cover > aa_mask) cover = aa_mask;
             return m_gamma[cover];
         }
+		
+		inline float calculate_alpha_f(int area) const
+		{
+			float cover = area * (1.f / float(poly_subpixel_scale * poly_subpixel_scale * 2));
+			
+			if (cover < 0) cover = -cover;
+			
+			if (m_filling_rule == fill_even_odd)
+			{
+				if (cover > 1.f)
+					cover = 2.f - cover;
+			}
+			
+			return cover;
+		}
 
         //--------------------------------------------------------------------
         template<class Scanline> bool sweep_scanline(Scanline& sl)
@@ -270,6 +287,64 @@ namespace agg
                     if(num_cells && cur_cell->x > x)
                     {
                         alpha = calculate_alpha(cover << (poly_subpixel_shift + 1));
+                        if(alpha)
+                        {
+                            sl.add_span(x, cur_cell->x - x, alpha);
+                        }
+                    }
+                }
+        
+                if(sl.num_spans()) break;
+                ++m_scan_y;
+            }
+
+            sl.finalize(m_scan_y);
+            ++m_scan_y;
+            return true;
+        }
+		
+		//--------------------------------------------------------------------
+        template<class Scanline> bool sweep_scanline_f(Scanline& sl)
+        {
+            for(;;)
+            {
+                if(m_scan_y > m_outline.max_y()) return false;
+                sl.reset_spans();
+                unsigned num_cells = m_outline.scanline_num_cells(m_scan_y);
+                const cell_aa* const* cells = m_outline.scanline_cells(m_scan_y);
+                int cover = 0;
+
+                while(num_cells)
+                {
+                    const cell_aa* cur_cell = *cells;
+                    int x    = cur_cell->x;
+                    int area = cur_cell->area;
+                    float alpha;
+
+                    cover += cur_cell->cover;
+
+                    //accumulate all cells with the same X
+                    while(--num_cells)
+                    {
+                        cur_cell = *++cells;
+                        if(cur_cell->x != x) break;
+                        area  += cur_cell->area;
+                        cover += cur_cell->cover;
+                    }
+
+                    if(area)
+                    {
+                        alpha = calculate_alpha_f((cover << (poly_subpixel_shift + 1)) - area);
+                        if(alpha)
+                        {
+                            sl.add_cell(x, alpha);
+                        }
+                        x++;
+                    }
+
+                    if(num_cells && cur_cell->x > x)
+                    {
+                        alpha = calculate_alpha_f(cover << (poly_subpixel_shift + 1));
                         if(alpha)
                         {
                             sl.add_span(x, cur_cell->x - x, alpha);

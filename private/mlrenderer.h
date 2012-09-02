@@ -69,13 +69,14 @@ private:
 	BaseRenderer *_ren;
 };
 
+
 template<class Rasterizer, class Scanline, class Renderer>
 void mlRenderScanlines(Rasterizer& ras, Scanline& sl, Renderer& ren)
 {
     if(ras.rewind_scanlines())
     {
         sl.reset(ras.min_x(), ras.max_x());
-        while(ras.sweep_scanline(sl))
+        while(ras.sweep_scanline_f(sl))
         {
             ren.render(sl);
         }
@@ -83,10 +84,10 @@ void mlRenderScanlines(Rasterizer& ras, Scanline& sl, Renderer& ren)
 }
 
 template <class Filler>
-class MLImageBaseRenderer
+class MLImageBaseRenderer8
 {
 public:
-	MLImageBaseRenderer(const MLArgbBitmap &bitmap, MLBlendOp *blendOp, Filler *filler) :
+	MLImageBaseRenderer8(const MLArgbBitmap &bitmap, MLBlendOp *blendOp, Filler *filler) :
 		_bitmap(bitmap),
 		_blendOp(blendOp),
 		_filler(filler)
@@ -129,6 +130,54 @@ public:
 		
 		QPoint pos(start, y);
 		_filler->fill(pos, newCount, _bitmap.pixelPointer(pos), float(cover) * (1.f / 255.f), _blendOp);
+	}
+	
+private:
+	MLArgbBitmap _bitmap;
+	MLBlendOp *_blendOp;
+	Filler *_filler;
+};
+
+template <class Filler>
+class MLImageBaseRenderer
+{
+public:
+	MLImageBaseRenderer(const MLArgbBitmap &bitmap, MLBlendOp *blendOp, Filler *filler) :
+		_bitmap(bitmap),
+		_blendOp(blendOp),
+		_filler(filler)
+	{}
+	
+	void blendRasterizerSpan(int x, int y, int count, float *covers)
+	{
+		if (y < _bitmap.rect().top() || _bitmap.rect().bottom() < y)
+			return;
+		
+		int start = qMax(x, _bitmap.rect().left());
+		int end = qMin(x + count, _bitmap.rect().left() + _bitmap.rect().width());
+		int newCount = end - start;
+		
+		if (newCount <= 0)
+			return;
+		
+		QPoint pos(start, y);
+		_filler->fill(pos, newCount, _bitmap.pixelPointer(pos), covers + (start - x), _blendOp);
+	}
+	
+	void blendRasterizerLine(int x, int y, int count, float cover)
+	{
+		if (y < _bitmap.rect().top() || _bitmap.rect().bottom() < y)
+			return;
+		
+		int start = qMax(x, _bitmap.rect().left());
+		int end = qMin(x + count, _bitmap.rect().left() + _bitmap.rect().width());
+		int newCount = end - start;
+		
+		if (newCount <= 0)
+			return;
+		
+		QPoint pos(start, y);
+		_filler->fill(pos, newCount, _bitmap.pixelPointer(pos), cover, _blendOp);
 	}
 	
 private:

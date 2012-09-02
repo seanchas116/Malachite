@@ -173,6 +173,138 @@ namespace agg
 
 
 
+	class scanline_pf
+    {
+    public:
+        typedef scanline_pf self_type;
+        typedef float       cover_type;
+        typedef int16       coord_type;
+
+        //--------------------------------------------------------------------
+        struct span
+        {
+            coord_type        x;
+            coord_type        len; // If negative, it's a solid span, covers is valid
+            mutable cover_type* covers;
+        };
+
+        typedef span* iterator;
+        typedef const span* const_iterator;
+
+        scanline_pf() :
+            m_last_x(0x7FFFFFF0),
+            m_covers(),
+            m_cover_ptr(0),
+            m_spans(),
+            m_cur_span(0)
+        {
+        }
+
+        //--------------------------------------------------------------------
+        void reset(int min_x, int max_x)
+        {
+            unsigned max_len = max_x - min_x + 3;
+            if(max_len > m_spans.size())
+            {
+                m_spans.resize(max_len);
+                m_covers.resize(max_len);
+            }
+            m_last_x    = 0x7FFFFFF0;
+            m_cover_ptr = &m_covers[0];
+            m_cur_span  = &m_spans[0];
+            m_cur_span->len = 0;
+        }
+
+        //--------------------------------------------------------------------
+        void add_cell(int x, cover_type cover)
+        {
+            *m_cover_ptr = (cover_type)cover;
+            if(x == m_last_x+1 && m_cur_span->len > 0)
+            {
+                m_cur_span->len++;
+            }
+            else
+            {
+                m_cur_span++;
+                m_cur_span->covers = m_cover_ptr;
+                m_cur_span->x = (int16)x;
+                m_cur_span->len = 1;
+            }
+            m_last_x = x;
+            m_cover_ptr++;
+        }
+
+        //--------------------------------------------------------------------
+        void add_cells(int x, unsigned len, const cover_type* covers)
+        {
+            memcpy(m_cover_ptr, covers, len * sizeof(cover_type));
+            if(x == m_last_x+1 && m_cur_span->len > 0)
+            {
+                m_cur_span->len += (int16)len;
+            }
+            else
+            {
+                m_cur_span++;
+                m_cur_span->covers = m_cover_ptr;
+                m_cur_span->x = (int16)x;
+                m_cur_span->len = (int16)len;
+            }
+            m_cover_ptr += len;
+            m_last_x = x + len - 1;
+        }
+
+        //--------------------------------------------------------------------
+        void add_span(int x, unsigned len, cover_type cover)
+        {
+            if(x == m_last_x+1 && 
+               m_cur_span->len < 0 && 
+               cover == *m_cur_span->covers)
+            {
+                m_cur_span->len -= (int16)len;
+            }
+            else
+            {
+                *m_cover_ptr = (cover_type)cover;
+                m_cur_span++;
+                m_cur_span->covers = m_cover_ptr++;
+                m_cur_span->x      = (int16)x;
+                m_cur_span->len    = (int16)(-int(len));
+            }
+            m_last_x = x + len - 1;
+        }
+
+        //--------------------------------------------------------------------
+        void finalize(int y) 
+        { 
+            m_y = y; 
+        }
+
+        //--------------------------------------------------------------------
+        void reset_spans()
+        {
+            m_last_x    = 0x7FFFFFF0;
+            m_cover_ptr = &m_covers[0];
+            m_cur_span  = &m_spans[0];
+            m_cur_span->len = 0;
+        }
+
+        //--------------------------------------------------------------------
+        int            y()         const { return m_y; }
+        unsigned       num_spans() const { return unsigned(m_cur_span - &m_spans[0]); }
+        const_iterator begin()     const { return &m_spans[1]; }
+
+    private:
+        scanline_pf(const self_type&);
+        const self_type& operator = (const self_type&);
+
+        int                   m_last_x;
+        int                   m_y;
+        pod_array<cover_type> m_covers;
+        cover_type*           m_cover_ptr;
+        pod_array<span>       m_spans;
+        span*                 m_cur_span;
+    };
+
 
 
 

@@ -7,7 +7,7 @@
 template <class Rasterizer, class Filler>
 void mlFill(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blendOp, Filler *filler)
 {
-	agg::scanline_p8 sl;
+	agg::scanline_pf sl;
 	MLImageBaseRenderer<Filler> baseRen(*bitmap, blendOp, filler);
 	MLRenderer<MLImageBaseRenderer<Filler> > ren(baseRen);
 	
