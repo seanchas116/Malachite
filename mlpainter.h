@@ -49,6 +49,9 @@ public:
 		{ Q_ASSERT(_paintEngine); _paintEngine->drawTransformedPolygons(polygons); }
 	void drawTransformedImage(const QPoint &pos, const MLImage &image)
 		{ Q_ASSERT(_paintEngine); _paintEngine->drawTransformedImage(pos, image); }
+	void drawTransformedSurface(const QPoint &pos, const MLSurface &surface)
+		{ Q_ASSERT(_paintEngine); _paintEngine->drawTransformedSurface(pos, surface); }
+	
 	void drawPolygons(const MLMultiPolygon &polygons)
 		{ Q_ASSERT(_paintEngine); _paintEngine->drawPolygons(polygons); }
 	void drawPath(const QPainterPath &path)
