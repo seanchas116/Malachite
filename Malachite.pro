@@ -32,7 +32,9 @@ SOURCES += \
     mlvector.cpp \
     mlpolygon.cpp \
     private/mlrenderer.cpp \
-    private/mlimagepaintengine.cpp
+    private/mlimagepaintengine.cpp \
+    mlfixedpolygon.cpp \
+    private/clipper.cpp
 
 HEADERS +=\
     mlglobal.h \
@@ -78,7 +80,9 @@ HEADERS +=\
     private/mlfiller.h \
     private/mlrenderer.h \
     private/mlimagepaintengine.h \
-    mldivision.h
+    mldivision.h \
+    mlfixedpolygon.h \
+    private/clipper.hpp
 
 OTHER_FILES += \
     resources/shader/default.vert \

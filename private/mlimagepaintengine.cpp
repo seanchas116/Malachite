@@ -95,7 +95,12 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 			return;
 		}
 	}
-	else if (brush.type() == ML::BrushTypeLinearGradient)
+	if (brush.type() == ML::BrushTypeSurface)
+	{
+		mlDrawTransformedImageBrush<Rasterizer, SpreadType, MLSurface, ML::PixelFieldSurface>(ras, bitmap, blendOp, brush.surface(), opacity, fillShapeTransform.inverted(), state.imageTransformType);
+		return;
+	}
+	if (brush.type() == ML::BrushTypeLinearGradient)
 	{
 		MLLinearGradientInfo info = brush.linearGradientInfo();
 		
@@ -122,7 +127,7 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 			return;
 		}
 	}
-	else if (brush.type() == ML::BrushTypeRadialGradient)
+	if (brush.type() == ML::BrushTypeRadialGradient)
 	{
 		MLRadialGradientInfo info = brush.radialGradientInfo();
 		
@@ -178,7 +183,6 @@ void mlDrawWithSpreadType(Rasterizer *ras, MLArgbBitmap *bitmap, MLBlendOp *blen
 
 MLImagePaintEngine::MLImagePaintEngine() :
 	MLPaintEngine(),
-	_blendOp(0),
 	_image(0)
 {}
 
@@ -198,69 +202,44 @@ bool MLImagePaintEngine::flush()
 	return true;
 }
 
-void MLImagePaintEngine::updateState(const MLPaintEngineState &state)
+void MLImagePaintEngine::drawTransformedPolygons(const MLFixedMultiPolygon &polygons)
 {
-	_state = state;
-	_blendOp = state.blendMode.op();
-}
-
-void MLImagePaintEngine::drawPath(const QPainterPath &path)
-{
-	QPainterPath newPath = _state.shapeTransform.map(path);
-	
 	agg::rasterizer_scanline_aa<> ras;
-	QPainterPath_vs vs(newPath);
-	ras.add_path(vs);
 	
-#ifdef QT_DEBUG
-	qDebug() << Q_FUNC_INFO << ": polygon count:" << vs.totalCount();
-#endif
+	foreach (const MLFixedPolygon &polygon, polygons)
+	{
+		if (polygon.size() < 3) continue;
+		
+		MLFixedPoint p = polygon.at(0);
+		ras.move_to(p.x, p.y);
+		
+		for (int i = 1; i < polygon.size(); ++i)
+		{
+			p = polygon.at(i);
+			ras.line_to(p.x, p.y);
+		}
+	}
 	
-	switch (_state.brush.spreadType())
+	switch (state()->brush.spreadType())
 	{
 	case ML::SpreadTypePad:
-		mlDrawWithSpreadType<agg::rasterizer_scanline_aa<>, ML::SpreadTypePad>(&ras, &_bitmap, _blendOp, _state);
+			mlDrawWithSpreadType<agg::rasterizer_scanline_aa<>, ML::SpreadTypePad>(&ras, &_bitmap, state()->blendMode.op(), *state());
 		return;
 	case ML::SpreadTypeRepeat:
-		mlDrawWithSpreadType<agg::rasterizer_scanline_aa<>, ML::SpreadTypeRepeat>(&ras, &_bitmap, _blendOp, _state);
+		mlDrawWithSpreadType<agg::rasterizer_scanline_aa<>, ML::SpreadTypeRepeat>(&ras, &_bitmap, state()->blendMode.op(), *state());
 		return;
 	case ML::SpreadTypeReflective:
-		mlDrawWithSpreadType<agg::rasterizer_scanline_aa<>, ML::SpreadTypeReflective>(&ras, &_bitmap, _blendOp, _state);
+		mlDrawWithSpreadType<agg::rasterizer_scanline_aa<>, ML::SpreadTypeReflective>(&ras, &_bitmap, state()->blendMode.op(), *state());
 		return;
 	default:
 		return;
 	}
 }
 
-void MLImagePaintEngine::drawImage(const QPoint &point, const MLImage &image)
-{
-	QTransform transform = _state.shapeTransform;
-	
-	if (transform.isIdentity())
-	{
-		drawImageSimple(point, image);
-		return;
-	}
-	if (mlTransformIsIntegerTranslating(transform))
-	{
-		QPoint offset(transform.dx(), transform.dy());
-		drawImageSimple(point + offset, image);
-		return;
-	}
-	
-	MLBrush imageBrush(image);
-	imageBrush.setSpreadType(ML::SpreadTypeReflective);
-	
-	MLPainter painter(_image);
-	painter.setBrush(imageBrush);
-	painter.setShapeTransform(transform);
-	painter.drawRect(point.x(), point.y(), image.width(), image.height());
-}
-
-void MLImagePaintEngine::drawImageSimple(const QPoint &offset, const MLImage &image)
+void MLImagePaintEngine::drawTransformedImage(const QPoint &point, const MLImage &image)
 {
 	QRect dstRect = QRect(QPoint(), _image->size());
-	QRect srcRect = QRect(offset, image.size());
+	QRect srcRect = QRect(point, image.size());
 	
 	QRect targetRect = dstRect & srcRect;
 	
@@ -271,10 +250,11 @@ void MLImagePaintEngine::drawImageSimple(const QPoint &offset, const MLImage &im
 	{
 		QPoint p(targetRect.left(), y);
 		
-		if (_state.opacity == 1.0)
-			_blendOp->blend(targetRect.width(), _bitmap.pixelPointer(p), image.constPixelPointer(p - offset));
+		if (state()->opacity == 1.0)
+			state()->blendMode.op()->blend(targetRect.width(), _bitmap.pixelPointer(p), image.constPixelPointer(p - point));
 		else
-			_blendOp->blend(targetRect.width(), _bitmap.pixelPointer(p), image.constPixelPointer(p - offset), _state.opacity);
+			state()->blendMode.op()->blend(targetRect.width(), _bitmap.pixelPointer(p), image.constPixelPointer(p - point), state()->opacity);
 	}
 }
+
 

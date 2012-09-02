@@ -204,5 +204,18 @@ inline bool mlTransformIsSimilar(const QTransform &transform)
 	return transform.isIdentity() || (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22());
 }
 
+/**
+  Returns the bit-to-bit reinterpretation of src.
+  
+  Example:
+  double value = 3.14;
+  uint64_t data = mlTransferCast<uint64_t>(value);
+*/
+template <class TypeDst, class TypeSrc>
+inline TypeDst &mlTransferCast(TypeSrc &src)
+{
+	return *reinterpret_cast<TypeDst *>(&src);
+}
+
 
 #endif // MLMISC_H

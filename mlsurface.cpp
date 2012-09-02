@@ -107,7 +107,8 @@ MLSurface MLSurface::loaded(QIODevice *device)
 		else
 		{
 			MLPainter painter(&surface);
-			painter.drawImage(key * (int)tileSize, *tile);
+			painter.setBlendMode(ML::BlendModeSource);
+			painter.drawTransformedImage(key * (int)tileSize, *tile);
 		}
 		delete tile;
 	}
@@ -137,9 +138,8 @@ QPointSet MLSurface::keysForRect(const QRect &rect)
 {
 	QPointSet set;
 	
-	QPoint topLeftKey, bottomRightKey;
-	mlDividePoint(rect.topLeft(), MLSurface::TileSize, &topLeftKey);
-	mlDividePoint(rect.bottomRight(), MLSurface::TileSize, &bottomRightKey);
+	QPoint topLeftKey = keyForPixel(rect.topLeft());
+	QPoint bottomRightKey = keyForPixel(rect.bottomRight());
 	
 	QRect keyRect(topLeftKey, bottomRightKey);
 	set.reserve(keyRect.width() * keyRect.height());

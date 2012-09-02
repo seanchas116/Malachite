@@ -102,9 +102,9 @@ private:
 		if (right > 0)
 		{
 			if (CoverIsNotArray)
-				blendOp->blend(mid, dst + i, _srcBitmap.pixel(_srcBitmap.width() - 1, imageY), *covers);
+				blendOp->blend(right, dst + i, _srcBitmap.pixel(_srcBitmap.width() - 1, imageY), *covers);
 			else
-				blendOp->blend(mid, dst + i, _srcBitmap.pixel(_srcBitmap.width() - 1, imageY), covers + i);
+				blendOp->blend(right, dst + i, _srcBitmap.pixel(_srcBitmap.width() - 1, imageY), covers + i);
 		}
 	}
 	

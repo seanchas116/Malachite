@@ -75,12 +75,12 @@ public:
 		Q_ASSERT(rangeCorrect());
 	}
 	
-	MLPointer(T *start, int byteSize) :
-		_start(start),
-		_byteSize(byteSize),
-		_p(start)
+	MLPointer(T *p, int rangeByteSize) :
+		_start(p),
+		_byteSize(rangeByteSize),
+		_p(p)
 	{
-		Q_ASSERT(start);
+		Q_ASSERT(p);
 	}
 	
 	MLPointer(T &value) :
@@ -101,9 +101,9 @@ public:
 		_p(p)
 	{ Q_UNUSED(rangeStart); Q_UNUSED(rangeByteSize); }
 	
-	MLPointer(T *start, int byteSize) :
-		_p(start)
-	{ Q_UNUSED(byteSize); }
+	MLPointer(T *p, int rangeByteSize) :
+		_p(p)
+	{ Q_UNUSED(rangeByteSize); }
 	
 	MLPointer(T *p) :
 		_p(p)

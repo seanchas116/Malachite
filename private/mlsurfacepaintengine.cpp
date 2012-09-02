@@ -31,62 +31,40 @@ bool MLSurfacePaintEngine::flush()
 	return true;
 }
 
-void MLSurfacePaintEngine::drawPath(const QPainterPath &path)
+void MLSurfacePaintEngine::drawTransformedPolygons(const MLFixedMultiPolygon &polygons)
 {
-	QRect boundingRect = _state.shapeTransform.mapRect(path.boundingRect()).toAlignedRect();
+	QRect boundingRect = polygons.boundingRect().toAlignedRect();
 	
 	foreach (const QPoint &key, MLSurface::keysForRect(boundingRect))
 	{
 		if (_keyClip.isEmpty() || _keyClip.contains(key))
 		{
-			MLPainter painter(_editor->tileRefForKey(key));
-			painter.setState(_state);
+			MLFixedMultiPolygon rectShape = MLFixedPolygon::fromRect(MLSurface::keyToRect(key));
+			MLFixedMultiPolygon clippedShape = rectShape & polygons;
 			
 			QPoint delta = -key * MLSurface::TileSize;
-			painter.setShapeTransform(_state.shapeTransform * QTransform::fromTranslate(delta.x(), delta.y()));
 			
-			//painter.translateShape(-key * MLSurface::TileSize);
+			clippedShape.translate(delta);
 			
-			painter.drawPath(path);
+			MLPainter painter(_editor->tileRefForKey(key));
+			*painter.state() = *state();
+			painter.setShapeTransform(state()->shapeTransform * QTransform::fromTranslate(delta.x(), delta.y()));
+			
+			painter.drawTransformedPolygons(clippedShape);
 		}
 	}
 }
 
-void MLSurfacePaintEngine::drawImage(const QPoint &point, const MLImage &image)
+void MLSurfacePaintEngine::drawTransformedImage(const QPoint &point, const MLImage &image)
 {
-	QTransform transform = _state.shapeTransform;
-	
-	if (mlTransformIsSimilar(transform))
+	foreach (const QPoint &key, MLSurface::keysForRect(QRect(point, image.size())))
 	{
-		QPoint offset = QPoint(transform.dx(), transform.dy()) + point;
-		
-		foreach (const QPoint &key, MLSurface::keysForRect(QRect(point, image.size())))
+		if (_keyClip.isEmpty() || _keyClip.contains(key))
 		{
-			if (_keyClip.isEmpty() || _keyClip.contains(key))
-			{
-				MLPainter painter(_editor->tileRefForKey(key));
-				painter.setState(_state);
-				
-				painter.drawImage(offset - key * MLSurface::TileSize, image);
-			}
+			MLPainter painter(_editor->tileRefForKey(key));
+			*painter.state() = *state();
+			painter.drawTransformedImage(point - key * MLSurface::TileSize, image);
 		}
 	}
-	else
-	{
-		MLBrush brush = _state.brush;
-		MLBrush imageBrush(image);
-		imageBrush.setSpreadType(ML::SpreadTypeReflective);
-		_state.brush = imageBrush;
-		
-		drawRect(point.x(), point.y(), image.width(), image.height());
-		
-		_state.brush = brush;
-	}
 }
-
-void MLSurfacePaintEngine::updateState(const MLPaintEngineState &state)
-{
-	_state = state;
-}
-
 

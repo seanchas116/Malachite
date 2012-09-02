@@ -13,20 +13,14 @@ public:
 	bool begin(MLPaintable *paintable);
 	bool flush();
 	
-	void updateState(const MLPaintEngineState &state);
-	
-	void drawPath(const QPainterPath &path);
-	void drawImage(const QPoint &point, const MLImage &image);
+	void drawTransformedPolygons(const MLFixedMultiPolygon &polygons);
+	void drawTransformedImage(const QPoint &point, const MLImage &image);
 	
 private:
 	
 	void drawImageSimple(const QPoint &offset, const MLImage &image);
 	
-	MLBlendOp *_blendOp;
-	
 	MLArgbBitmap _bitmap;
-	
-	MLPaintEngineState _state;
 	MLImage *_image;
 };
 

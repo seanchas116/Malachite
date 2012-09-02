@@ -10,6 +10,7 @@
 #include "mlimage.h"
 #include "mlmisc.h"
 #include "mlimage.h"
+#include "mldivision.h"
 
 typedef QHash<QPoint, MLImage *>	MLSurfaceHash;
 
@@ -47,6 +48,17 @@ public:
 	MLImage tileForKey(const QPoint &key) const;
 	MLImage tileForKey(int x, int y) const { return tileForKey(QPoint(x, y)); }
 	
+	MLVec4F pixel(const QPoint &pos) const
+	{
+		QPoint key, rem;
+		mlDividePoint(pos, TileSize, &key, &rem);
+		return tileForKey(key).pixel(rem);
+	}
+	
+	QSize size() const { return QSize(); }	// no size
+	int width() const { return size().width(); }
+	int height() const { return size().height(); }
+	
 	bool contains(const QPoint &key) const { return d ? d->tileHash.contains(key) : false; }
 	bool contains(int x, int y) const { return contains(QPoint(x, y)); }
 	
@@ -57,6 +69,8 @@ public:
 	
 	QRect boundingKeyRect() const;
 	QRect boundingRect() const;
+	
+	static QPoint keyForPixel(const QPoint &pos) { QPoint key; mlDividePoint(pos, TileSize, &key); return key; }
 	
 	static QRect keyToRect(int x, int y) { return QRect(TileSize * x, TileSize * y, TileSize, TileSize); }
 	static QRect keyToRect(const QPoint &point) { return keyToRect(point.x(), point.y()); }

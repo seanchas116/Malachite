@@ -578,6 +578,7 @@ struct MLVec2D
 	MLVec2D(double s) : x(s), y(s) {}
 	MLVec2D(double x, double y) : x(x), y(y) {}
 	MLVec2D(const QPointF &p) : x(p.x()), y(p.y()) {}
+	MLVec2D(const QPoint &p) : x(p.x()), y(p.y()) {}
 	MLVec2D(__v2df v) : v(v) {}
 	
 	QPoint toQPoint() const { return QPointF(*this).toPoint(); }
