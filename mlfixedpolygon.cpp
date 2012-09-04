@@ -119,6 +119,9 @@ MLFixedMultiPolygon operator^(const MLFixedMultiPolygon &polygons1, const MLFixe
 
 MLFixedMultiPolygon operator-(const MLFixedMultiPolygon &polygons1, const MLFixedMultiPolygon &polygons2)
 {
+	if (polygons2.size() == 0)
+		return polygons1;
+	
 	MLFixedMultiPolygon result;
 	
 	Clipper clipper;

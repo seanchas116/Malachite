@@ -286,7 +286,15 @@ public:
 	
 	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
 	{
-		return states;
+		switch (states)
+		{
+		case MLBlendOp::TileBoth:
+			return MLBlendOp::TileBoth;
+		case MLBlendOp::TileSource:
+		case MLBlendOp::TileDestination:
+		default:
+			return MLBlendOp::NoTile;
+		}
 	}
 };
 
@@ -494,6 +502,9 @@ class BlendFunctionsSoftLight
 public:
 	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
+		if (src.a == 0) return;
+		if (dst.a == 0) { dst = src; return; }
+		
 		MLVec4F m, f, d0, d1, d2, d3;
 		m = dst / dst.a;
 		f = 2.0f * src - src.a;
@@ -534,6 +545,9 @@ class BlendFunctionsDifference
 public:
 	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
+		if (src.a == 0) return;
+		if (dst.a == 0) { dst = src; return; }
+		
 		MLVec4F d = src + dst - 2.0f * mlMin(src * dst.a, dst * src.a);
 		d.a += src.a * dst.a;
 		dst = d;
@@ -550,9 +564,69 @@ class BlendFunctionsExclusion
 public:
 	static void blend(MLVec4F &dst, const MLVec4F &src)
 	{
+		if (src.a == 0) return;
+		if (dst.a == 0) { dst = src; return; }
+		
 		MLVec4F d = (src * dst.a + dst * src.a - (2.0f * src.a * dst.a)) + src * (1.0f - dst.a) + dst * (1.0f - src.a);
 		d.a += src.a * dst.a;
 		dst = d;
+	}
+	
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
+	{
+		return states;
+	}
+};
+
+class BlendFunctionsDestinationPadding
+{
+public:
+	
+	static void blend(MLVec4F &dst, const MLVec4F &src)
+	{
+		if (dst.a == 1)
+			return;
+		
+		float margin = 1 - dst.a;
+		
+		if (margin >= src.a)
+		{
+			dst += src;
+			return;
+		}
+		
+		dst += (margin / src.a) * src;
+		dst.a = 1;
+	}
+	
+	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
+	{
+		return states;
+	}
+};
+
+class BlendFunctionsSourcePadding
+{
+public:
+	
+	static void blend(MLVec4F &dst, const MLVec4F &src)
+	{
+		if (src.a == 1)
+		{
+			dst = src;
+			return;
+		}
+		
+		float margin = 1 - src.a;
+		
+		if (margin >= dst.a)
+		{
+			dst += src;
+			return;
+		}
+		
+		dst = (margin / dst.a) * dst + src;
+		dst.a = 1;
 	}
 	
 	static MLBlendOp::TileCombination tileRequirement(MLBlendOp::TileCombination states)
@@ -589,6 +663,9 @@ MLBlendOpDictionary::MLBlendOpDictionary()
 	_blendOps[ML::BlendModeSoftLight] = new MLTemplateBlendOp<BlendFunctionsSoftLight>;
 	_blendOps[ML::BlendModeDifference] = new MLTemplateBlendOp<BlendFunctionsDifference>;
 	_blendOps[ML::BlendModeExclusion] = new MLTemplateBlendOp<BlendFunctionsExclusion>;
+	
+	_blendOps[ML::BlendModeSourcePadding] = new MLTemplateBlendOp<BlendFunctionsSourcePadding>;
+	_blendOps[ML::BlendModeDestinationPadding] = new MLTemplateBlendOp<BlendFunctionsDestinationPadding>;
 }
 
 MLBlendOpDictionary BlendOpDictionary;

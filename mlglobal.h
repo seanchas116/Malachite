@@ -14,23 +14,82 @@
 namespace ML
 {
 
+/**
+  This enum describes the blend mode (aka compositing mode) in painting.
+  Malachite supports all compositing operations of SVG Compositing Specification (http://www.w3.org/TR/SVGCompositing/) and some original modes.
+*/
 enum BlendMode
 {
-	BlendModeNormal = 0,	// 通常
-	BlendModePlus,	// 加算
-	BlendModeMultiply,	// 乗算
-	BlendModeScreen,	// スクリーン
-	BlendModeOverlay,	// オーバーレイ
-	BlendModeDarken,	// 比較（暗）
-	BlendModeLighten,	// 比較（明）
-	BlendModeColorDodge,	// 覆い焼き
-	BlendModeColorBurn,	// 焼き込み
-	BlendModeHardLight,	// ハードライト
-	BlendModeSoftLight,	// ソフトライト
-	BlendModeDifference,	// 差の絶対値
-	BlendModeExclusion,	// 除外
+	/**
+	  Normal (通常)
+	  Equal to BlendModeSourceover
+	*/
+	BlendModeNormal = 0,
 	
-	BlendModeClear,
+	/**
+	  Plus (加算)
+	*/
+	BlendModePlus,
+	
+	/**
+	  Multiply (乗算)
+	*/
+	BlendModeMultiply,
+	
+	/**
+	  Screen (スクリーン)
+	*/
+	BlendModeScreen,
+	
+	/**
+	  Overlay (オーバーレイ)
+	*/
+	BlendModeOverlay,
+	
+	/**
+	  Darken (比較（暗）)
+	*/
+	BlendModeDarken,
+	
+	/**
+	  Lighten (比較（明）)
+	*/
+	BlendModeLighten,
+	
+	/**
+	  Color Dodge (覆い焼き)
+	*/
+	BlendModeColorDodge,
+	
+	/**
+	  Color Burn (焼き込み)
+	*/
+	BlendModeColorBurn,
+	
+	/**
+	  Hard Light (ハードライト)
+	*/
+	BlendModeHardLight,
+	
+	/**
+	  Soft Light (ソフトライト)
+	*/
+	BlendModeSoftLight,
+	
+	/**
+	  Difference (差の絶対値)
+	*/
+	BlendModeDifference,
+	
+	/**
+	  Exclusion (除外)
+	*/
+	BlendModeExclusion,
+	
+	BlendModeSourcePadding,
+	BlendModeDestinationPadding,
+	
+	BlendModeClear = 128,
 	BlendModeSource,
 	BlendModeDestination,
 	BlendModeSourceOver,
@@ -43,7 +102,12 @@ enum BlendMode
 	BlendModeDestinationAtop,
 	BlendModeXor,
 	
-	BlendModePassThrough	// Group only
+	/**
+	  Pass Through
+	  This value is for group layers only.
+	  This value means that the group layer will not affect layer blending order.
+	*/
+	BlendModePassThrough = 256
 };
 
 enum ImageFormat
