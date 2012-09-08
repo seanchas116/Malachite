@@ -18,8 +18,6 @@ public:
 	
 private:
 	
-	void drawImageSimple(const QPoint &offset, const MLImage &image);
-	
 	MLArgbBitmap _bitmap;
 	MLImage *_image;
 };

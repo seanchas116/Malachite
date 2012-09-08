@@ -50,10 +50,8 @@ public:
 		return *this;
 	}
 	
-	bool operator==(int index)
-	{
-		return _index == index;
-	}
+	bool operator==(int index) { return _index == index; }
+	bool operator!=(int index) { return _index != index; }
 	
 private:
 	

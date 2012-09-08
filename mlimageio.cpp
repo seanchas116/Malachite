@@ -80,12 +80,11 @@ MLImageExporter::MLImageExporter(const QSize &size, const QString &format) :
 	}
 }
 
-/*
 MLImageExporter::MLImageExporter(const MLSurface &surface, const QSize &size, const QString &format) :
 	MLImageExporter(size, format)
 {
 	pasteSurface(surface, QPoint());
-}*/
+}
 
 MLImageExporter::MLImageExporter(const MLImage &image, const QString &format) :
 	MLImageExporter(image.size(), format)
@@ -137,7 +136,6 @@ bool MLImageExporter::pasteImage(const MLImage &image, const QPoint &pos)
 	return mlPasteImageToBitmap(pos, _bitmap, image);
 }
 
-/*
 bool MLImageExporter::pasteSurface(const MLSurface &surface, const QPoint &pos)
 {
 	if (!_bitmap)
@@ -154,7 +152,7 @@ bool MLImageExporter::pasteSurface(const MLSurface &surface, const QPoint &pos)
 	}
 	
 	return true;
-}*/
+}
 
 /*
 bool mlSaveAsPNG(const MLImage &image, const QString &filePath)

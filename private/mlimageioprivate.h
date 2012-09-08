@@ -16,46 +16,47 @@ bool mlPasteFIBITMAPToImage(const QPoint &pos, Image *dst, FIBITMAP *src)
 	
 	switch (srcType)
 	{
-	case FIT_BITMAP:
-	{
-		int bpp = FreeImage_GetBPP(src);
-		
-		switch (bpp)
+		case FIT_BITMAP:
 		{
-		case 24:
-		{
-			dst->paste(MLGenericImage<ML::ImageFormatRgb, MLVec3U8>::wrap(srcBits, srcSize, srcPitch), pos, false, true);
+			int bpp = FreeImage_GetBPP(src);
+			
+			switch (bpp)
+			{
+				case 24:
+				{
+					auto wrapped = MLGenericImage<ML::ImageFormatRgb, MLVec3U8>::wrap(srcBits, srcSize, srcPitch);
+					dst->template paste<false, true>(wrapped, pos);
+					break;
+				}
+				case 32:
+				{
+					dst->template paste<false, true>(MLGenericImage<ML::ImageFormatArgb, MLVec4U8>::wrap(srcBits, srcSize, srcPitch), pos);
+					break;
+				}
+				default:
+				{
+					FIBITMAP *newBitmap = FreeImage_ConvertTo32Bits(src);	// converted to RGBA8
+					dst->template paste<false, true>(MLGenericImage<ML::ImageFormatArgb, MLVec4U8>::wrap(FreeImage_GetBits(newBitmap), srcSize, FreeImage_GetPitch(newBitmap)), pos);
+					FreeImage_Unload(newBitmap);
+					break;
+				}
+			}
+			
 			break;
 		}
-		case 32:
+		case FIT_RGB16:
 		{
-			dst->paste(MLGenericImage<ML::ImageFormatArgb, MLVec4U8>::wrap(srcBits, srcSize, srcPitch), pos, false, true);
+			dst->template paste<false, true>(MLGenericImage<ML::ImageFormatRgb, MLVec3U16>::wrap(srcBits, srcSize, srcPitch), pos);
+			break;
+		}
+		case FIT_RGBA16:
+		{
+			dst->template paste<false, true>(MLGenericImage<ML::ImageFormatArgb, MLVec4U16>::wrap(srcBits, srcSize, srcPitch), pos);
 			break;
 		}
 		default:
-		{
-			FIBITMAP *newBitmap = FreeImage_ConvertTo32Bits(src);	// converted to RGBA8
-			dst->paste(MLGenericImage<ML::ImageFormatArgb, MLVec4U8>::wrap(FreeImage_GetBits(newBitmap), srcSize, FreeImage_GetPitch(newBitmap)), pos, false, true);
-			FreeImage_Unload(newBitmap);
-			break;
-		}
-		}
-		
-		break;
-	}
-	case FIT_RGB16:
-	{
-		dst->paste(MLGenericImage<ML::ImageFormatRgb, MLVec3U16>::wrap(srcBits, srcSize, srcPitch), pos, false, true);
-		break;
-	}
-	case FIT_RGBA16:
-	{
-		dst->paste(MLGenericImage<ML::ImageFormatArgb, MLVec4U16>::wrap(srcBits, srcSize, srcPitch), pos, false, true);
-		break;
-	}
-	default:
-		qWarning() << Q_FUNC_INFO << ": Unsupported data type";
-		return false;
+			qWarning() << Q_FUNC_INFO << ": Unsupported data type";
+			return false;
 	}
 	
 	return true;
@@ -71,46 +72,46 @@ bool mlPasteImageToBitmap(const QPoint &pos, FIBITMAP *dst, const Image &src)
 	
 	switch (dstType)
 	{
-	case FIT_BITMAP:
-	{
-		int bpp = FreeImage_GetBPP(dst);
-		
-		switch (bpp)
+		case FIT_BITMAP:
 		{
-		case 24:
-		{
-			auto wrapper = MLGenericImage<ML::ImageFormatRgb, MLVec3U8>::wrap(dstBits, dstSize, dstPitch);
-			wrapper.paste(src, pos, true, false);
+			int bpp = FreeImage_GetBPP(dst);
+			
+			switch (bpp)
+			{
+				case 24:
+				{
+					auto wrapper = MLGenericImage<ML::ImageFormatRgb, MLVec3U8>::wrap(dstBits, dstSize, dstPitch);
+					wrapper.paste<true, false>(src, pos);
+					break;
+				}
+				case 32:
+				{
+					auto wrapper = MLGenericImage<ML::ImageFormatArgb, MLVec4U8>::wrap(dstBits, dstSize, dstPitch);
+					wrapper.paste<true, false>(src, pos);
+					break;
+				}
+				default:
+					qWarning() << Q_FUNC_INFO << ": Unsupported data type";
+					return false;
+			}
+			
 			break;
 		}
-		case 32:
+		case FIT_RGB16:
 		{
-			auto wrapper = MLGenericImage<ML::ImageFormatArgb, MLVec4U8>::wrap(dstBits, dstSize, dstPitch);
-			wrapper.paste(src, pos, true, false);
+			auto wrapper = MLGenericImage<ML::ImageFormatRgb, MLVec3U16>::wrap(dstBits, dstSize, dstPitch);
+			wrapper.paste<true, false>(src, pos);
+			break;
+		}
+		case FIT_RGBA16:
+		{
+			auto wrapper = MLGenericImage<ML::ImageFormatArgb, MLVec4U16>::wrap(dstBits, dstSize, dstPitch);
+			wrapper.paste<true, false>(src, pos);
 			break;
 		}
 		default:
 			qWarning() << Q_FUNC_INFO << ": Unsupported data type";
 			return false;
-		}
-		
-		break;
-	}
-	case FIT_RGB16:
-	{
-		auto wrapper = MLGenericImage<ML::ImageFormatRgb, MLVec3U16>::wrap(dstBits, dstSize, dstPitch);
-		wrapper.paste(src, pos, true, false);
-		break;
-	}
-	case FIT_RGBA16:
-	{
-		auto wrapper = MLGenericImage<ML::ImageFormatArgb, MLVec4U16>::wrap(dstBits, dstSize, dstPitch);
-		wrapper.paste(src, pos, true, false);
-		break;
-	}
-	default:
-		qWarning() << Q_FUNC_INFO << ": Unsupported data type";
-		return false;
 	}
 	
 	return true;

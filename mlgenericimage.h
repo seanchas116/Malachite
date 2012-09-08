@@ -142,15 +142,15 @@ public:
 		}
 	}
 	
-	template <ML::ImageFormat SrcFormat, class SrcColor>
-	void paste(const MLGenericImage<SrcFormat, SrcColor> &image, const QPoint &point = QPoint(), bool dstInverted = false, bool srcInverted = false)
+	template <bool DstInverted = false, bool SrcInverted = false, ML::ImageFormat SrcFormat, class SrcColor>
+	void paste(const MLGenericImage<SrcFormat, SrcColor> &image, const QPoint &point = QPoint())
 	{
 		QRect r = rect() & QRect(point, image.size());
 		
 		for (int y = r.top(); y <= r.bottom(); ++y)
 		{
-			ColorType *dp = (dstInverted ? invertedScanline(y) : scanline(y)) + r.left();
-			const SrcColor *sp = (srcInverted ? image.invertedConstScanline(y - point.y()) : image.constScanline(y - point.y())) + r.left() - point.x();
+			ColorType *dp = (DstInverted ? invertedScanline(y) : scanline(y)) + r.left();
+			const SrcColor *sp = (SrcInverted ? image.invertedConstScanline(y - point.y()) : image.constScanline(y - point.y())) + r.left() - point.x();
 			
 			for (int x = 0; x < r.width(); ++x)
 				mlConvertPixel<Format, Color, SrcFormat, SrcColor>(*dp++, *sp++);

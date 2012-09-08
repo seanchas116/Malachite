@@ -17,6 +17,7 @@ public:
 	
 	void drawTransformedPolygons(const MLFixedMultiPolygon &polygons);
 	void drawTransformedImage(const QPoint &point, const MLImage &image);
+	void drawTransformedSurface(const QPoint &point, const MLSurface &surface);
 	
 	void setKeyClip(const QPointSet &keys) { _keyClip = keys; }
 	QPointSet keyClip() const { return _keyClip; }

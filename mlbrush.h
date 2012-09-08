@@ -128,6 +128,8 @@ public:
 		return MLBrush(gradient, MLRadialGradientInfo(center, radius));
 	}
 	
+	bool isValid() { return d; }
+	
 	ML::BrushType type() const { return d->type; }
 	
 	void setSpreadType(ML::SpreadType type) { d->spreadType = type; }

@@ -34,7 +34,7 @@ class MALACHITESHARED_EXPORT MLImageExporter
 public:
 	
 	MLImageExporter(const QSize &size, const QString &format);
-	//MLImageExporter(const MLSurface &surface, const QSize &size, const QString &format);
+	MLImageExporter(const MLSurface &surface, const QSize &size, const QString &format);
 	MLImageExporter(const MLImage &image, const QString &format);
 	
 	~MLImageExporter();
@@ -44,7 +44,7 @@ public:
 private:
 	
 	bool pasteImage(const MLImage &image, const QPoint &pos);
-	//bool pasteSurface(const MLSurface &surface, const QPoint &pos);
+	bool pasteSurface(const MLSurface &surface, const QPoint &pos);
 	
 	QSize _size;
 	FIBITMAP *_bitmap;
