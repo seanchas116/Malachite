@@ -12,28 +12,21 @@
 #include <cstring>
 #include "mlglobal.h"
 
-class QPolygonF;
-class MLPolygon;
+typedef QList<QPoint>	QPointList;
+typedef QSet<QPoint>	QPointSet;
+
+namespace Malachite
+{
 
 #include <cstdlib>
 #ifdef __MINGW32__
 #include <malloc.h>
 #endif
 
-#define	MAX(a, b)	(((a) > (b)) ? (a) : (b))
-#define	MIN(a, b)	(((a) < (b)) ? (a) : (b))
-#define MAX3(a, b, c)	(((a) > (b) && (a) > (c)) ? (a) : ((b) > (c)) ? (b) : (c))
-#define MIN3(a, b, c)	(((a) < (b) && (a) < (c)) ? (a) : ((b) < (c)) ? (b) : (c))
-#define	ABS(a)	(((a) < 0) ? -(a) : (a))
-#define	CLAMP(x, low, high)	(((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
-
-typedef QList<QPoint>	QPointList;
-typedef QSet<QPoint>	QPointSet;
-
 #define ML_CURRENT_FUNCTION	__PRETTY_FUNCTION__
 
 template <typename T>
-inline T mlMax(const T &a, const T &b, const T &c)
+inline T max3(const T &a, const T &b, const T &c)
 {
 	if (a > b && a > c) {
 		return a;
@@ -46,7 +39,7 @@ inline T mlMax(const T &a, const T &b, const T &c)
 }
 
 template <typename T>
-inline T mlMin(const T &a, const T &b, const T &c)
+inline T min3(const T &a, const T &b, const T &c)
 {
 	if (a < b && a < c) {
 		return a;
@@ -58,14 +51,8 @@ inline T mlMin(const T &a, const T &b, const T &c)
 	}
 }
 
-
-inline QPointF operator*(const QTransform &transform, const QPointF &point)
-{
-	return transform.map(point);
-}
-
 template <typename T>
-QList<T> mlListFromValue(const T &value)
+QList<T> listFromValue(const T &value)
 {
 	QList<T> list;
 	list << value;
@@ -73,7 +60,7 @@ QList<T> mlListFromValue(const T &value)
 }
 
 template <typename T>
-QList<const T *> mlConstList(const QList<T *> &list) {
+QList<const T *> constList(const QList<T *> &list) {
 	QList<const T *> result;
 	result.reserve(list.size());
 	foreach (T *p, list) {
@@ -83,7 +70,7 @@ QList<const T *> mlConstList(const QList<T *> &list) {
 }
 
 template <typename T>
-QList<T *> mlNonConstList(const QList<const T *> &list) {
+QList<T *> nonConstList(const QList<const T *> &list) {
 	QList<T *> result;
 	result.reserve(list.size());
 	foreach (const T *p, list) {
@@ -93,23 +80,11 @@ QList<T *> mlNonConstList(const QList<const T *> &list) {
 }
 
 template <typename Container>
-Container mlReversedContainer(const Container &container) {
+Container reversedContainer(const Container &container) {
 	Container reversed;
 	reversed.reserve(container.size());
 	std::reverse_copy(container.begin(), container.end(), std::back_inserter(reversed));
 	return reversed;
-}
-
-inline uint qHash(const QSize &key)
-{
-	QPair<int, int> pair(key.width(), key.height());
-	return qHash(pair);
-}
-
-inline uint qHash(const QPoint &key)
-{
-	QPair<int, int> pair(key.x(), key.y());
-	return qHash(pair);
 }
 
 template <typename T>
@@ -191,7 +166,7 @@ private:
 	QVectorCountableIterator<T> i;
 };
 
-inline bool mlTransformIsIntegerTranslating(const QTransform &transform)
+inline bool transformIsIntegerTranslating(const QTransform &transform)
 {
 	if (transform.isIdentity())
 		return true;
@@ -199,7 +174,7 @@ inline bool mlTransformIsIntegerTranslating(const QTransform &transform)
 	return transform.type() <= QTransform::TxTranslate && transform.dx() == floor(transform.dx()) && transform.dy() == floor(transform.dy());
 }
 
-inline bool mlTransformIsSimilar(const QTransform &transform)
+inline bool transformIsSimilar(const QTransform &transform)
 {
 	return transform.isIdentity() || (transform.isAffine() && transform.m12() == 0 && transform.m21() == 0 && transform.m11() == transform.m22());
 }
@@ -212,10 +187,23 @@ inline bool mlTransformIsSimilar(const QTransform &transform)
   uint64_t data = mlTransferCast<uint64_t>(value);
 */
 template <class TypeDst, class TypeSrc>
-inline TypeDst &mlTransferCast(TypeSrc &src)
+inline TypeDst &transferCast(TypeSrc &src)
 {
 	return *reinterpret_cast<TypeDst *>(&src);
 }
 
+}
+
+inline uint qHash(const QSize &key)
+{
+	QPair<int, int> pair(key.width(), key.height());
+	return qHash(pair);
+}
+
+inline uint qHash(const QPoint &key)
+{
+	QPair<int, int> pair(key.x(), key.y());
+	return qHash(pair);
+}
 
 #endif // MLMISC_H

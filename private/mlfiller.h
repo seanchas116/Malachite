@@ -5,68 +5,71 @@
 #include "mlblendop.h"
 #include "mldivision.h"
 
-class MLColorFiller
+namespace Malachite
+{
+
+class ColorFiller
 {
 public:
-	MLColorFiller(const MLVec4F &argb, double opacity) :
+	ColorFiller(const Vec4F &argb, double opacity) :
 		_argb(argb * opacity)
 	{}
 	
-	void fill(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		Q_UNUSED(pos);
 		blendOp->blend(count, dst, _argb, covers);
 	}
 	
-	void fill(const QPoint &pos, int count, MLPointer<MLVec4F> dst, float cover, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Vec4F> dst, float cover, BlendOp *blendOp)
 	{
 		Q_UNUSED(pos);
 		blendOp->blend(count, dst, _argb * cover);
 	}
 	
 private:
-	MLVec4F _argb;
+	Vec4F _argb;
 };
 
-template <ML::SpreadType SpreadType>
-class MLImageFiller
+template <Malachite::SpreadType T_SpreadType>
+class ImageFiller
 {
 public:
 	
-	MLImageFiller(const MLArgbBitmap &bitmap, const QPoint &offset) :
+	ImageFiller(const ArgbBitmap &bitmap, const QPoint &offset) :
 		_srcBitmap(bitmap), _offset(offset) {}
 	
-	void fill(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		fillTemplate<false>(pos, count, dst, covers, blendOp);
 	}
 	
-	void fill(const QPoint &pos, int count, MLPointer<MLVec4F> dst, float cover, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Vec4F> dst, float cover, BlendOp *blendOp)
 	{
-		fillTemplate<true>(pos, count, dst, MLPointer<float>(cover), blendOp);
+		fillTemplate<true>(pos, count, dst, Pointer<float>(cover), blendOp);
 	}
 	
 private:
 	
 	template <bool CoverIsNotArray>
-	void fillTemplate(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
+	void fillTemplate(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
-		switch (SpreadType)
+		switch (T_SpreadType)
 		{
-		case ML::SpreadTypePad:
+		case Malachite::SpreadTypePad:
 			fillTemplatePad<CoverIsNotArray>(pos, count, dst, covers, blendOp);
 			return;
-		case ML::SpreadTypeRepeat:
+		case Malachite::SpreadTypeRepeat:
 			fillTemplateRepeat<CoverIsNotArray>(pos, count, dst, covers, blendOp);
 			return;
-		case ML::SpreadTypeReflective:
+		case Malachite::SpreadTypeReflective:
 			fillTemplateReflective<CoverIsNotArray>(pos, count, dst, covers, blendOp);
 			return;
 		}
 	}
 	
 	template <bool CoverIsNotArray>
-	void fillTemplatePad(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
+	void fillTemplatePad(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
 		int imageY = qBound(0, srcPos.y(), _srcBitmap.height() - 1);
@@ -109,11 +112,11 @@ private:
 	}
 	
 	template <bool CoverIsNotArray>
-	void fillTemplateRepeat(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
+	void fillTemplateRepeat(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
-		MLIntDivision divX(srcPos.x(), _srcBitmap.width());
-		MLIntDivision divY(srcPos.y(), _srcBitmap.height());
+		IntDivision divX(srcPos.x(), _srcBitmap.width());
+		IntDivision divY(srcPos.y(), _srcBitmap.height());
 		
 		int imageY = divY.rem();
 		
@@ -152,11 +155,11 @@ private:
 	}
 	
 	template <bool CoverIsNotArray>
-	void fillTemplateReflective(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
+	void fillTemplateReflective(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
-		MLIntDivision divX(srcPos.x(),  _srcBitmap.width());
-		MLIntDivision divY(srcPos.y(),  _srcBitmap.height());
+		IntDivision divX(srcPos.x(),  _srcBitmap.width());
+		IntDivision divY(srcPos.y(),  _srcBitmap.height());
 		
 		int imageY = divY.quot() % 2 ?  _srcBitmap.height() - divY.rem() - 1 : divY.rem();
 		
@@ -238,21 +241,21 @@ private:
 		}
 	}
 	
-	const MLBitmap<MLVec4F> _srcBitmap;
+	const Bitmap<Vec4F> _srcBitmap;
 	QPoint _offset;
 };
 
-template <class Generator, bool TransformEnabled>
-class MLFiller
+template <class T_Generator, bool TransformEnabled>
+class Filler
 {
 public:
-	MLFiller(Generator *generator, float opacity, const QTransform &worldTransform = QTransform()) :
+	Filler(T_Generator *generator, float opacity, const QTransform &worldTransform = QTransform()) :
 		_generator(generator),
 		_opacity(opacity),
 		_transform(worldTransform)
 	{}
 	
-	void fill(const QPoint &pos, int count, MLPointer<MLVec4F> dst, MLPointer<float> covers, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		if (_opacity != 1)
 		{
@@ -260,42 +263,44 @@ public:
 				covers[i] *= _opacity;
 		}
 		
-		MLArray<MLVec4F> fill(count);
+		Array<Vec4F> fill(count);
 		
-		MLVec2D centerPos(pos.x(), pos.y());
-		centerPos += MLVec2D(0.5, 0.5);
+		Vec2D centerPos(pos.x(), pos.y());
+		centerPos += Vec2D(0.5, 0.5);
 		
 		for (int i = 0; i < count; ++i)
 		{
 			fill[i] = _generator->at(TransformEnabled ? centerPos * _transform : centerPos);
-			centerPos += MLVec2D(1, 0);
+			centerPos += Vec2D(1, 0);
 		}
 		
 		blendOp->blend(count, dst, fill.data(), covers);
 	}
 	
-	void fill(const QPoint &pos, int count, MLPointer<MLVec4F> dst, float cover, MLBlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Vec4F> dst, float cover, BlendOp *blendOp)
 	{
 		cover *= _opacity;
 		
-		MLArray<MLVec4F> fill(count);
+		Array<Vec4F> fill(count);
 		
-		MLVec2D centerPos(pos.x(), pos.y());
-		centerPos += MLVec2D(0.5, 0.5);
+		Vec2D centerPos(pos.x(), pos.y());
+		centerPos += Vec2D(0.5, 0.5);
 		
 		for (int i = 0; i < count; ++i)
 		{
 			fill[i] = _generator->at(TransformEnabled ? centerPos * _transform : centerPos);
-			centerPos += MLVec2D(1, 0);
+			centerPos += Vec2D(1, 0);
 		}
 		
 		blendOp->blend(count, dst, fill.data(), cover);
 	}
 	
 private:
-	Generator *_generator;
+	T_Generator *_generator;
 	float _opacity;
 	QTransform _transform;
 };
+
+}
 
 #endif // MLFILLER_H

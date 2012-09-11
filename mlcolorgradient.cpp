@@ -1,7 +1,10 @@
 #include "mlcolorgradient.h"
 
-MLColorGradientCache::MLColorGradientCache(MLColorGradient *gradient, int sampleCount) :
-	MLColorGradient(),
+namespace Malachite
+{
+
+ColorGradientCache::ColorGradientCache(ColorGradient *gradient, int sampleCount) :
+	ColorGradient(),
 	_sampleCount(sampleCount),
 	_cache(sampleCount + 1)
 {
@@ -12,15 +15,15 @@ MLColorGradientCache::MLColorGradientCache(MLColorGradient *gradient, int sample
 }
 
 
-MLVec4F MLArgbGradient::at(float x) const
+Vec4F ArgbGradient::at(float x) const
 {
 	int count = _stops.size();
 	if (count == 0)
-		return MLVec4F(0);
+		return Vec4F(0);
 	if (count == 1)
 		return _stops.value(0);
 	
-	QMapIterator<float, MLVec4F> i(_stops);
+	QMapIterator<float, Vec4F> i(_stops);
 	
 	if (x <= i.peekNext().key()) return i.peekNext().value();
 	i.next();
@@ -31,10 +34,10 @@ MLVec4F MLArgbGradient::at(float x) const
 		if (x < x1)
 		{
 			float x0 = i.peekPrevious().key();
-			MLVec4F y0 = i.peekPrevious().value();
-			MLVec4F y1 = i.peekNext().value();
+			Vec4F y0 = i.peekPrevious().value();
+			Vec4F y1 = i.peekNext().value();
 			
-			MLVec4F r = y0 + (x - x0) / (x1 - x0) * (y1 - y0);
+			Vec4F r = y0 + (x - x0) / (x1 - x0) * (y1 - y0);
 			return r;
 		}
 		if (x == x1)
@@ -44,3 +47,4 @@ MLVec4F MLArgbGradient::at(float x) const
 	return _stops.values().last();
 }
 
+}

@@ -4,29 +4,32 @@
 #include "mlvector.h"
 #include "mldivision.h"
 
-template <ML::SpreadType SpreadType>
-QPoint mlActualImagePos(const QPoint &p, const QSize &size)
+namespace Malachite
+{
+
+template <Malachite::SpreadType T_SpreadType>
+QPoint actualImagePos(const QPoint &p, const QSize &size)
 {
 	QPoint r;
 	
-	switch (SpreadType)
+	switch (T_SpreadType)
 	{
-	case ML::SpreadTypePad:
+	case Malachite::SpreadTypePad:
 	{
 		r.rx() = qBound(0, p.x(), size.width() - 1);
 		r.ry() = qBound(0, p.y(), size.height() - 1);
 		break;
 	}
-	case ML::SpreadTypeRepeat:
+	case Malachite::SpreadTypeRepeat:
 	{
-		r.rx() = MLIntDivision(p.x(), size.width()).rem();
-		r.ry() = MLIntDivision(p.y(), size.height()).rem();
+		r.rx() = IntDivision(p.x(), size.width()).rem();
+		r.ry() = IntDivision(p.y(), size.height()).rem();
 		break;
 	}
-	case ML::SpreadTypeReflective:
+	case Malachite::SpreadTypeReflective:
 	{
-		MLIntDivision divX(p.x(), size.width());
-		MLIntDivision divY(p.y(), size.height());
+		IntDivision divX(p.x(), size.width());
+		IntDivision divY(p.y(), size.height());
 		r.rx() = (divX.quot() % 2) ? (size.width() - divX.rem() - 1) : divX.rem();
 		r.ry() = (divY.quot() % 2) ? (size.height() - divY.rem() - 1) : divY.rem();
 		break;
@@ -38,18 +41,18 @@ QPoint mlActualImagePos(const QPoint &p, const QSize &size)
 	return r;
 }
 
-template <class Source, ML::PixelFieldType SourceType, ML::SpreadType SpreadType>
-class MLScalingGeneratorNearestNeighbor
+template <class Source, Malachite::PixelFieldType T_SourceType, Malachite::SpreadType T_SpreadType>
+class ScalingGeneratorNearestNeighbor
 {
 public:
-	MLScalingGeneratorNearestNeighbor(const Source *source) :
+	ScalingGeneratorNearestNeighbor(const Source *source) :
 		_source(source)
 	{}
 	
-	MLVec4F at(const MLVec2D &p)
+	Vec4F at(const Vec2D &p)
 	{
-		if (SourceType == ML::PixelFieldImage)
-			return _source->pixel(mlActualImagePos<SpreadType>(p.toQPoint(), _source->size()));
+		if (T_SourceType == Malachite::PixelFieldImage)
+			return _source->pixel(actualImagePos<T_SpreadType>(p.toQPoint(), _source->size()));
 		else
 			return _source->pixel(p.toQPoint());
 	}
@@ -58,30 +61,30 @@ private:
 	const Source *_source;
 };
 
-template <class Source, ML::PixelFieldType SourceType, ML::SpreadType SpreadType>
-class MLScalingGeneratorBilinear
+template <class Source, Malachite::PixelFieldType T_SourceType, Malachite::SpreadType T_SpreadType>
+class ScalingGeneratorBilinear
 {
 public:
-	MLScalingGeneratorBilinear(const Source *source) :
+	ScalingGeneratorBilinear(const Source *source) :
 		_source(source)
 	{}
 	
-	MLVec4F at(const MLVec2D &p)
+	Vec4F at(const Vec2D &p)
 	{
-		MLVec2D rp(round(p.x), round(p.y));
-		MLVec2D d = p - rp + MLVec2D(0.5, 0.5);
+		Vec2D rp(round(p.x), round(p.y));
+		Vec2D d = p - rp + Vec2D(0.5, 0.5);
 		float dx = d.x;
 		float dy = d.y;
 		QPoint irp = rp.toQPoint();
 		
-		MLVec4F c11, c12, c21, c22;
+		Vec4F c11, c12, c21, c22;
 		
-		if (SourceType == ML::PixelFieldImage)
+		if (T_SourceType == Malachite::PixelFieldImage)
 		{
-			c11 = _source->pixel(mlActualImagePos<SpreadType>(irp + QPoint(-1, -1), _source->size()));
-			c12 = _source->pixel(mlActualImagePos<SpreadType>(irp + QPoint(-1, 0), _source->size()));
-			c21 = _source->pixel(mlActualImagePos<SpreadType>(irp + QPoint(0, -1), _source->size()));
-			c22 = _source->pixel(mlActualImagePos<SpreadType>(irp, _source->size()));
+			c11 = _source->pixel(actualImagePos<T_SpreadType>(irp + QPoint(-1, -1), _source->size()));
+			c12 = _source->pixel(actualImagePos<T_SpreadType>(irp + QPoint(-1, 0), _source->size()));
+			c21 = _source->pixel(actualImagePos<T_SpreadType>(irp + QPoint(0, -1), _source->size()));
+			c22 = _source->pixel(actualImagePos<T_SpreadType>(irp, _source->size()));
 		}
 		else
 			c11 = _source->pixel(irp + QPoint(-1, -1));
@@ -89,7 +92,7 @@ public:
 			c21 = _source->pixel(irp + QPoint(0, -1));
 			c22 = _source->pixel(irp);
 		
-		MLVec4F result;
+		Vec4F result;
 		result.v = (c11 * (1.f - dx) + c21 * dx) * (1.f - dy) + (c12 * (1.f - dx) + c22 * dx) * dy;
 		
 		return result;
@@ -99,24 +102,24 @@ private:
 	const Source *_source;
 };
 
-template <class Source, ML::PixelFieldType SourceType, ML::SpreadType SpreadType, class WeightMethod>
-class MLScalingGenerator2
+template <class T_Source, Malachite::PixelFieldType T_SourceType, Malachite::SpreadType T_SpreadType, class T_WeightMethod>
+class ScalingGenerator2
 {
 public:
-	MLScalingGenerator2(const Source *source) :
+	ScalingGenerator2(const T_Source *source) :
 		_source(source)
 	{}
 	
-	MLVec4F at(const MLVec2D &p)
+	Vec4F at(const Vec2D &p)
 	{
 		reset(p);
 		
 		QPoint fp(round(p.x), round(p.y));
 		
-		if (SourceType != ML::PixelFieldImage ||  pointIsInSafeZone(fp))
+		if (T_SourceType != Malachite::PixelFieldImage ||  pointIsInSafeZone(fp))
 		{
-			if (SourceType == ML::PixelFieldImage)
-				fp = mlActualImagePos<SpreadType>(fp, _source->size());
+			if (T_SourceType == Malachite::PixelFieldImage)
+				fp = actualImagePos<T_SpreadType>(fp, _source->size());
 			
 			addPixelEasy(fp + QPoint(-2, -2));
 			addPixelEasy(fp + QPoint(1, -2));
@@ -159,16 +162,16 @@ public:
 			addPixel(fp + QPoint(0, 0));
 		}
 		
-		MLVec4F result = _argb;
+		Vec4F result = _argb;
 		
 		if (_divisor == 0)
 		{
-			result = MLVec4F(0);
+			result = Vec4F(0);
 		}
 		else
 		{
 			result /= _divisor;
-			result = mlBound(0, result, 1);
+			result = vecBound(0, result, 1);
 		}
 		
 		return result;
@@ -183,14 +186,14 @@ private:
 	
 	void addPixel(const QPoint &p)
 	{
-		float w = WeightMethod::weight(MLVec2D(p) + MLVec2D(0.5, 0.5) - _p);
+		float w = T_WeightMethod::weight(Vec2D(p) + Vec2D(0.5, 0.5) - _p);
 		_divisor += w;
-		_argb += _source->pixel(mlActualImagePos<SpreadType>(p, _source->size())) * w;
+		_argb += _source->pixel(actualImagePos<T_SpreadType>(p, _source->size())) * w;
 	}
 	
 	void addPixelEasy(const QPoint &p)
 	{
-		float w = WeightMethod::weight(MLVec2D(p) + MLVec2D(0.5, 0.5) - _p);
+		float w = T_WeightMethod::weight(Vec2D(p) + Vec2D(0.5, 0.5) - _p);
 		_divisor += w;
 		_argb += _source->pixel(p) * w;
 	}
@@ -198,25 +201,25 @@ private:
 	void reset()
 	{
 		_divisor = 0;
-		_argb = MLVec4F(0);
+		_argb = Vec4F(0);
 	}
 	
-	void reset(const MLVec2D &p)
+	void reset(const Vec2D &p)
 	{
 		reset();
 		_p = p;
 	}
 
-	MLVec2D _p;
+	Vec2D _p;
 	float _divisor;
-	MLVec4F _argb;
-	const Source *_source;
+	Vec4F _argb;
+	const T_Source *_source;
 };
 
-class MLScalingWeightMethodBicubic
+class ScalingWeightMethodBicubic
 {
 public:
-	static double weight(const MLVec2D &d)
+	static double weight(const Vec2D &d)
 	{
 		double dx = fabs(d.x);
 		double dy = fabs(d.y);
@@ -241,29 +244,30 @@ private:
 	}
 };
 
-class MLScalingWeightMethodLanczos2
+class ScalingWeightMethodLanczos2
 {
 public:
-	static double weight(const MLVec2D &d)
+	static double weight(const Vec2D &d)
 	{
-		MLVec2D pd = M_PI * d;
-		MLVec2D hpd = 0.5 * M_PI * d;
-		MLVec2D dd = d * d;
+		Vec2D pd = M_PI * d;
+		Vec2D hpd = 0.5 * M_PI * d;
+		Vec2D dd = d * d;
 		
 		return sin(pd.x) * sin(hpd .x) * sin(pd.y) * sin(hpd.y) / (0.25 * M_PI * M_PI * M_PI * M_PI * dd.x * dd.y);
 	}
 };
 
-class MLScalingWeightMethodLanczos2Hypot
+class ScalingWeightMethodLanczos2Hypot
 {
 public:
-	static double weight(const MLVec2D &d)
+	static double weight(const Vec2D &d)
 	{
-		double dist = mlLength(d);
+		double dist = vecLength(d);
 		return sin(M_PI * dist) * sin(0.5 * M_PI * dist) / (0.5 * M_PI * M_PI * dist * dist);
 		
 	}
 };
 
+}
 
 #endif // MLSCALINGGENERATOR_H

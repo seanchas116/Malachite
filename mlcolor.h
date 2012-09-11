@@ -8,7 +8,10 @@
 #include "mlmisc.h"
 #include "mlgenericimage.h"
 
-class MALACHITESHARED_EXPORT MLColor
+namespace Malachite
+{
+
+class MALACHITESHARED_EXPORT Color
 {
 public:
 	
@@ -22,7 +25,7 @@ public:
 		Value
 	};
 	
-	MLColor() :
+	Color() :
 		_a(0), _r(0), _g(0), _b(0), _h(0), _s(0), _v(0) {}
 	
 	double alpha() const { return _a; }
@@ -99,27 +102,27 @@ public:
 	void setComponent(Component component, double x);
 	void setNormalizedComponent(Component component, double x);
 	
-	static MLColor fromRgbValue(double r, double g, double b, double a = 1.0)
+	static Color fromRgbValue(double r, double g, double b, double a = 1.0)
 	{
-		MLColor color;
+		Color color;
 		color.setAlpha(a);
 		color.setRgb(r, g, b);
 		color.rgbChanged();
 		return color;
 	}
 
-	static MLColor fromHsvValue(double h, double s, double v, double a = 1.0)
+	static Color fromHsvValue(double h, double s, double v, double a = 1.0)
 	{
-		MLColor color;
+		Color color;
 		color.setAlpha(a);
 		color.setHsv(h, s, v);
 		color.hsvChanged();
 		return color;
 	}
 	
-	MLVec4F toArgb() const
+	Vec4F toArgb() const
 	{
-		MLVec4F argb;
+		Vec4F argb;
 		argb.a = _a;
 		argb.r = _r * _a;
 		argb.g = _g * _a;
@@ -127,16 +130,16 @@ public:
 		return argb;
 	}
 	
-	MLVec4U8 toFastArgb8() const
+	Vec4U8 toFastArgb8() const
 	{
-		MLVec4U8 argb8;
-		mlConvertPixel<ML::ImageFormatArgbFast, MLVec4U8, ML::ImageFormatArgbFast, MLVec4F>(argb8, toArgb());
+		Vec4U8 argb8;
+		convertPixel<Malachite::ImageFormatArgbFast, Vec4U8, Malachite::ImageFormatArgbFast, Vec4F>(argb8, toArgb());
 		return argb8;
 	}
 	
 	QRgb toQRgb() const
 	{
-		MLVec4U8 argb8 = toFastArgb8();
+		Vec4U8 argb8 = toFastArgb8();
 		QRgb rgb = *(reinterpret_cast<uint32_t *>(&argb8));
 		return rgb;
 	}
@@ -144,30 +147,30 @@ public:
 	QColor toQColor() const { return QColor::fromRgbF(_r, _g, _b, _a); }
 	QString toWebColor() const;
 	
-	static MLColor transparent() { return MLColor::fromRgbValue(0, 0, 0, 0); }
-	static MLColor white() { return MLColor::fromRgbValue(1, 1, 1, 1); }
-	static MLColor black() { return MLColor::fromRgbValue(0, 0, 0, 1); }
+	static Color transparent() { return Color::fromRgbValue(0, 0, 0, 0); }
+	static Color white() { return Color::fromRgbValue(1, 1, 1, 1); }
+	static Color black() { return Color::fromRgbValue(0, 0, 0, 1); }
 	
-	static MLColor fromArgb(const MLVec4F &argb)
+	static Color fromArgb(const Vec4F &argb)
 	{
-		return argb.a ? MLColor::fromRgbValue(argb.r / argb.a, argb.g / argb.a, argb.b / argb.a, argb.a) : MLColor();
+		return argb.a ? Color::fromRgbValue(argb.r / argb.a, argb.g / argb.a, argb.b / argb.a, argb.a) : Color();
 	}
 	
-	static MLColor fromFastArgb8(const MLVec4U8 &argb)
+	static Color fromFastArgb8(const Vec4U8 &argb)
 	{
-		MLVec4F argbf;
-		mlConvertPixel<ML::ImageFormatArgbFast, MLVec4F, ML::ImageFormatArgbFast, MLVec4U8>(argbf, argb);
-		return MLColor::fromArgb(argbf);
+		Vec4F argbf;
+		convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::ImageFormatArgbFast, Vec4U8>(argbf, argb);
+		return Color::fromArgb(argbf);
 	}
 	
-	static MLColor fromQColor(const QColor &qcolor)
+	static Color fromQColor(const QColor &qcolor)
 	{
-		return MLColor::fromRgbValue(qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF());
+		return Color::fromRgbValue(qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF());
 	}
 	
-	static MLColor fromWebColor(const QString &webColor, bool *ok = 0);
+	static Color fromWebColor(const QString &webColor, bool *ok = 0);
 	
-	bool operator==(const MLColor &other)
+	bool operator==(const Color &other)
 	{
 		return	_a == other._a && 
 				_r == other._r &&
@@ -186,6 +189,8 @@ private:
 	double _a, _r, _g, _b, _h, _s, _v;
 };
 
-Q_DECLARE_METATYPE(MLColor)
+}
+
+Q_DECLARE_METATYPE(Malachite::Color)
 
 #endif // MLCOLOR_H

@@ -1,36 +1,38 @@
 #include "mlsurfacepainter.h"
 #include "mlsurfaceselection.h"
 
-
-void MLSurfaceSelection::setPath(const QPainterPath &path)
+namespace Malachite
 {
-	_type = Path;
+
+void SurfaceSelection::setPath(const QPainterPath &path)
+{
+	_type = TypePath;
 	_path = path;
-	_surface = MLSurface();
+	_surface = Surface();
 }
 
-void MLSurfaceSelection::setSurface(const MLSurface &surface)
+void SurfaceSelection::setSurface(const Surface &surface)
 {
-	_type = Surface;
+	_type = TypeSurface;
 	_path = QPainterPath();
 	_surface = surface;
 }
 
-MLSurface MLSurfaceSelection::clip(const MLSurface &surface) const
+Surface SurfaceSelection::clip(const Surface &surface) const
 {
-	if (_type == Whole)
+	if (_type == TypeWhole)
 		return surface;
 	
-	MLSurface result = surface;
-	MLSurfacePainter painter(&result);
-	painter.setBlendMode(ML::BlendModeDestinationIn);
+	Surface result = surface;
+	SurfacePainter painter(&result);
+	painter.setBlendMode(Malachite::BlendModeDestinationIn);
 	
 	switch (_type)
 	{
-	case Path:
+	case TypePath:
 		painter.drawPath(_path);
 		break;
-	case Surface:
+	case TypeSurface:
 		painter.drawSurface(0, 0, _surface);
 		break;
 	default:
@@ -42,3 +44,4 @@ MLSurface MLSurfaceSelection::clip(const MLSurface &surface) const
 	return result;
 }
 
+}

@@ -4,23 +4,27 @@
 #include "mlpaintengine.h"
 #include "mlrenderer.h"
 
-class MLImagePaintEngine : public MLPaintEngine
+namespace Malachite
+{
+
+class ImagePaintEngine : public PaintEngine
 {
 public: 
 	
-	MLImagePaintEngine();
+	ImagePaintEngine();
 	
-	bool begin(MLPaintable *paintable);
+	bool begin(Paintable *paintable);
 	bool flush();
 	
-	void drawTransformedPolygons(const MLFixedMultiPolygon &polygons);
-	void drawTransformedImage(const QPoint &point, const MLImage &image);
+	void drawTransformedPolygons(const FixedMultiPolygon &polygons);
+	void drawTransformedImage(const QPoint &point, const Image &image);
 	
 private:
 	
-	MLArgbBitmap _bitmap;
-	MLImage *_image;
+	ArgbBitmap _bitmap;
+	Image *_image;
 };
 
+}
 
 #endif // MLIMAGEPAINTENGINE_H

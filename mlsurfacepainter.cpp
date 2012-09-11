@@ -2,18 +2,23 @@
 
 #include "mlsurfacepainter.h"
 
-void MLSurfacePainter::setKeyClip(const QPointSet &keys)
+namespace Malachite
 {
-	static_cast<MLSurfacePaintEngine *>(paintEngine())->setKeyClip(keys);
+
+void SurfacePainter::setKeyClip(const QPointSet &keys)
+{
+	static_cast<SurfacePaintEngine *>(paintEngine())->setKeyClip(keys);
 }
 
-QPointSet MLSurfacePainter::keyClip() const
+QPointSet SurfacePainter::keyClip() const
 {
-	return static_cast<const MLSurfacePaintEngine *>(paintEngine())->keyClip();
+	return static_cast<const SurfacePaintEngine *>(paintEngine())->keyClip();
 }
 
-QPointSet MLSurfacePainter::editedKeys() const
+QPointSet SurfacePainter::editedKeys() const
 {
-	return static_cast<const MLSurfacePaintEngine *>(paintEngine())->editedKeys();
+	return static_cast<const SurfacePaintEngine *>(paintEngine())->editedKeys();
+}
+
 }
 

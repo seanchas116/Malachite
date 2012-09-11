@@ -5,11 +5,14 @@
 #include <QPoint>
 #include <cmath>
 
+namespace Malachite
+{
+
 // 余りが必ず正になる整数除算
-class MALACHITESHARED_EXPORT MLIntDivision
+class MALACHITESHARED_EXPORT IntDivision
 {
 public:
-	MLIntDivision(int numerator, int denominator) {
+	IntDivision(int numerator, int denominator) {
 		result = div(numerator, denominator);
 		if (result.rem < 0) {
 			result.rem += denominator;
@@ -24,10 +27,10 @@ private:
 	div_t result;
 };
 
-class MALACHITESHARED_EXPORT MLDivision
+class MALACHITESHARED_EXPORT Division
 {
 public:
-	MLDivision(double numerator, double denominator)
+	Division(double numerator, double denominator)
 	{
 		_quot = floor(numerator / denominator);
 		_rem = fmod(numerator, denominator);
@@ -46,10 +49,10 @@ private:
 	double _quot, _rem;
 };
 
-inline void mlDividePoint(const QPoint &point, int divisor, QPoint *quot, QPoint *rem)
+inline void dividePoint(const QPoint &point, int divisor, QPoint *quot, QPoint *rem)
 {
-	MLIntDivision divisionX(point.x(), divisor);
-	MLIntDivision divisionY(point.y(), divisor);
+	IntDivision divisionX(point.x(), divisor);
+	IntDivision divisionY(point.y(), divisor);
 	
 	quot->rx() = divisionX.quot();
 	quot->ry() = divisionY.quot();
@@ -57,18 +60,20 @@ inline void mlDividePoint(const QPoint &point, int divisor, QPoint *quot, QPoint
 	rem->ry() = divisionY.rem();
 }
 
-inline void mlDividePoint(const QPoint &point, int divisor, QPoint *quot)
+inline void dividePoint(const QPoint &point, int divisor, QPoint *quot)
 {
-	MLIntDivision divisionX(point.x(), divisor);
-	MLIntDivision divisionY(point.y(), divisor);
+	IntDivision divisionX(point.x(), divisor);
+	IntDivision divisionY(point.y(), divisor);
 	
 	quot->rx() = divisionX.quot();
 	quot->ry() = divisionY.quot();
 }
 
-inline double mlAlign(double value, double unit)
+inline double align(double value, double unit)
 {
 	return round(value / unit) * unit;
+}
+
 }
 
 #endif // MLDIVISION_H

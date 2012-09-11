@@ -5,37 +5,42 @@
 #include <QVector>
 #include <QPolygonF>
 
-class MLPolygon : public QVector<MLVec2D>
+namespace Malachite
+{
+
+class Polygon : public QVector<Vec2D>
 {
 public:
-	MLPolygon() : QVector<MLVec2D>() {}
-	MLPolygon(int size) : QVector<MLVec2D>(size) {}
-	MLPolygon(const QVector<QPointF> &points);
+	Polygon() : QVector<Vec2D>() {}
+	Polygon(int size) : QVector<Vec2D>(size) {}
+	Polygon(const QVector<QPointF> &points);
 	
-	static MLPolygon fromRect(const QRectF &rect);
+	static Polygon fromRect(const QRectF &rect);
 	
-	MLPolygon &operator*=(const QTransform &transform);
+	Polygon &operator*=(const QTransform &transform);
 	
 	QPolygonF toQPolygonF() const;
 };
 
-class MLMultiPolygon : public QVector<MLPolygon>
+class MultiPolygon : public QVector<Polygon>
 {
 public:
-	MLMultiPolygon() : QVector<MLPolygon>() {}
-	MLMultiPolygon(int size) : QVector<MLPolygon>(size) {}
-	MLMultiPolygon(const MLPolygon &polygon) : QVector<MLPolygon>(1) { operator[](0) = polygon; }
+	MultiPolygon() : QVector<Polygon>() {}
+	MultiPolygon(int size) : QVector<Polygon>(size) {}
+	MultiPolygon(const Polygon &polygon) : QVector<Polygon>(1) { operator[](0) = polygon; }
 	
-	static MLMultiPolygon fromQPainterPath(const QPainterPath &path);
+	static MultiPolygon fromQPainterPath(const QPainterPath &path);
 	
-	MLMultiPolygon &operator*=(const QTransform &transform);
+	MultiPolygon &operator*=(const QTransform &transform);
 };
 
-inline MLMultiPolygon operator*(const MLMultiPolygon &polygons, const QTransform &transform)
+inline MultiPolygon operator*(const MultiPolygon &polygons, const QTransform &transform)
 {
-	MLMultiPolygon result = polygons;
+	MultiPolygon result = polygons;
 	result *= transform;
 	return result;
+}
+
 }
 
 #endif // MLPOLYGON_H

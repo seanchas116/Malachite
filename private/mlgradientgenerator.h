@@ -3,16 +3,19 @@
 
 #include "mlvector.h"
 
-template <class Gradient, class Method, ML::SpreadType SpreadType>
-class MLGradientGenerator
+namespace Malachite
+{
+
+template <class T_Gradient, class T_Method, Malachite::SpreadType T_SpreadType>
+class GradientGenerator
 {
 public:
-	MLGradientGenerator(const Gradient *gradient, Method *method) :
+	GradientGenerator(const T_Gradient *gradient, T_Method *method) :
 		_gradient(gradient),
 		_method(method)
 	{}
 	
-	MLVec4F at(const MLVec2D &p)
+	Vec4F at(const Vec2D &p)
 	{
 		return _gradient->at(actualPosition(_method->position(p)));
 	}
@@ -21,14 +24,14 @@ private:
 	
 	float actualPosition(float x) const
 	{
-		switch (SpreadType)
+		switch (T_SpreadType)
 		{
 		default:
-		case ML::SpreadTypePad:
+		case Malachite::SpreadTypePad:
 			return qBound(0.f, x, 1.f);
-		case ML::SpreadTypeRepeat:
+		case Malachite::SpreadTypeRepeat:
 			return x - floorf(x);
-		case ML::SpreadTypeReflective:
+		case Malachite::SpreadTypeReflective:
 		{
 			float f = floorf(x);
 			float r = x - f;
@@ -37,134 +40,136 @@ private:
 		}
 	}
 	
-	const Gradient *_gradient;
-	Method *_method;
+	const T_Gradient *_gradient;
+	T_Method *_method;
 };
 
-class MLLinearGradientMethod
+class LinearGradientMethod
 {
 public:
 	
-	MLLinearGradientMethod(const MLVec2D &start, const MLVec2D &end) :
+	LinearGradientMethod(const Vec2D &start, const Vec2D &end) :
 		a(start),
 		ab(end - start)
 	{
 		Q_ASSERT(start != end);
-		ab2inv = 1.0 / mlSqLength(ab);
+		ab2inv = 1.0 / vecSqLength(ab);
 	}
 	
-	float position(const MLVec2D &p) const
+	float position(const Vec2D &p) const
 	{
-		return mlDot(p - a, ab) * ab2inv;
+		return vecDot(p - a, ab) * ab2inv;
 	}
 	
 private:
-	MLVec2D a;
-	MLVec2D ab;
+	Vec2D a;
+	Vec2D ab;
 	double ab2inv;
 };
 
 /*
-class MLRadialGradientMethod
+class RadialGradientMethod
 {
 public:
 	
-	MLRadialGradientMethod(const MLVec2D &center, double radius) :
+	RadialGradientMethod(const Vec2D &center, double radius) :
 		c(center)
 	{
 		Q_ASSERT(radius > 0);
 		rinv = 1.0 / radius;
 	}
 	
-	float position(const MLVec2D &p) const
+	float position(const Vec2D &p) const
 	{
-		MLVec2D d = p - c;
-		return mlLength(d) * rinv;
+		Vec2D d = p - c;
+		return Length(d) * rinv;
 	}
 	
 private:
-	MLVec2D c;
+	Vec2D c;
 	double rinv;
 };*/
 
-class MLRadialGradientMethod
+class RadialGradientMethod
 {
 public:
 	
-	MLRadialGradientMethod(const MLVec2D &center, const MLVec2D &radius) :
+	RadialGradientMethod(const Vec2D &center, const Vec2D &radius) :
 		c(center)
 	{
 		Q_ASSERT(radius.x > 0 && radius.y > 0);
 		rinv = 1.0 / radius;
 	}
 	
-	float position(const MLVec2D &p) const
+	float position(const Vec2D &p) const
 	{
-		MLVec2D d = p - c;
-		return mlLength(d * rinv);
+		Vec2D d = p - c;
+		return vecLength(d * rinv);
 	}
 	
 private:
-	MLVec2D c, rinv;
+	Vec2D c, rinv;
 };
 
 /*
-class MLFocalGradientMethod
+class FocalGradientMethod
 {
 public:
 	
-	MLFocalGradientMethod(const MLVec2D &center, double radius, const MLVec2D &focal) :
+	FocalGradientMethod(const Vec2D &center, double radius, const Vec2D &focal) :
 		o(center), f(focal), r(radius)
 	{
 		Q_ASSERT(r > 0);
 		of = f - o;
-		c = mlSqLength(of) - r * r;
+		c = SqLength(of) - r * r;
 		Q_ASSERT(c < 0);
 	}
 	
-	float position(const MLVec2D &p) const
+	float position(const Vec2D &p) const
 	{
-		MLVec2D fp = p - f;
-		double dot = mlDot(of, fp);
-		double fp2 = mlSqLength(fp);
+		Vec2D fp = p - f;
+		double dot = Dot(of, fp);
+		double fp2 = SqLength(fp);
 		
 		return fp2 / (sqrt(dot * dot - fp2 * c) - dot); 
 	}
 	
 private:
-	MLVec2D o, f, of;
+	Vec2D o, f, of;
 	double r, c;
 };
 */
 
-class MLFocalGradientMethod
+class FocalGradientMethod
 {
 public:
 	
-	MLFocalGradientMethod(const MLVec2D &center, const MLVec2D &radius, const MLVec2D &focal) :
+	FocalGradientMethod(const Vec2D &center, const Vec2D &radius, const Vec2D &focal) :
 		o(center)
 	{
 		Q_ASSERT(radius.x > 0 && radius.y > 0);
 		rinv = 1 / radius;
 		
 		of = (focal - center) * rinv;
-		c = mlSqLength(of) - 1;
+		c = vecSqLength(of) - 1;
 		Q_ASSERT(c < 0);
 	}
 	
-	float position(const MLVec2D &p) const
+	float position(const Vec2D &p) const
 	{
-		MLVec2D op = (p - o) * rinv;
-		MLVec2D fp = op - of;
-		double dot = mlDot(of, fp);
-		double fp2 = mlSqLength(fp);
+		Vec2D op = (p - o) * rinv;
+		Vec2D fp = op - of;
+		double dot = vecDot(of, fp);
+		double fp2 = vecSqLength(fp);
 		
 		return fp2 / (sqrt(dot * dot - fp2 * c) - dot); 
 	}
 	
 private:
-	MLVec2D o, of, rinv;
+	Vec2D o, of, rinv;
 	double c;
 };
 
-#endif // MLGRADIENTGENERATOR_H
+}
+
+#endif // GRADIENTGENERATOR_H

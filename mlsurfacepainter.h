@@ -3,16 +3,21 @@
 
 #include "mlpainter.h"
 
-class MALACHITESHARED_EXPORT MLSurfacePainter : public MLPainter
+namespace Malachite
+{
+
+class MALACHITESHARED_EXPORT SurfacePainter : public Painter
 {
 public:
-	MLSurfacePainter(MLSurface *surface) :
-		MLPainter(surface) {}
+	SurfacePainter(Surface *surface) :
+		Painter(surface) {}
 	
 	void setKeyClip(const QPointSet &keys);
 	QPointSet keyClip() const;
 	
 	QPointSet editedKeys() const;
 };
+
+}
 
 #endif // MLSURFACEPAINTER_H

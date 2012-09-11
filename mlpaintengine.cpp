@@ -1,60 +1,63 @@
 
 #include "mlpaintengine.h"
 
-MLPaintEngine::MLPaintEngine()
+namespace Malachite
 {
-	_state.blendMode = ML::BlendModeNormal;
-	_state.brush = MLBrush(MLColor::fromRgbValue(0, 0, 0));
+
+PaintEngine::PaintEngine()
+{
+	_state.blendMode = Malachite::BlendModeNormal;
+	_state.brush = Brush(Color::fromRgbValue(0, 0, 0));
 	_state.opacity = 1.0;
-	_state.imageTransformType = ML::ImageTransformTypeBicubic;
+	_state.imageTransformType = Malachite::ImageTransformTypeBicubic;
 }
 
-void MLPaintEngine::drawTransformedPolygons(const MLMultiPolygon &polygons)
+void PaintEngine::drawTransformedPolygons(const MultiPolygon &polygons)
 {
-	drawTransformedPolygons(MLFixedMultiPolygon::fromMLPolygons(polygons));
+	drawTransformedPolygons(FixedMultiPolygon::fromMLPolygons(polygons));
 }
 
-void MLPaintEngine::drawPolygons(const MLMultiPolygon &polygons)
+void PaintEngine::drawPolygons(const MultiPolygon &polygons)
 {
 	drawTransformedPolygons(polygons * state()->shapeTransform);
 }
 
-void MLPaintEngine::drawPath(const QPainterPath &path)
+void PaintEngine::drawPath(const QPainterPath &path)
 {
-	drawTransformedPolygons(MLFixedMultiPolygon::fromQPainterPath(path * state()->shapeTransform));
+	drawTransformedPolygons(FixedMultiPolygon::fromQPainterPath(path * state()->shapeTransform));
 }
 
-void MLPaintEngine::drawEllipse(double x, double y, double rx, double ry)
+void PaintEngine::drawEllipse(double x, double y, double rx, double ry)
 {
 	QPainterPath path;
 	path.addEllipse(QPointF(x, y), rx, ry);
 	drawPath(path);
 }
 
-void MLPaintEngine::drawRect(double x, double y, double width, double height)
+void PaintEngine::drawRect(double x, double y, double width, double height)
 {
-	MLPolygon polygon(4);
+	Polygon polygon(4);
 	
-	polygon[0] = MLVec2D(x, y);
-	polygon[1] = MLVec2D(x + width, y);
-	polygon[2] = MLVec2D(x + width, y + height);
-	polygon[3] = MLVec2D(x, y + height);
+	polygon[0] = Vec2D(x, y);
+	polygon[1] = Vec2D(x + width, y);
+	polygon[2] = Vec2D(x + width, y + height);
+	polygon[3] = Vec2D(x, y + height);
 	
 	drawPolygons(polygon);
 }
 
-void MLPaintEngine::drawTransformedSurface(const QPoint &point, const MLSurface &surface)
+void PaintEngine::drawTransformedSurface(const QPoint &point, const Surface &surface)
 {
 	foreach (const QPoint &key, surface.keys())
-		drawTransformedImage(point + key * MLSurface::TileSize, surface.tileForKey(key));
+		drawTransformedImage(point + key * Surface::TileSize, surface.tileForKey(key));
 }
 
-void MLPaintEngine::drawSurface(const MLVec2D &point, const MLSurface &surface)
+void PaintEngine::drawSurface(const Vec2D &point, const Surface &surface)
 {
 	QTransform transform = _state.shapeTransform;
 	if (transform.type() <= QTransform::TxTranslate)
 	{
-		MLVec2D offset = point + MLVec2D(transform.dx(), transform.dy());
+		Vec2D offset = point + Vec2D(transform.dx(), transform.dy());
 		QPoint rounded(round(offset.x), round(offset.y));
 		
 		if (offset.x == rounded.x() && offset.y == rounded.y())
@@ -67,25 +70,25 @@ void MLPaintEngine::drawSurface(const MLVec2D &point, const MLSurface &surface)
 	pushState();
 	
 	_state.shapeTransform = QTransform::fromTranslate(point.x, point.y) * _state.shapeTransform;
-	_state.brush = MLBrush(surface);
+	_state.brush = Brush(surface);
 	
 	qDebug() << surface.keys();
 	
 	foreach (const QPoint &key, surface.keys())
 	{
-		MLVec2D relativePos = key * MLSurface::TileSize;
-		drawRect(relativePos.x, relativePos.y, MLSurface::TileSize, MLSurface::TileSize);
+		Vec2D relativePos = key * Surface::TileSize;
+		drawRect(relativePos.x, relativePos.y, Surface::TileSize, Surface::TileSize);
 	}
 	
 	popState();
 }
 
-void MLPaintEngine::drawImage(const MLVec2D &point, const MLImage &image)
+void PaintEngine::drawImage(const Vec2D &point, const Image &image)
 {
 	QTransform transform = _state.shapeTransform;
 	if (transform.type() <= QTransform::TxTranslate)
 	{
-		MLVec2D offset = point + MLVec2D(transform.dx(), transform.dy());
+		Vec2D offset = point + Vec2D(transform.dx(), transform.dy());
 		QPoint rounded(round(offset.x), round(offset.y));
 		
 		if (offset.x == rounded.x() && offset.y == rounded.y())
@@ -97,8 +100,8 @@ void MLPaintEngine::drawImage(const MLVec2D &point, const MLImage &image)
 	
 	pushState();
 	
-	_state.brush = MLBrush(image);
-	_state.brush.setSpreadType(ML::SpreadTypeReflective);
+	_state.brush = Brush(image);
+	_state.brush.setSpreadType(Malachite::SpreadTypeReflective);
 	
 	_state.shapeTransform = QTransform::fromTranslate(point.x, point.y) * _state.shapeTransform;
 	
@@ -107,12 +110,14 @@ void MLPaintEngine::drawImage(const MLVec2D &point, const MLImage &image)
 	popState();
 }
 
-void MLPaintEngine::pushState()
+void PaintEngine::pushState()
 {
 	_stateStack.push(_state);
 }
 
-void MLPaintEngine::popState()
+void PaintEngine::popState()
 {
 	_state = _stateStack.pop();
+}
+
 }

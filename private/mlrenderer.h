@@ -8,7 +8,10 @@
 #include "mlbitmap.h"
 #include "mlblendop.h"
 
-typedef MLBitmap<MLVec4F> MLArgbBitmap;
+namespace Malachite
+{
+
+typedef Bitmap<Vec4F> ArgbBitmap;
 
 class QPainterPath_vs
 {
@@ -28,16 +31,16 @@ public:
 private:
 	const QPainterPath _path;
 	int _index;
-	MLPolygon _subdPolygon;
+	Polygon _subdPolygon;
 	int _subdIndex;
 	int _totalCount;
 };
 
-template <class BaseRenderer>
-class MLRenderer
+template <class T_BaseRenderer>
+class Renderer
 {
 public:
-	MLRenderer(BaseRenderer &ren) :
+	Renderer(T_BaseRenderer &ren) :
 		_ren(&ren)
 	{}
 	
@@ -66,12 +69,12 @@ public:
     }
 	
 private:
-	BaseRenderer *_ren;
+	T_BaseRenderer *_ren;
 };
 
 
-template<class Rasterizer, class Scanline, class Renderer>
-void mlRenderScanlines(Rasterizer& ras, Scanline& sl, Renderer& ren)
+template<class T_Rasterizer, class T_Scanline, class T_Renderer>
+void renderScanlines(T_Rasterizer& ras, T_Scanline& sl, T_Renderer& ren)
 {
     if(ras.rewind_scanlines())
     {
@@ -83,11 +86,11 @@ void mlRenderScanlines(Rasterizer& ras, Scanline& sl, Renderer& ren)
     }
 }
 
-template <class Filler>
-class MLImageBaseRenderer8
+template <class T_Filler>
+class ImageBaseRenderer8
 {
 public:
-	MLImageBaseRenderer8(const MLArgbBitmap &bitmap, MLBlendOp *blendOp, Filler *filler) :
+	ImageBaseRenderer8(const ArgbBitmap &bitmap, BlendOp *blendOp, T_Filler *filler) :
 		_bitmap(bitmap),
 		_blendOp(blendOp),
 		_filler(filler)
@@ -105,7 +108,7 @@ public:
 		if (newCount <= 0)
 			return;
 		
-		MLArray<float> newCovers(newCount);
+		Array<float> newCovers(newCount);
 		
 		for (int i = 0; i < newCount; ++i)
 		{
@@ -133,16 +136,16 @@ public:
 	}
 	
 private:
-	MLArgbBitmap _bitmap;
-	MLBlendOp *_blendOp;
-	Filler *_filler;
+	ArgbBitmap _bitmap;
+	BlendOp *_blendOp;
+	T_Filler *_filler;
 };
 
-template <class Filler>
-class MLImageBaseRenderer
+template <class T_Filler>
+class ImageBaseRenderer
 {
 public:
-	MLImageBaseRenderer(const MLArgbBitmap &bitmap, MLBlendOp *blendOp, Filler *filler) :
+	ImageBaseRenderer(const ArgbBitmap &bitmap, BlendOp *blendOp, T_Filler *filler) :
 		_bitmap(bitmap),
 		_blendOp(blendOp),
 		_filler(filler)
@@ -181,10 +184,12 @@ public:
 	}
 	
 private:
-	MLArgbBitmap _bitmap;
-	MLBlendOp *_blendOp;
-	Filler *_filler;
+	ArgbBitmap _bitmap;
+	BlendOp *_blendOp;
+	T_Filler *_filler;
 };
 
+
+}
 
 #endif // MLRENDERER_H

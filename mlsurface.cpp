@@ -6,28 +6,31 @@
 #include "mlsurface.h"
 #include "mldivision.h"
 
-MLSurfaceData::MLSurfaceData()
+namespace Malachite
+{
+
+SurfaceData::SurfaceData()
 {}
 
-MLSurfaceData::MLSurfaceData(const MLSurfaceData &other)
+SurfaceData::SurfaceData(const SurfaceData &other)
     : QSharedData(other),
       tileHash(other.tileHash)
 {
 	MLSurfaceHash::iterator i;
 	for (i = tileHash.begin(); i != tileHash.end(); ++i)
 	{
-		i.value() = new MLImage(*(i.value()));
+		i.value() = new Image(*(i.value()));
 	}
 }
 
 
 
-MLPaintEngine *MLSurface::createPaintEngine()
+PaintEngine *Surface::createPaintEngine()
 {
-	return new MLSurfacePaintEngine();
+	return new SurfacePaintEngine();
 }
 
-bool MLSurface::save(QIODevice *device) const
+bool Surface::save(QIODevice *device) const
 {
 	QDataStream outStream(device);
 	
@@ -39,13 +42,13 @@ bool MLSurface::save(QIODevice *device) const
 	MLSurfaceHash::const_iterator i;
 	for (i = d->tileHash.begin(); i != d->tileHash.end(); ++i)
 	{
-		const MLImage *tile = i.value();
+		const Image *tile = i.value();
 		
 		QByteArray tileArray;
 		QDataStream tileStream(&tileArray, QIODevice::WriteOnly);
 		
 		for (int y = 0; y < TileSize; ++y) {
-			const MLVec4F *p = tile->constScanline(y);
+			const Vec4F *p = tile->constScanline(y);
 			for (int x = 0; x < TileSize; ++x)
 			{
 				tileStream << p->a;
@@ -62,14 +65,14 @@ bool MLSurface::save(QIODevice *device) const
 	return true;
 }
 
-MLSurface MLSurface::loaded(QIODevice *device)
+Surface Surface::loaded(QIODevice *device)
 {
 	QDataStream inStream(device);
 	
 	quint32 tileSize;
 	inStream >> tileSize;
 	
-	MLSurface surface;
+	Surface surface;
 	surface.setupData();
 	
 	while (!inStream.atEnd())
@@ -80,12 +83,12 @@ MLSurface MLSurface::loaded(QIODevice *device)
 		inStream >> key;
 		inStream >> tileArray;
 		
-		MLImage *tile = new MLImage(TileSize, TileSize);
+		Image *tile = new Image(TileSize, TileSize);
 		QDataStream tileStream(&tileArray, QIODevice::ReadOnly);
 		
 		for (int y = 0; y < TileSize; ++y)
 		{
-			MLVec4F *p = tile->scanline(y);
+			Vec4F *p = tile->scanline(y);
 			for (int x = 0; x < TileSize; ++x) 
 			{
 				tileStream >> p->a;
@@ -106,8 +109,8 @@ MLSurface MLSurface::loaded(QIODevice *device)
 		}
 		else
 		{
-			MLPainter painter(&surface);
-			painter.setBlendMode(ML::BlendModeSource);
+			Painter painter(&surface);
+			painter.setBlendMode(Malachite::BlendModeSource);
 			painter.drawTransformedImage(key * (int)tileSize, *tile);
 		}
 		delete tile;
@@ -116,25 +119,25 @@ MLSurface MLSurface::loaded(QIODevice *device)
 	return surface;
 }
 
-bool MLSurface::isNull() const
+bool Surface::isNull() const
 {
 	if (!d || d->tileHash.isEmpty())
 		return true;
 	return false;
 }
 
-MLImage MLSurface::tileForKey(const QPoint &key) const
+Image Surface::tileForKey(const QPoint &key) const
 {
 	if (!d)
-		return MLSurface::DefaultTile;
+		return Surface::DefaultTile;
 	
 	if (d->tileHash.contains(key))
 		return *(d->tileHash[key]);
 	else
-		return MLSurface::DefaultTile;
+		return Surface::DefaultTile;
 }
 
-QPointSet MLSurface::keysForRect(const QRect &rect)
+QPointSet Surface::keysForRect(const QRect &rect)
 {
 	QPointSet set;
 	
@@ -155,7 +158,7 @@ QPointSet MLSurface::keysForRect(const QRect &rect)
 	return set;
 }
 
-QRect MLSurface::boundingKeyRect() const
+QRect Surface::boundingKeyRect() const
 {
 	if (isNull())
 		return QRect();
@@ -192,7 +195,7 @@ QRect MLSurface::boundingKeyRect() const
 }
 
 // Returns the rectangle that bounds everything that is painted on the surface
-QRect MLSurface::boundingRect() const
+QRect Surface::boundingRect() const
 {
 	if (isNull())
 		return QRect();
@@ -244,48 +247,48 @@ QRect MLSurface::boundingRect() const
 	return rect;
 }
 
-MLSurface MLSurface::section(const QPointSet &keys) const
+Surface Surface::section(const QPointSet &keys) const
 {
 	if (isNull())
-		return MLSurface();
+		return Surface();
 	
-	MLSurface surface;
+	Surface surface;
 	
 	foreach (const QPoint &key, keys)
 	{
 		if (!d->tileHash.contains(key))
 			continue;
 		surface.setupData();
-		surface.d->tileHash.insert(key, new MLImage(*(d->tileHash.value(key))));
+		surface.d->tileHash.insert(key, new Image(*(d->tileHash.value(key))));
 	}
 	return surface;
 }
 
-MLSurface MLSurface::exclusion(const QPointSet &keys) const
+Surface Surface::exclusion(const QPointSet &keys) const
 {
 	if (isNull())
-		return MLSurface();
+		return Surface();
 	
-	MLSurface surface;
+	Surface surface;
 	
 	foreach (const QPoint &key, d->tileHash.keys())
 	{
 		if (keys.contains(key))
 			continue;
 		surface.setupData();
-		surface.d->tileHash.insert(key, new MLImage(*(d->tileHash.value(key))));
+		surface.d->tileHash.insert(key, new Image(*(d->tileHash.value(key))));
 	}
 	return surface;
 }
 
-int MLSurface::commonLeftBound(const QPointSet &keys) const
+int Surface::commonLeftBound(const QPointSet &keys) const
 {
-	for (int x = 0; x < MLSurface::TileSize; ++x)
+	for (int x = 0; x < Surface::TileSize; ++x)
 	{
 		foreach (const QPoint &key, keys)
 		{
-			const MLImage image = tileForKey(key);
-			for (int y = 0; y < MLSurface::TileSize; ++y)
+			const Image image = tileForKey(key);
+			for (int y = 0; y < Surface::TileSize; ++y)
 			{
 				if (image.pixel(x, y).a)
 					return x;
@@ -295,14 +298,14 @@ int MLSurface::commonLeftBound(const QPointSet &keys) const
 	return -1;
 }
 
-int MLSurface::commonRightBound(const QPointSet &keys) const
+int Surface::commonRightBound(const QPointSet &keys) const
 {
-	for (int x = MLSurface::TileSize - 1; x >= 0; --x)
+	for (int x = Surface::TileSize - 1; x >= 0; --x)
 	{
 		foreach (const QPoint &key, keys)
 		{
-			const MLImage image = tileForKey(key);
-			for (int y = 0; y < MLSurface::TileSize; ++y)
+			const Image image = tileForKey(key);
+			for (int y = 0; y < Surface::TileSize; ++y)
 			{
 				if (image.pixel(x, y).a)
 					return x;
@@ -312,14 +315,14 @@ int MLSurface::commonRightBound(const QPointSet &keys) const
 	return -1;
 }
 
-int MLSurface::commonTopBound(const QPointSet &keys) const
+int Surface::commonTopBound(const QPointSet &keys) const
 {
-	for (int y = 0; y < MLSurface::TileSize; ++y)
+	for (int y = 0; y < Surface::TileSize; ++y)
 	{
 		foreach (const QPoint &key, keys)
 		{
-			const MLVec4F *scanline = tileForKey(key).scanline(y);
-			for (int x = 0; x < MLSurface::TileSize; ++x)
+			const Vec4F *scanline = tileForKey(key).scanline(y);
+			for (int x = 0; x < Surface::TileSize; ++x)
 			{
 				if (scanline->a)
 					return y;
@@ -330,14 +333,14 @@ int MLSurface::commonTopBound(const QPointSet &keys) const
 	return -1;
 }
 
-int MLSurface::commonBottomBound(const QPointSet &keys) const
+int Surface::commonBottomBound(const QPointSet &keys) const
 {
-	for (int y = MLSurface::TileSize - 1; y >= 0; --y)
+	for (int y = Surface::TileSize - 1; y >= 0; --y)
 	{
 		foreach (const QPoint &key, keys)
 		{
-			const MLVec4F *scanline = tileForKey(key).scanline(y);
-			for (int x = 0; x < MLSurface::TileSize; ++x)
+			const Vec4F *scanline = tileForKey(key).scanline(y);
+			for (int x = 0; x < Surface::TileSize; ++x)
 			{
 				if (scanline->a)
 					return y;
@@ -348,18 +351,18 @@ int MLSurface::commonBottomBound(const QPointSet &keys) const
 	return -1;
 }
 
-MLImage MLSurface::DefaultTile;
-MLImage MLSurface::WhiteTile;
+Image Surface::DefaultTile;
+Image Surface::WhiteTile;
 
 class MLSurfaceInitializer
 {
 public:
 	MLSurfaceInitializer()
 	{
-		MLSurface::DefaultTile = MLImage(MLSurface::TileSize, MLSurface::TileSize);
-		MLSurface::DefaultTile.fill(MLColor::fromRgbValue(0, 0, 0, 0).toArgb());
-		MLSurface::WhiteTile = MLImage(MLSurface::TileSize, MLSurface::TileSize);
-		MLSurface::WhiteTile.fill(MLColor::fromRgbValue(1, 1, 1, 1).toArgb());
+		Surface::DefaultTile = Image(Surface::TileSize, Surface::TileSize);
+		Surface::DefaultTile.fill(Color::fromRgbValue(0, 0, 0, 0).toArgb());
+		Surface::WhiteTile = Image(Surface::TileSize, Surface::TileSize);
+		Surface::WhiteTile.fill(Color::fromRgbValue(1, 1, 1, 1).toArgb());
 	}
 };
 
@@ -368,20 +371,20 @@ MLSurfaceInitializer fsSurfaceInitializer;
 
 
 
-MLSurfaceEditor::~MLSurfaceEditor()
+SurfaceEditor::~SurfaceEditor()
 {
 	squeeze(_editedKeys);
 }
 
-void MLSurfaceEditor::deleteTile(const QPoint &key)
+void SurfaceEditor::deleteTile(const QPoint &key)
 {
 	if (_surface->isNull()) return;
 	
-	MLImage *tile = takeTile(key);
+	Image *tile = takeTile(key);
 	if (tile) delete tile;
 }
 
-void MLSurfaceEditor::clear()
+void SurfaceEditor::clear()
 {
 	if (_surface->isNull()) return;
 	
@@ -390,7 +393,7 @@ void MLSurfaceEditor::clear()
 	_surface->d->tileHash.clear();
 }
 
-MLImage *MLSurfaceEditor::takeTile(const QPoint &key)
+Image *SurfaceEditor::takeTile(const QPoint &key)
 {
 	if (_surface->isNull()) return 0;
 	if (!_surface->d->tileHash.contains(key)) return 0;
@@ -399,10 +402,10 @@ MLImage *MLSurfaceEditor::takeTile(const QPoint &key)
 	return _surface->d->tileHash.take(key);
 }
 
-MLImage *MLSurfaceEditor::replaceTile(const QPoint &key, MLImage *image)
+Image *SurfaceEditor::replaceTile(const QPoint &key, Image *image)
 {
 	_editedKeys << key;
-	MLImage *tile = takeTile(key);
+	Image *tile = takeTile(key);
 	
 	_surface->setupData();
 	_surface->d->tileHash.insert(key, image);
@@ -410,7 +413,7 @@ MLImage *MLSurfaceEditor::replaceTile(const QPoint &key, MLImage *image)
 	return tile;
 }
 
-void MLSurfaceEditor::replace(const MLSurface &surface, const QPointSet &keys)
+void SurfaceEditor::replace(const Surface &surface, const QPointSet &keys)
 {
 	if (surface.isNull()) return;
 	
@@ -418,7 +421,7 @@ void MLSurfaceEditor::replace(const MLSurface &surface, const QPointSet &keys)
 	
 	foreach (const QPoint &key, keys)
 	{
-		MLImage *oldTile = replaceTile(key, new MLImage(surface.tileForKey(key)));
+		Image *oldTile = replaceTile(key, new Image(surface.tileForKey(key)));
 		if (oldTile)
 			delete oldTile;
 	}
@@ -426,15 +429,15 @@ void MLSurfaceEditor::replace(const MLSurface &surface, const QPointSet &keys)
 
 // Returns tile item with "key"
 // If the tile hash no tile with "key", inserts a new tile and returns it
-MLImage *MLSurfaceEditor::tileRefForKey(const QPoint &key)
+Image *SurfaceEditor::tileRefForKey(const QPoint &key)
 {
 	_surface->setupData();
 	
-	MLImage *tile;
+	Image *tile;
 	
 	if (!_surface->d->tileHash.contains(key))
 	{
-		tile = new MLImage(MLSurface::DefaultTile);
+		tile = new Image(Surface::DefaultTile);
 		_surface->d->tileHash.insert(key, tile);
 	}
 	else
@@ -445,15 +448,15 @@ MLImage *MLSurfaceEditor::tileRefForKey(const QPoint &key)
 	return tile;
 }
 
-const MLImage *MLSurfaceEditor::constTileRefForKey(const QPoint &key) const
+const Image *SurfaceEditor::constTileRefForKey(const QPoint &key) const
 {
 	if (_surface->isNull() || _surface->d->tileHash.contains(key))
 		return _surface->d->tileHash[key];
 	else
-		return &MLSurface::DefaultTile;
+		return &Surface::DefaultTile;
 }
 
-void MLSurfaceEditor::squeeze(const QPointSet &keys)
+void SurfaceEditor::squeeze(const QPointSet &keys)
 {
 	if (_surface->isNull()) return;
 	
@@ -474,4 +477,5 @@ void MLSurfaceEditor::squeeze(const QPointSet &keys)
 	}
 }
 
+}
 

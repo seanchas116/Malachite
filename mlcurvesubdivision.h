@@ -6,16 +6,21 @@
 #include "mlvector.h"
 #include "private/agg_array.h"
 
-class MLCurveSubdivision
+namespace Malachite
+{
+
+class CurveSubdivision
 {
 public:
-	MLCurveSubdivision(const MLCurve4 &curve);
-	MLCurveSubdivision(const MLVec2D &start, const MLVec2D &control1, const MLVec2D &control2, const MLVec2D &end);
+	CurveSubdivision(const Curve4 &curve);
+	CurveSubdivision(const Vec2D &start, const Vec2D &control1, const Vec2D &control2, const Vec2D &end);
 	
-	MLPolygon polygon() const { return _polygon; }
+	Polygon polygon() const { return _polygon; }
 	
 private:
-	MLPolygon _polygon;
+	Polygon _polygon;
 };
+
+}
 
 #endif // MLCURVESUBDIVISION_H

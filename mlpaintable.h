@@ -3,13 +3,18 @@
 
 #include "mlglobal.h"
 
-class MLPaintEngine;
+namespace Malachite
+{
 
-class MALACHITESHARED_EXPORT MLPaintable
+class PaintEngine;
+
+class MALACHITESHARED_EXPORT Paintable
 {
 public:
-	virtual ~MLPaintable() {}
-	virtual MLPaintEngine *createPaintEngine() = 0;
+	virtual ~Paintable() {}
+	virtual PaintEngine *createPaintEngine() = 0;
 };
+
+}
 
 #endif // MLPAINTABLE_H

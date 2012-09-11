@@ -11,7 +11,7 @@
 #  define MALACHITESHARED_EXPORT Q_DECL_IMPORT
 #endif
 
-namespace ML
+namespace Malachite
 {
 
 /**

@@ -5,19 +5,22 @@
 #include "mlsurface.h"
 #include "mlpaintengine.h"
 
-class MLSurfacePaintEngine : public MLPaintEngine
+namespace Malachite
+{
+
+class SurfacePaintEngine : public PaintEngine
 {
 public:
 	
-	MLSurfacePaintEngine();
-	~MLSurfacePaintEngine();
+	SurfacePaintEngine();
+	~SurfacePaintEngine();
 	
-	bool begin(MLPaintable *paintable);
+	bool begin(Paintable *paintable);
 	bool flush();
 	
-	void drawTransformedPolygons(const MLFixedMultiPolygon &polygons);
-	void drawTransformedImage(const QPoint &point, const MLImage &image);
-	void drawTransformedSurface(const QPoint &point, const MLSurface &surface);
+	void drawTransformedPolygons(const FixedMultiPolygon &polygons);
+	void drawTransformedImage(const QPoint &point, const Image &image);
+	void drawTransformedSurface(const QPoint &point, const Surface &surface);
 	
 	void setKeyClip(const QPointSet &keys) { _keyClip = keys; }
 	QPointSet keyClip() const { return _keyClip; }
@@ -26,8 +29,10 @@ public:
 	
 private:
 	
-	MLSurfaceEditor *_editor;
+	SurfaceEditor *_editor;
 	QPointSet _keyClip;
 };
+
+}
 
 #endif // MLSURFACEPAINTENGINE_H

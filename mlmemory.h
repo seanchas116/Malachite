@@ -4,14 +4,17 @@
 #include <QtGlobal>
 #include "mlglobal.h"
 
-inline void *mlAllocateAlignedMemory(size_t size, size_t alignment)
+namespace Malachite
+{
+
+inline void *allocateAlignedMemory(size_t size, size_t alignment)
 {
 	void *p;
 	posix_memalign(&p, alignment, size);
 	return p;
 }
 
-inline void mlFreeAlignedMemory(void *p)
+inline void freeAlignedMemory(void *p)
 {
 	free(p);
 }
@@ -19,10 +22,10 @@ inline void mlFreeAlignedMemory(void *p)
 #define ML_ALIGN_16BYTE \
 public: \
 	static void *operator new(size_t size) { \
-		return mlAllocateAlignedMemory(size, 16); \
+		return allocateAlignedMemory(size, 16); \
 	} \
 	static void operator delete(void *p) { \
-		mlFreeAlignedMemory(p); \
+		freeAlignedMemory(p); \
 	} \
 	static void *operator new(size_t size, void *buf) { \
 		Q_UNUSED(size); \
@@ -33,10 +36,10 @@ public: \
 		Q_UNUSED(buf); \
 	} \
 	static void *operator new[](size_t size) { \
-		return mlAllocateAlignedMemory(size, 16); \
+		return allocateAlignedMemory(size, 16); \
 	} \
 	static void operator delete[](void *p) { \
-		mlFreeAlignedMemory(p); \
+		freeAlignedMemory(p); \
 	} \
 	static void *operator new[](size_t size, void *buf) { \
 		Q_UNUSED(size); \
@@ -54,19 +57,19 @@ public: \
 #endif
 
 template <class T>
-class MLPointer
+class Pointer
 {
 public:
 	
 #ifdef ML_DEBUG_MEMORY
 	
-	MLPointer() :
+	Pointer() :
 		_start(0),
 		_byteSize(0),
 		_p(0)
 	{}
 	
-	MLPointer(const void *rangeStart, int rangeByteSize, T *p) :
+	Pointer(const void *rangeStart, int rangeByteSize, T *p) :
 		_start(rangeStart),
 		_byteSize(rangeByteSize),
 		_p(p)
@@ -75,7 +78,7 @@ public:
 		Q_ASSERT(rangeCorrect());
 	}
 	
-	MLPointer(T *p, int rangeByteSize) :
+	Pointer(T *p, int rangeByteSize) :
 		_start(p),
 		_byteSize(rangeByteSize),
 		_p(p)
@@ -83,7 +86,7 @@ public:
 		Q_ASSERT(p);
 	}
 	
-	MLPointer(T &value) :
+	Pointer(T &value) :
 		_start(&value),
 		_byteSize(sizeof(T)),
 		_p(&value)
@@ -93,23 +96,23 @@ public:
 	
 #else
 	
-	MLPointer() :
+	Pointer() :
 		_p(0)
 	{}
 	
-	MLPointer(void *rangeStart, int rangeByteSize, T *p) :
+	Pointer(void *rangeStart, int rangeByteSize, T *p) :
 		_p(p)
 	{ Q_UNUSED(rangeStart); Q_UNUSED(rangeByteSize); }
 	
-	MLPointer(T *p, int rangeByteSize) :
+	Pointer(T *p, int rangeByteSize) :
 		_p(p)
 	{ Q_UNUSED(rangeByteSize); }
 	
-	MLPointer(T *p) :
+	Pointer(T *p) :
 		_p(p)
 	{}
 	
-	MLPointer(T &value) :
+	Pointer(T &value) :
 		_p(&value)
 	{}
 	
@@ -118,21 +121,21 @@ public:
 	bool isNull() const { return !_p; }
 	bool isValid() const { return _p; }
 	
-	MLPointer byteOffset(int offset) const
+	Pointer byteOffset(int offset) const
 	{
 #ifdef ML_DEBUG_MEMORY
-		return MLPointer(_start, _byteSize, reinterpret_cast<T *>(reinterpret_cast<size_t>(_p) + offset));
+		return Pointer(_start, _byteSize, reinterpret_cast<T *>(reinterpret_cast<size_t>(_p) + offset));
 #else
-		return MLPointer(reinterpret_cast<T *>(reinterpret_cast<size_t>(_p) + offset));
+		return Pointer(reinterpret_cast<T *>(reinterpret_cast<size_t>(_p) + offset));
 #endif
 	}
 	
-	void pasteArray(MLPointer<const T> otherPointer, int elemCount)
+	void pasteArray(Pointer<const T> otherPointer, int elemCount)
 	{
 		pasteByte(otherPointer, elemCount * sizeof(T));
 	}
 	
-	void pasteByte(MLPointer<const T> otherPointer, int byteCount)
+	void pasteByte(Pointer<const T> otherPointer, int byteCount)
 	{
 #ifdef ML_DEBUG_MEMORY
 		Q_ASSERT(isValid());
@@ -146,7 +149,7 @@ public:
 	
 	void fill(const T &value, int count)
 	{
-		MLPointer<T> p = *this;
+		Pointer<T> p = *this;
 		
 		for (int i = 0; i < count; ++i)
 		{
@@ -155,49 +158,49 @@ public:
 	}
 	
 	template <class S>
-	MLPointer<S> reinterpret() const
+	Pointer<S> reinterpret() const
 	{
 #ifdef ML_DEBUG_MEMORY
-		return MLPointer<S>(_start, _byteSize, reinterpret_cast<S *>(_p));
+		return Pointer<S>(_start, _byteSize, reinterpret_cast<S *>(_p));
 #else
-		return MLPointer<S>(reinterpret_cast<S *>(_p));
+		return Pointer<S>(reinterpret_cast<S *>(_p));
 #endif
 	}
 	
 	template <class S>
-	MLPointer<S> constCast() const
+	Pointer<S> constCast() const
 	{
 #ifdef ML_DEBUG_MEMORY
-		return MLPointer<S>(_start, _byteSize, const_cast<S *>(_p));
+		return Pointer<S>(_start, _byteSize, const_cast<S *>(_p));
 #else
-		return MLPointer<S>(const_cast<S *>(_p));
+		return Pointer<S>(const_cast<S *>(_p));
 #endif
 	}
 	
-	MLPointer operator+(int i) const
+	Pointer operator+(int i) const
 	{
 #ifdef ML_DEBUG_MEMORY
-		return MLPointer(_start, _byteSize, _p + i);
+		return Pointer(_start, _byteSize, _p + i);
 #else
-		return MLPointer(_p + i);
+		return Pointer(_p + i);
 #endif
 	}
-	MLPointer operator-(int i) const { return operator+(-i); }
+	Pointer operator-(int i) const { return operator+(-i); }
 	
-	MLPointer &operator+=(int i) { _p += i; return *this; }
-	MLPointer &operator-=(int i) { _p -= i; return *this; }
+	Pointer &operator+=(int i) { _p += i; return *this; }
+	Pointer &operator-=(int i) { _p -= i; return *this; }
 	
-	MLPointer &operator++() { ++_p; return *this; }
-	MLPointer operator++(int) { MLPointer p = *this; ++_p; return p; }
-	MLPointer &operator--() { --_p; return *this; }
-	MLPointer operator--(int) { MLPointer p = *this; --_p;; return p; }
+	Pointer &operator++() { ++_p; return *this; }
+	Pointer operator++(int) { Pointer p = *this; ++_p; return p; }
+	Pointer &operator--() { --_p; return *this; }
+	Pointer operator--(int) { Pointer p = *this; --_p;; return p; }
 	
-	operator MLPointer<const T>() const
+	operator Pointer<const T>() const
 	{
 #ifdef ML_DEBUG_MEMORY
-		return MLPointer<const T>(_start, _byteSize, _p);
+		return Pointer<const T>(_start, _byteSize, _p);
 #else
-		return MLPointer<const T>(_p);
+		return Pointer<const T>(_p);
 #endif
 	}
 	
@@ -252,27 +255,27 @@ private:
 
 
 template <class T>
-class MLArray
+class Array
 {
 public:
 	
-	MLArray(int size) :
+	Array(int size) :
 		_data(new T[size]),
 		_size(size)
 	{}
 	
-	~MLArray()
+	~Array()
 	{
 		delete[] _data;
 	}
 	
 	int size() const { return _size; }
 	
-	MLPointer<T> data() { return p(0); }
-	MLPointer<const T> data() const { return p(0); }
+	Pointer<T> data() { return p(0); }
+	Pointer<const T> data() const { return p(0); }
 	
-	MLPointer<T> p(int index) { return MLPointer<T>(_data, _size * sizeof(T), _data + index); }
-	MLPointer<const T> p(int index) const { return MLPointer<const T>(_data, _size * sizeof(T), _data + index); }
+	Pointer<T> p(int index) { return Pointer<T>(_data, _size * sizeof(T), _data + index); }
+	Pointer<const T> p(int index) const { return Pointer<const T>(_data, _size * sizeof(T), _data + index); }
 	
 	T &operator[](int index) { Q_ASSERT(0 <= index && index < _size); return _data[index]; }
 	const T &operator[](int index) const { Q_ASSERT(0 <= index && index < _size); return _data[index]; }
@@ -310,5 +313,7 @@ template <typename T> inline void mlFillArray (
 	}
 }*/
 
+
+}
 
 #endif // MLMEMORY_H

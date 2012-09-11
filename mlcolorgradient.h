@@ -5,23 +5,26 @@
 #include "mlvector.h"
 #include <QMap>
 
-class MALACHITESHARED_EXPORT MLColorGradient
+namespace Malachite
+{
+
+class MALACHITESHARED_EXPORT ColorGradient
 {
 public:
-	MLColorGradient() {}
-	virtual ~MLColorGradient() {}
+	ColorGradient() {}
+	virtual ~ColorGradient() {}
 	
-	virtual MLVec4F at(float x) const = 0;
-	virtual MLColorGradient *clone() const { return 0; }
+	virtual Vec4F at(float x) const = 0;
+	virtual ColorGradient *clone() const { return 0; }
 };
 
-class MALACHITESHARED_EXPORT MLColorGradientCache : public MLColorGradient
+class MALACHITESHARED_EXPORT ColorGradientCache : public ColorGradient
 {
 public:
 	
-	MLColorGradientCache(MLColorGradient *gradient, int sampleCount);
+	ColorGradientCache(ColorGradient *gradient, int sampleCount);
 	
-	MLVec4F at(float x) const
+	Vec4F at(float x) const
 	{
 		return _cache.at(roundf(x * _sampleCount));
 	}
@@ -31,33 +34,33 @@ public:
 private:
 	
 	int _sampleCount;
-	QVector<MLVec4F> _cache;
+	QVector<Vec4F> _cache;
 };
 
-class MALACHITESHARED_EXPORT MLArgbGradient : public MLColorGradient
+class MALACHITESHARED_EXPORT ArgbGradient : public ColorGradient
 {
 public:
 	
-	MLArgbGradient() : MLColorGradient() {}
+	ArgbGradient() : ColorGradient() {}
 	
-	void addStop(float x, const MLVec4F &y) { _stops.insert(x, y); }
-	void addStop(float x, const MLColor &color) { addStop(x, color.toArgb()); }
+	void addStop(float x, const Vec4F &y) { _stops.insert(x, y); }
+	void addStop(float x, const Color &color) { addStop(x, color.toArgb()); }
 	void clear() { _stops.clear(); }
 	
-	MLVec4F at(float x) const;
+	Vec4F at(float x) const;
 	
-	MLColorGradient *clone() const { return new MLArgbGradient(*this); }
+	ColorGradient *clone() const { return new ArgbGradient(*this); }
 	
 private:
 	
-	QMap<float, MLVec4F> _stops;
+	QMap<float, Vec4F> _stops;
 };
 
-struct MLLinearGradientInfo
+struct LinearGradientInfo
 {
-	MLLinearGradientInfo() {}
+	LinearGradientInfo() {}
 	
-	MLLinearGradientInfo(const MLVec2D &start, const MLVec2D &end) :
+	LinearGradientInfo(const Vec2D &start, const Vec2D &end) :
 		start(start), end(end) {}
 	
 	bool transformable(const QTransform &transform) const
@@ -77,23 +80,23 @@ struct MLLinearGradientInfo
 		end *= transform;
 	}
 	
-	MLVec2D start, end;
+	Vec2D start, end;
 };
 
-struct MLRadialGradientInfo
+struct RadialGradientInfo
 {
-	MLRadialGradientInfo() {}
+	RadialGradientInfo() {}
 	
-	MLRadialGradientInfo(const MLVec2D &center, double radius, const MLVec2D &focal) :
+	RadialGradientInfo(const Vec2D &center, double radius, const Vec2D &focal) :
 		center(center), focal(focal), radius(radius) {}
 	
-	MLRadialGradientInfo(const MLVec2D &center, const MLVec2D &radius, const MLVec2D &focal) :
+	RadialGradientInfo(const Vec2D &center, const Vec2D &radius, const Vec2D &focal) :
 		center(center), focal(focal), radius(radius) {}
 	
-	MLRadialGradientInfo(const MLVec2D &center, double radius) :
+	RadialGradientInfo(const Vec2D &center, double radius) :
 		center(center), focal(center), radius(radius) {}
 	
-	MLRadialGradientInfo(const MLVec2D &center, const MLVec2D &radius) :
+	RadialGradientInfo(const Vec2D &center, const Vec2D &radius) :
 		center(center), focal(center), radius(radius) {}
 	
 	bool transformable(const QTransform &transform) const
@@ -111,15 +114,16 @@ struct MLRadialGradientInfo
 	{
 		center *= transform;
 		focal *= transform;
-		radius *= MLVec2D(transform.m11(), transform.m22());
+		radius *= Vec2D(transform.m11(), transform.m22());
 	}
 	
-	MLVec2D center, focal, radius;
+	Vec2D center, focal, radius;
 };
 
-Q_DECLARE_METATYPE(MLLinearGradientInfo)
-Q_DECLARE_METATYPE(MLRadialGradientInfo)
 
+}
 
+Q_DECLARE_METATYPE(Malachite::LinearGradientInfo)
+Q_DECLARE_METATYPE(Malachite::RadialGradientInfo)
 
 #endif // MLCOLORGRADIENT_H

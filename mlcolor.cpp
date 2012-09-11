@@ -2,7 +2,10 @@
 #include "mlmisc.h"
 #include "mlcolor.h"
 
-double MLColor::component(Component component) const
+namespace Malachite
+{
+
+double Color::component(Component component) const
 {
 	switch (component)
 	{
@@ -23,13 +26,13 @@ double MLColor::component(Component component) const
 	}
 }
 
-double MLColor::intervaledComponent(Component component) const
+double Color::intervaledComponent(Component component) const
 {
 	double result = this->component(component);
 	return component == Hue ? result / 360.0 : result;
 }
 
-void MLColor::setComponent(Component component, double x)
+void Color::setComponent(Component component, double x)
 {
 	switch (component)
 	{
@@ -56,15 +59,15 @@ void MLColor::setComponent(Component component, double x)
 	}
 }
 
-void MLColor::setNormalizedComponent(Component component, double x)
+void Color::setNormalizedComponent(Component component, double x)
 {
 	setComponent(component, component == Hue ? x * 360.0 : x);
 }
 
-void MLColor::rgbChanged()
+void Color::rgbChanged()
 {
-	double max = mlMax(_r, _g, _b);
-	double min = mlMin(_r, _g, _b);
+	double max = max3(_r, _g, _b);
+	double min = min3(_r, _g, _b);
 	
 	_v = max;
 	double d = max - min;
@@ -90,7 +93,7 @@ void MLColor::rgbChanged()
 		_h += 360.0;
 }
 
-void MLColor::hsvChanged()
+void Color::hsvChanged()
 {
 	double d = _h / 60.0;
 	int i = floor(d);
@@ -132,11 +135,11 @@ void MLColor::hsvChanged()
 	}
 }
 
-QString MLColor::toWebColor() const
+QString Color::toWebColor() const
 {
-	MLColor color = *this;
+	Color color = *this;
 	color.setAlpha(1.0);
-	MLVec4U8 argb = color.toFastArgb8();
+	Vec4U8 argb = color.toFastArgb8();
 	
 	QString rText = QString::number(argb.r, 16).toUpper();
 	if (rText.size() == 1)
@@ -153,16 +156,16 @@ QString MLColor::toWebColor() const
 	return "#" + rText + gText + bText;
 }
 
-MLColor MLColor::fromWebColor(const QString &webColor, bool *ok)
+Color Color::fromWebColor(const QString &webColor, bool *ok)
 {
 	if (webColor.size() != 7 || webColor.at(0) != '#')
 	{
 		if (ok)
 			*ok = false;
-		return MLColor();
+		return Color();
 	}
 	
-	MLVec4U8 argb;
+	Vec4U8 argb;
 	bool textOk;
 	
 	argb.a = 0xFF;
@@ -172,7 +175,7 @@ MLColor MLColor::fromWebColor(const QString &webColor, bool *ok)
 	{
 		if (ok)
 			*ok = false;
-		return MLColor();
+		return Color();
 	}
 	
 	argb.g = webColor.mid(3, 2).toInt(&textOk, 16);
@@ -180,7 +183,7 @@ MLColor MLColor::fromWebColor(const QString &webColor, bool *ok)
 	{
 		if (ok)
 			*ok = false;
-		return MLColor();
+		return Color();
 	}
 	
 	argb.b = webColor.mid(5, 2).toInt(&textOk, 16);
@@ -188,13 +191,14 @@ MLColor MLColor::fromWebColor(const QString &webColor, bool *ok)
 	{
 		if (ok)
 			*ok = false;
-		return MLColor();
+		return Color();
 	}
 	
 	if (ok)
 		*ok = true;
 	
-	return MLColor::fromFastArgb8(argb);
+	return Color::fromFastArgb8(argb);
 }
 
+}
 

@@ -56,7 +56,6 @@ HEADERS +=\
     mlbitmap.h \
     mlimageio.h \
     mlcolorgradient.h \
-    mlpixelgenerator.h \
     mlcurvesubdivision.h \
     private/mlsurfacepaintengine.h \
     private/agg_scanline_p.h \

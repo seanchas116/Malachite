@@ -9,30 +9,33 @@
 #include <QMetaType>
 #include "mlblendop.h"
 
-class MLBlendModeDictionary
+namespace Malachite
+{
+
+class BlendModeDictionary
 {
 public:
-	MLBlendModeDictionary();
+	BlendModeDictionary();
 	
 	QString name(int index) const
 		{ return nameHash.value(index, "normal"); }
 	QPainter::CompositionMode qPainterMode(int index) const
 		{ return qtCompositionModeHash.value(index, QPainter::CompositionMode_SourceOver); }
 	int indexForName(const QString &name) const
-		{ return nameHash.key(name, ML::BlendModeSourceOver); }
+		{ return nameHash.key(name, Malachite::BlendModeSourceOver); }
 	
 private:
 	QHash<int, QString> nameHash;
 	QHash<int, QPainter::CompositionMode> qtCompositionModeHash;
 };
 
-class MALACHITESHARED_EXPORT MLBlendMode
+class MALACHITESHARED_EXPORT BlendModeUtil
 {
 public:
 	
-	MLBlendMode() : _index(ML::BlendModeNormal) {}
-	MLBlendMode(int index) : _index(index) {}
-	MLBlendMode(const QString &modeName) : _index(_dict.indexForName(modeName)) {}
+	BlendModeUtil() : _index(Malachite::BlendModeNormal) {}
+	BlendModeUtil(int index) : _index(index) {}
+	BlendModeUtil(const QString &modeName) : _index(_dict.indexForName(modeName)) {}
 	
 	int index() const { return _index; }
 	void setIndex(int index) { _index = index; }
@@ -42,9 +45,9 @@ public:
 	
 	QPainter::CompositionMode qPainterMode() const { return _dict.qPainterMode(_index); }
 	
-	MLBlendOp *op() const { return mlBlendOpDictionary()->blendOp(_index); }
+	BlendOp *op() const { return blendOpDictionary()->blendOp(_index); }
 	
-	MLBlendMode &operator=(int index)
+	BlendModeUtil &operator=(int index)
 	{
 		_index = index;
 		return *this;
@@ -55,11 +58,11 @@ public:
 	
 private:
 	
-	static MLBlendModeDictionary _dict;
+	static BlendModeDictionary _dict;
 	
 	int _index;
 };
 
-Q_DECLARE_METATYPE(MLBlendMode)
+}
 
 #endif // MLBLENDMODE_H

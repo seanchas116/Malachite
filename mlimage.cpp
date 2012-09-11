@@ -5,7 +5,10 @@
 #include "private/mlimagepaintengine.h"
 #include "mlimage.h"
 
-bool MLImage::isBlank() const
+namespace Malachite
+{
+
+bool Image::isBlank() const
 {
 	/*
 	for (int y = 0; y < height(); ++y) {
@@ -19,7 +22,7 @@ bool MLImage::isBlank() const
 	return true;*/
 	
 	int count = area();
-	const MLVec4F *p = constBits();
+	const Vec4F *p = constBits();
 	
 	for (int i = 0; i < count; ++i)
 	{
@@ -30,13 +33,13 @@ bool MLImage::isBlank() const
 	return true;
 }
 
-MLImage MLImage::toOpaqueImage() const
+Image Image::toOpaqueImage() const
 {
-	MLImage image = *this;
+	Image image = *this;
 	
-	MLPainter painter(&image);
-	painter.setColor(MLColor::white());
-	painter.setBlendMode(ML::BlendModeDestinationOver);
+	Painter painter(&image);
+	painter.setColor(Color::white());
+	painter.setBlendMode(Malachite::BlendModeDestinationOver);
 	painter.drawRect(image.rect());
 	
 	painter.end();
@@ -69,9 +72,9 @@ static MLVec4F mlColorSummation(int count, const MLVec4F *data)
 	return r;
 }*/
 
-static MLVec4F mlColorSummation(int count, MLPointer<const MLVec4F> data, MLPointer<const MLVec4F> mask)
+static Vec4F mlColorSummation(int count, Pointer<const Vec4F> data, Pointer<const Vec4F> mask)
 {
-	MLVec4F r(0);
+	Vec4F r(0);
 	
 	for (int i = 0; i < count; ++i)
 	{
@@ -83,7 +86,7 @@ static MLVec4F mlColorSummation(int count, MLPointer<const MLVec4F> data, MLPoin
 	return r;
 }
 
-MLVec4F MLImage::colorSummation(const QPoint &maskOffset, const MLImage &mask) const
+Vec4F Image::colorSummation(const QPoint &maskOffset, const Image &mask) const
 {
 	QRect dstRect = QRect(QPoint(), size());
 	QRect srcRect = QRect(maskOffset, mask.size());
@@ -91,12 +94,12 @@ MLVec4F MLImage::colorSummation(const QPoint &maskOffset, const MLImage &mask) c
 	QRect targetRect = dstRect & srcRect;
 	
 	if (targetRect.isEmpty())
-		return MLVec4F(0);
+		return Vec4F(0);
 	
 	int blockCount = targetRect.width() * targetRect.height() / COLOR_SUM_MAX + 1;
-	QScopedArrayPointer<MLVec4F> blocks(new MLVec4F[blockCount]);
+	QScopedArrayPointer<Vec4F> blocks(new Vec4F[blockCount]);
 	
-	MLVec4F remainderArgb;
+	Vec4F remainderArgb;
 	int remainder = 0;
 	int currentBlock = 0;
 	
@@ -104,8 +107,8 @@ MLVec4F MLImage::colorSummation(const QPoint &maskOffset, const MLImage &mask) c
 	{
 		QPoint p(targetRect.left(), y);
 		
-		MLPointer<const MLVec4F> pointer = constPixelPointer(p);
-		MLPointer<const MLVec4F> maskPointer = mask.constPixelPointer(p - maskOffset);
+		Pointer<const Vec4F> pointer = constPixelPointer(p);
+		Pointer<const Vec4F> maskPointer = mask.constPixelPointer(p - maskOffset);
 		
 		int rx = targetRect.width();
 		int x = 0;
@@ -128,7 +131,7 @@ MLVec4F MLImage::colorSummation(const QPoint &maskOffset, const MLImage &mask) c
 	
 	blocks[currentBlock] = remainderArgb;
 	
-	MLVec4F r(0);
+	Vec4F r(0);
 	
 	for (int i = 0; i < blockCount; ++i)
 	{
@@ -138,12 +141,12 @@ MLVec4F MLImage::colorSummation(const QPoint &maskOffset, const MLImage &mask) c
 	return r;
 }
 
-MLPaintEngine *MLImage::createPaintEngine()
+PaintEngine *Image::createPaintEngine()
 {
-	return new MLImagePaintEngine;
+	return new ImagePaintEngine;
 }
 
-QImage MLImage::toQImage() const
+QImage Image::toQImage() const
 {
 	QImage image(size(), QImage::Format_ARGB32_Premultiplied);
 	
@@ -152,27 +155,27 @@ QImage MLImage::toQImage() const
 	return image;
 }
 
-MLImage MLImage::fromQImage(const QImage &qimage)
+Image Image::fromQImage(const QImage &qimage)
 {
-	MLImage image(qimage.size());
+	Image image(qimage.size());
 	
 	auto wrapper = MLImage32::wrap(qimage.constBits(), qimage.size(), qimage.bytesPerLine());
 	image.paste(wrapper);
 	return image;
 }
 
-MLImage &MLImage::operator*=(float factor)
+Image &Image::operator*=(float factor)
 {
 	factor = qBound(0.f, factor, 1.f);
 	if (factor == 1.f)
 		return *this;
 	
-	MLVec4F vfactor(factor);
+	Vec4F vfactor(factor);
 	QSize size = this->size();
 	
 	for (int y = 0; y < size.height(); ++y)
 	{
-		MLVec4F *p = scanline(y);
+		Vec4F *p = scanline(y);
 		
 		for (int x = 0; x < size.width(); ++x)
 			*p++ *= vfactor;
@@ -181,4 +184,4 @@ MLImage &MLImage::operator*=(float factor)
 	return *this;
 }
 
-
+}

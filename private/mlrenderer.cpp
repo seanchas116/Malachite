@@ -1,5 +1,8 @@
 #include "mlrenderer.h"
 
+namespace Malachite
+{
+
 unsigned QPainterPath_vs::vertex(double *x, double *y)
 {
 	forever
@@ -12,7 +15,7 @@ unsigned QPainterPath_vs::vertex(double *x, double *y)
 				continue;
 			}
 			
-			const MLVec2D p = _subdPolygon.at(_subdIndex);
+			const Vec2D p = _subdPolygon.at(_subdIndex);
 			*x = p.x;
 			*y = p.y;
 			_subdIndex++;
@@ -34,7 +37,7 @@ unsigned QPainterPath_vs::vertex(double *x, double *y)
 			e3 = _path.elementAt(_index + 1);
 			e4 = _path.elementAt(_index + 2);
 			
-			_subdPolygon = MLCurveSubdivision(MLVec2D(e1.x, e1.y), MLVec2D(e2.x, e2.y), MLVec2D(e3.x, e3.y), MLVec2D(e4.x, e4.y)).polygon();
+			_subdPolygon = CurveSubdivision(Vec2D(e1.x, e1.y), Vec2D(e2.x, e2.y), Vec2D(e3.x, e3.y), Vec2D(e4.x, e4.y)).polygon();
 			_subdIndex = 1;
 			_index += 3;
 			continue;
@@ -54,4 +57,6 @@ unsigned QPainterPath_vs::vertex(double *x, double *y)
 			return agg::path_cmd_line_to;
 		}
 	}
+}
+
 }

@@ -1,37 +1,42 @@
 #include "mlblendmode.h"
 
-MLBlendModeDictionary::MLBlendModeDictionary()
+namespace Malachite
+{
+
+BlendModeDictionary::BlendModeDictionary()
 {
 	nameHash.reserve(17);
 	qtCompositionModeHash.reserve(17);
 	
-	nameHash.insert(ML::BlendModeNormal, "normal");
-	nameHash.insert(ML::BlendModePlus, "plus");
-	nameHash.insert(ML::BlendModeMultiply, "multiply");
-	nameHash.insert(ML::BlendModeScreen, "screen");
-	nameHash.insert(ML::BlendModeOverlay, "overlay");
-	nameHash.insert(ML::BlendModeDarken, "darken");
-	nameHash.insert(ML::BlendModeLighten, "lighten");
-	nameHash.insert(ML::BlendModeColorDodge, "color-dodge");
-	nameHash.insert(ML::BlendModeColorBurn, "color-burn");
-	nameHash.insert(ML::BlendModeHardLight, "hard-light");
-	nameHash.insert(ML::BlendModeSoftLight, "soft-light");
-	nameHash.insert(ML::BlendModeDifference, "difference");
-	nameHash.insert(ML::BlendModeExclusion, "exclusion");
+	nameHash.insert(Malachite::BlendModeNormal, "normal");
+	nameHash.insert(Malachite::BlendModePlus, "plus");
+	nameHash.insert(Malachite::BlendModeMultiply, "multiply");
+	nameHash.insert(Malachite::BlendModeScreen, "screen");
+	nameHash.insert(Malachite::BlendModeOverlay, "overlay");
+	nameHash.insert(Malachite::BlendModeDarken, "darken");
+	nameHash.insert(Malachite::BlendModeLighten, "lighten");
+	nameHash.insert(Malachite::BlendModeColorDodge, "color-dodge");
+	nameHash.insert(Malachite::BlendModeColorBurn, "color-burn");
+	nameHash.insert(Malachite::BlendModeHardLight, "hard-light");
+	nameHash.insert(Malachite::BlendModeSoftLight, "soft-light");
+	nameHash.insert(Malachite::BlendModeDifference, "difference");
+	nameHash.insert(Malachite::BlendModeExclusion, "exclusion");
 	
-	qtCompositionModeHash.insert(ML::BlendModeNormal, QPainter::CompositionMode_SourceOver);
-	qtCompositionModeHash.insert(ML::BlendModePlus, QPainter::CompositionMode_Plus);
-	qtCompositionModeHash.insert(ML::BlendModeMultiply, QPainter::CompositionMode_Multiply);
-	qtCompositionModeHash.insert(ML::BlendModeScreen, QPainter::CompositionMode_Screen);
-	qtCompositionModeHash.insert(ML::BlendModeOverlay, QPainter::CompositionMode_Overlay);
-	qtCompositionModeHash.insert(ML::BlendModeDarken, QPainter::CompositionMode_Darken);
-	qtCompositionModeHash.insert(ML::BlendModeLighten, QPainter::CompositionMode_Lighten);
-	qtCompositionModeHash.insert(ML::BlendModeColorDodge, QPainter::CompositionMode_ColorDodge);
-	qtCompositionModeHash.insert(ML::BlendModeColorBurn, QPainter::CompositionMode_ColorBurn);
-	qtCompositionModeHash.insert(ML::BlendModeHardLight, QPainter::CompositionMode_HardLight);
-	qtCompositionModeHash.insert(ML::BlendModeSoftLight, QPainter::CompositionMode_SoftLight);
-	qtCompositionModeHash.insert(ML::BlendModeDifference, QPainter::CompositionMode_Difference);
-	qtCompositionModeHash.insert(ML::BlendModeExclusion, QPainter::CompositionMode_Exclusion);
+	qtCompositionModeHash.insert(Malachite::BlendModeNormal, QPainter::CompositionMode_SourceOver);
+	qtCompositionModeHash.insert(Malachite::BlendModePlus, QPainter::CompositionMode_Plus);
+	qtCompositionModeHash.insert(Malachite::BlendModeMultiply, QPainter::CompositionMode_Multiply);
+	qtCompositionModeHash.insert(Malachite::BlendModeScreen, QPainter::CompositionMode_Screen);
+	qtCompositionModeHash.insert(Malachite::BlendModeOverlay, QPainter::CompositionMode_Overlay);
+	qtCompositionModeHash.insert(Malachite::BlendModeDarken, QPainter::CompositionMode_Darken);
+	qtCompositionModeHash.insert(Malachite::BlendModeLighten, QPainter::CompositionMode_Lighten);
+	qtCompositionModeHash.insert(Malachite::BlendModeColorDodge, QPainter::CompositionMode_ColorDodge);
+	qtCompositionModeHash.insert(Malachite::BlendModeColorBurn, QPainter::CompositionMode_ColorBurn);
+	qtCompositionModeHash.insert(Malachite::BlendModeHardLight, QPainter::CompositionMode_HardLight);
+	qtCompositionModeHash.insert(Malachite::BlendModeSoftLight, QPainter::CompositionMode_SoftLight);
+	qtCompositionModeHash.insert(Malachite::BlendModeDifference, QPainter::CompositionMode_Difference);
+	qtCompositionModeHash.insert(Malachite::BlendModeExclusion, QPainter::CompositionMode_Exclusion);
 }
 
-MLBlendModeDictionary MLBlendMode::_dict;
+BlendModeDictionary BlendModeUtil::_dict;
+
+}

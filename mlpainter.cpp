@@ -2,7 +2,10 @@
 #include "mlpolygon.h"
 #include "mlpainter.h"
 
-MLPainter::MLPainter(MLPaintable *paintable) :
+namespace Malachite
+{
+
+Painter::Painter(Paintable *paintable) :
 	_paintable(0)
 {
 	bool ok = begin(paintable);
@@ -10,12 +13,12 @@ MLPainter::MLPainter(MLPaintable *paintable) :
 		qWarning() << "MLPainter::MLPainter: could not begin painting";
 }
 
-MLPainter::~MLPainter()
+Painter::~Painter()
 {
 	end();
 }
 
-bool MLPainter::begin(MLPaintable *paintable)
+bool Painter::begin(Paintable *paintable)
 {
 	if (_paintable) return false;
 	
@@ -32,15 +35,16 @@ bool MLPainter::begin(MLPaintable *paintable)
 	return true;
 }
 
-void MLPainter::flush()
+void Painter::flush()
 {
 	if (!_paintEngine) return;
 	_paintEngine->flush();
 }
 
-void MLPainter::end()
+void Painter::end()
 {
 	flush();
 	_paintEngine.reset();
 }
 
+}

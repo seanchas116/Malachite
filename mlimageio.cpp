@@ -4,7 +4,10 @@
 
 #include <FreeImage.h>
 
-MLImageImporter::MLImageImporter(const QString &filePath) :
+namespace Malachite
+{
+
+ImageImporter::ImageImporter(const QString &filePath) :
 	_bitmap(0)
 {
 	QFileInfo fileInfo(filePath);
@@ -37,33 +40,33 @@ MLImageImporter::MLImageImporter(const QString &filePath) :
 	_size = QSize(FreeImage_GetWidth(_bitmap), FreeImage_GetHeight(_bitmap));
 }
 
-MLImageImporter::~MLImageImporter()
+ImageImporter::~ImageImporter()
 {
 	if (_bitmap) FreeImage_Unload(_bitmap);
 }
 
-MLImage MLImageImporter::toImage() const
+Image ImageImporter::toImage() const
 {
 	if (!_bitmap)
-		return MLImage();
+		return Image();
 	
-	MLImage image(size());
+	Image image(size());
 	
-	mlPasteFIBITMAPToImage(QPoint(), &image, _bitmap);
+	pasteFIBITMAPToImage(QPoint(), &image, _bitmap);
 	return image;
 }
 
-MLSurface MLImageImporter::toSurface(const QPoint &p) const
+Surface ImageImporter::toSurface(const QPoint &p) const
 {
 	if (!_bitmap)
-		return MLSurface();
+		return Surface();
 	
-	MLSurface surface;
-	mlPasteFIBITMAPToImage(p, &surface, _bitmap);
+	Surface surface;
+	pasteFIBITMAPToImage(p, &surface, _bitmap);
 	return surface;
 }
 
-MLImageExporter::MLImageExporter(const QSize &size, const QString &format) :
+ImageExporter::ImageExporter(const QSize &size, const QString &format) :
 	_size(size),
 	_format(format)
 {
@@ -80,25 +83,25 @@ MLImageExporter::MLImageExporter(const QSize &size, const QString &format) :
 	}
 }
 
-MLImageExporter::MLImageExporter(const MLSurface &surface, const QSize &size, const QString &format) :
-	MLImageExporter(size, format)
+ImageExporter::ImageExporter(const Surface &surface, const QSize &size, const QString &format) :
+	ImageExporter(size, format)
 {
 	pasteSurface(surface, QPoint());
 }
 
-MLImageExporter::MLImageExporter(const MLImage &image, const QString &format) :
-	MLImageExporter(image.size(), format)
+ImageExporter::ImageExporter(const Image &image, const QString &format) :
+	ImageExporter(image.size(), format)
 {
 	pasteImage(image, QPoint());
 }
 
-MLImageExporter::~MLImageExporter()
+ImageExporter::~ImageExporter()
 {
 	if (_bitmap)
 		FreeImage_Unload(_bitmap);
 }
 
-bool MLImageExporter::save(const QString &filePath, int quality)
+bool ImageExporter::save(const QString &filePath, int quality)
 {
 	if (!_bitmap)
 		return false;
@@ -128,15 +131,15 @@ bool MLImageExporter::save(const QString &filePath, int quality)
 	return FreeImage_Save(fif, _bitmap, filePath.toLocal8Bit(), flags);
 }
 
-bool MLImageExporter::pasteImage(const MLImage &image, const QPoint &pos)
+bool ImageExporter::pasteImage(const Image &image, const QPoint &pos)
 {
 	if (!_bitmap)
 		return false;
 	
-	return mlPasteImageToBitmap(pos, _bitmap, image);
+	return pasteImageToFIBITMAP(pos, _bitmap, image);
 }
 
-bool MLImageExporter::pasteSurface(const MLSurface &surface, const QPoint &pos)
+bool ImageExporter::pasteSurface(const Surface &surface, const QPoint &pos)
 {
 	if (!_bitmap)
 		return false;
@@ -147,46 +150,13 @@ bool MLImageExporter::pasteSurface(const MLSurface &surface, const QPoint &pos)
 	
 	foreach (const QPoint &key, keys)
 	{
-		if (pasteImage(surface.tileForKey(key), key * MLSurface::TileSize + pos) == false)
+		if (pasteImage(surface.tileForKey(key), key * Surface::TileSize + pos) == false)
 			return false;
 	}
 	
 	return true;
 }
 
-/*
-bool mlSaveAsPNG(const MLImage &image, const QString &filePath)
-{
-	FIBITMAP *bitmap = FreeImage_AllocateT(FIT_RGBA16, image.width(), image.height());
-	
-	auto wrapper = MLGenericImage<ML::ImageFormatArgb, MLVec4U16>::wrap(FreeImage_GetBits(bitmap), image.size(), FreeImage_GetPitch(bitmap));
-	wrapper.paste(image, true);
-	
-	return FreeImage_Save(FIF_PNG, bitmap, filePath.toLocal8Bit());
-}
 
-bool mlSaveAsBMP(const MLImage &image, const QString &filePath)
-{
-	MLImage opaqueImage = image.toOpaqueImage();
-	
-	FIBITMAP *bitmap = FreeImage_Allocate(image.width(), image.height(), 24);
-	
-	auto wrapper = MLGenericImage<ML::ImageFormatRgb, MLVec3U8>::wrap(FreeImage_GetBits(bitmap), image.size(), FreeImage_GetPitch(bitmap));
-	wrapper.paste(opaqueImage, true);
-	
-	return FreeImage_Save(FIF_BMP, bitmap, filePath.toLocal8Bit());
 }
-
-bool mlSaveAsJPEG(const MLImage &image, const QString &filePath)
-{
-	MLImage opaqueImage = image.toOpaqueImage();
-	
-	FIBITMAP *bitmap = FreeImage_Allocate(image.width(), image.height(), 24);
-	
-	auto wrapper = MLGenericImage<ML::ImageFormatRgb, MLVec3U8>::wrap(FreeImage_GetBits(bitmap), image.size(), FreeImage_GetPitch(bitmap));
-	wrapper.paste(opaqueImage, true);
-	
-	return FreeImage_Save(FIF_JPEG, bitmap, filePath.toLocal8Bit());
-}
-*/
 

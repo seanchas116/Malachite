@@ -12,46 +12,49 @@
 #include "mlimage.h"
 #include "mldivision.h"
 
-typedef QHash<QPoint, MLImage *>	MLSurfaceHash;
+namespace Malachite
+{
 
-class MLSurfaceData : public QSharedData
+typedef QHash<QPoint, Image *>	MLSurfaceHash;
+
+class SurfaceData : public QSharedData
 {
 public:
-	MLSurfaceData();
-	MLSurfaceData(const MLSurfaceData &other);
-	~MLSurfaceData() { qDeleteAll(tileHash); }
+	SurfaceData();
+	SurfaceData(const SurfaceData &other);
+	~SurfaceData() { qDeleteAll(tileHash); }
 	
 	MLSurfaceHash tileHash;
 };
 
-class MLSurfaceEditor;
+class SurfaceEditor;
 
-class MALACHITESHARED_EXPORT MLSurface : public MLPaintable
+class MALACHITESHARED_EXPORT Surface : public Paintable
 {
 public:
-	friend class MLSurfaceEditor;
+	friend class SurfaceEditor;
 	
 	enum {
 		TileSize = 64
 	};
 	
-	MLSurface() : MLPaintable() { d = 0; }
-	MLSurface(const MLSurface &other) : MLPaintable(), d(other.d) {}
+	Surface() : Paintable() { d = 0; }
+	Surface(const Surface &other) : Paintable(), d(other.d) {}
 	
-	MLPaintEngine *createPaintEngine();
+	PaintEngine *createPaintEngine();
 	
 	bool save(QIODevice *device) const;
-	static MLSurface loaded(QIODevice *device);
+	static Surface loaded(QIODevice *device);
 	
 	bool isNull() const;
 	
-	MLImage tileForKey(const QPoint &key) const;
-	MLImage tileForKey(int x, int y) const { return tileForKey(QPoint(x, y)); }
+	Image tileForKey(const QPoint &key) const;
+	Image tileForKey(int x, int y) const { return tileForKey(QPoint(x, y)); }
 	
-	MLVec4F pixel(const QPoint &pos) const
+	Vec4F pixel(const QPoint &pos) const
 	{
 		QPoint key, rem;
-		mlDividePoint(pos, TileSize, &key, &rem);
+		dividePoint(pos, TileSize, &key, &rem);
 		return tileForKey(key).pixel(rem);
 	}
 	
@@ -70,23 +73,23 @@ public:
 	QRect boundingKeyRect() const;
 	QRect boundingRect() const;
 	
-	static QPoint keyForPixel(const QPoint &pos) { QPoint key; mlDividePoint(pos, TileSize, &key); return key; }
+	static QPoint keyForPixel(const QPoint &pos) { QPoint key; dividePoint(pos, TileSize, &key); return key; }
 	
 	static QRect keyToRect(int x, int y) { return QRect(TileSize * x, TileSize * y, TileSize, TileSize); }
 	static QRect keyToRect(const QPoint &point) { return keyToRect(point.x(), point.y()); }
 	
 	static QPointSet keysForRect(const QRect &rect);
 	
-	MLSurface section(const QPointSet &keys) const;
-	MLSurface exclusion(const QPointSet &keys) const;
+	Surface section(const QPointSet &keys) const;
+	Surface exclusion(const QPointSet &keys) const;
 	
 	template <bool DstInverted = false, bool SrcInverted = false, typename Image>
 	void paste(const Image &image, const QPoint &point = QPoint());
 	//template <typename Image> void paste(const Image &image, bool inverted = false, const QPoint &point = QPoint());
 	//template <typename Image> void paste(const Image &image) { fromImage(QPoint(), image); }
 	
-	static MLImage DefaultTile;
-	static MLImage WhiteTile;
+	static Image DefaultTile;
+	static Image WhiteTile;
 	
 private:
 	int commonLeftBound(const QPointSet &keys) const;
@@ -94,58 +97,59 @@ private:
 	int commonTopBound(const QPointSet &keys) const;
 	int commonBottomBound(const QPointSet &keys) const;
 	
-	void setupData() { if (!d) d = new MLSurfaceData; }
+	void setupData() { if (!d) d = new SurfaceData; }
 	
-	QSharedDataPointer<MLSurfaceData> d;
+	QSharedDataPointer<SurfaceData> d;
 };
 
 
-Q_DECLARE_METATYPE(MLSurface)
 
-
-
-class MLSurfaceEditor
+class SurfaceEditor
 {
 public:
 	
-	MLSurfaceEditor(MLSurface *surface) : _surface(surface) {}
-	~MLSurfaceEditor();
+	SurfaceEditor(Surface *surface) : _surface(surface) {}
+	~SurfaceEditor();
 	
 	void deleteTile(const QPoint &key);
 	void clear();
-	MLImage *replaceTile(const QPoint &key, MLImage *image);
-	MLImage *takeTile(const QPoint &key);
+	Image *replaceTile(const QPoint &key, Image *image);
+	Image *takeTile(const QPoint &key);
 	
-	void replace(const MLSurface &surface, const QPointSet &keys);
+	void replace(const Surface &surface, const QPointSet &keys);
 	
 	QPointSet editedKeys() const { return _editedKeys; }
 	
-	MLImage *tileRefForKey(const QPoint &key);
-	MLImage *tileRefForKey(int x, int y) { return tileRefForKey(QPoint(x, y)); }
-	const MLImage *constTileRefForKey(const QPoint &key) const;
-	const MLImage *constTileRefForKey(int x, int y) const { return constTileRefForKey(QPoint(x, y)); }
-	const MLImage *tileRefForKey(const QPoint &key) const { return constTileRefForKey(key); }
-	const MLImage *tileRefForKey(int x, int y) const { return constTileRefForKey(QPoint(x, y)); }
+	Image *tileRefForKey(const QPoint &key);
+	Image *tileRefForKey(int x, int y) { return tileRefForKey(QPoint(x, y)); }
+	const Image *constTileRefForKey(const QPoint &key) const;
+	const Image *constTileRefForKey(int x, int y) const { return constTileRefForKey(QPoint(x, y)); }
+	const Image *tileRefForKey(const QPoint &key) const { return constTileRefForKey(key); }
+	const Image *tileRefForKey(int x, int y) const { return constTileRefForKey(QPoint(x, y)); }
 	
-	const MLSurface *surface() { return _surface; }
+	const Surface *surface() { return _surface; }
 	
 private:
 	
 	void squeeze(const QPointSet &keys);
 	
-	MLSurface *_surface;
+	Surface *_surface;
 	QPointSet _editedKeys;
 };
 
 
 template <bool DstInverted, bool SrcInverted, typename Image>
-void MLSurface::paste(const Image &image, const QPoint &point)
+void Surface::paste(const Image &image, const QPoint &point)
 {
-	MLSurfaceEditor editor(this);
+	SurfaceEditor editor(this);
 	QPointSet keys = keysForRect(QRect(point, image.size()));
 	
 	foreach (const QPoint &key, keys)
-		editor.tileRefForKey(key)->template paste<DstInverted, SrcInverted>(image, point - key * MLSurface::TileSize);
+		editor.tileRefForKey(key)->template paste<DstInverted, SrcInverted>(image, point - key * Surface::TileSize);
 }
+
+}
+
+Q_DECLARE_METATYPE(Malachite::Surface)
 
 #endif // MLSURFACE_H

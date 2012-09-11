@@ -5,43 +5,46 @@
 #include "mlcolor.h"
 #include "mlgenericimage.h"
 
-typedef MLGenericImage<ML::ImageFormatArgbFast, MLVec4U8> MLImage32;
+namespace Malachite
+{
 
-class MALACHITESHARED_EXPORT MLImage : public MLGenericImage<ML::ImageFormatArgbFast, MLVec4F>, public MLPaintable
+typedef GenericImage<Malachite::ImageFormatArgbFast, Vec4U8> MLImage32;
+
+class MALACHITESHARED_EXPORT Image : public GenericImage<Malachite::ImageFormatArgbFast, Vec4F>, public Paintable
 {
 public:
-	MLImage() : MLGenericImage<ML::ImageFormatArgbFast, MLVec4F>() {}
-	MLImage(const MLGenericImage<ML::ImageFormatArgbFast, MLVec4F> &other) : MLGenericImage<ML::ImageFormatArgbFast, MLVec4F>(other) {}
-	MLImage(const QSize &size) : MLGenericImage<ML::ImageFormatArgbFast, MLVec4F>(size) {}
-	MLImage(int width, int height) : MLGenericImage<ML::ImageFormatArgbFast, MLVec4F>(width, height) {}
+	Image() : GenericImage<Malachite::ImageFormatArgbFast, Vec4F>() {}
+	Image(const GenericImage<Malachite::ImageFormatArgbFast, Vec4F> &other) : GenericImage<Malachite::ImageFormatArgbFast, Vec4F>(other) {}
+	Image(const QSize &size) : GenericImage<Malachite::ImageFormatArgbFast, Vec4F>(size) {}
+	Image(int width, int height) : GenericImage<Malachite::ImageFormatArgbFast, Vec4F>(width, height) {}
 	
-	void clear() { fill(MLVec4F(0)); }
+	void clear() { fill(Vec4F(0)); }
 	
 	bool isBlank() const;
 	
 	//MLArgb colorSummation() const;
-	MLVec4F colorSummation(const QPoint &maskOffset, const MLImage &mask) const;
+	Vec4F colorSummation(const QPoint &maskOffset, const Image &mask) const;
 	
-	MLPaintEngine *createPaintEngine();
+	PaintEngine *createPaintEngine();
 	
-	MLImage toOpaqueImage() const;
+	Image toOpaqueImage() const;
 	
 	QImage toQImage() const;
 	
-	static MLImage fromQImage(const QImage &qimage);
+	static Image fromQImage(const QImage &qimage);
 	
-	MLImage &operator*=(float factor);
+	Image &operator*=(float factor);
 };
 
-inline MLImage operator*(const MLImage &image, float factor)
+inline Image operator*(const Image &image, float factor)
 {
-	MLImage result = image;
+	Image result = image;
 	result *= factor;
 	return result;
 }
 
-Q_DECLARE_METATYPE(MLImage)
+}
 
-
+Q_DECLARE_METATYPE(Malachite::Image)
 
 #endif // MLIMAGE_H

@@ -10,47 +10,50 @@
 #include <QTransform>
 #include <QScopedPointer>
 
-class MLBrushData : public QSharedData
+namespace Malachite
+{
+
+class BrushData : public QSharedData
 {
 public:
-	MLBrushData() :
-		type(ML::BrushTypeNull),
-		spreadType(ML::SpreadTypeRepeat)
+	BrushData() :
+		type(Malachite::BrushTypeNull),
+		spreadType(Malachite::SpreadTypeRepeat)
 	{}
 	
-	MLBrushData(const MLVec4F &argb) :
-		type(ML::BrushTypeColor),
-		spreadType(ML::SpreadTypeRepeat),
+	BrushData(const Vec4F &argb) :
+		type(Malachite::BrushTypeColor),
+		spreadType(Malachite::SpreadTypeRepeat),
 		data(QVariant::fromValue(argb))
 	{}
 	
-	MLBrushData(const MLImage &image) :
-		type(ML::BrushTypeImage),
-		spreadType(ML::SpreadTypeRepeat),
+	BrushData(const Image &image) :
+		type(Malachite::BrushTypeImage),
+		spreadType(Malachite::SpreadTypeRepeat),
 		data(QVariant::fromValue(image))
 	{}
 	
-	MLBrushData(const MLColorGradient &gradient, const MLLinearGradientInfo &info) :
-		type(ML::BrushTypeLinearGradient),
-		spreadType(ML::SpreadTypePad),
+	BrushData(const ColorGradient &gradient, const LinearGradientInfo &info) :
+		type(Malachite::BrushTypeLinearGradient),
+		spreadType(Malachite::SpreadTypePad),
 		data(QVariant::fromValue(info)),
 		gradient(gradient.clone())
 	{}
 	
-	MLBrushData(const MLColorGradient &gradient, const MLRadialGradientInfo &info) :
-		type(ML::BrushTypeRadialGradient),
-		spreadType(ML::SpreadTypePad),
+	BrushData(const ColorGradient &gradient, const RadialGradientInfo &info) :
+		type(Malachite::BrushTypeRadialGradient),
+		spreadType(Malachite::SpreadTypePad),
 		data(QVariant::fromValue(info)),
 		gradient(gradient.clone())
 	{}
 	
-	MLBrushData(const MLSurface &surface) :
-		type(ML::BrushTypeSurface),
-		spreadType(ML::SpreadTypeRepeat),
+	BrushData(const Surface &surface) :
+		type(Malachite::BrushTypeSurface),
+		spreadType(Malachite::SpreadTypeRepeat),
 		data(QVariant::fromValue(surface))
 	{}
 	
-	MLBrushData(const MLBrushData &other) :
+	BrushData(const BrushData &other) :
 		QSharedData(other),
 		type(other.type),
 		spreadType(other.spreadType),
@@ -59,90 +62,90 @@ public:
 		gradient(gradient->clone())
 	{}
 	
-	ML::BrushType type;
-	ML::SpreadType spreadType;
+	Malachite::BrushType type;
+	Malachite::SpreadType spreadType;
 	QVariant data;
 	QTransform transform;
-	QScopedPointer<MLColorGradient> gradient;
+	QScopedPointer<ColorGradient> gradient;
 };
 
 
-class MALACHITESHARED_EXPORT MLBrush
+class MALACHITESHARED_EXPORT Brush
 {
 public:
 	
-	MLBrush() {}
+	Brush() {}
 	
-	MLBrush(const MLColor &color)
+	Brush(const Color &color)
 	{
-		d = new MLBrushData(color.toArgb());
+		d = new BrushData(color.toArgb());
 	}
 	
-	MLBrush(const MLVec4F &argb)
+	Brush(const Vec4F &argb)
 	{
-		d = new MLBrushData(argb);
+		d = new BrushData(argb);
 	}
 	
-	MLBrush(const MLColorGradient &gradient, const MLLinearGradientInfo &info)
+	Brush(const ColorGradient &gradient, const LinearGradientInfo &info)
 	{
-		d = new MLBrushData(gradient, info);
+		d = new BrushData(gradient, info);
 	}
 	
-	MLBrush(const MLColorGradient &gradient, const MLRadialGradientInfo &info)
+	Brush(const ColorGradient &gradient, const RadialGradientInfo &info)
 	{
-		d = new MLBrushData(gradient, info);
+		d = new BrushData(gradient, info);
 	}
 	
-	MLBrush(const MLImage &image)
+	Brush(const Image &image)
 	{
-		d = new MLBrushData(image);
+		d = new BrushData(image);
 	}
 	
-	MLBrush(const MLSurface &surface)
+	Brush(const Surface &surface)
 	{
-		d = new MLBrushData(surface);
+		d = new BrushData(surface);
 	}
 	
-	static MLBrush fromLinearGradient(const MLColorGradient &gradient, const MLVec2D &start, const MLVec2D &end)
+	static Brush fromLinearGradient(const ColorGradient &gradient, const Vec2D &start, const Vec2D &end)
 	{
-		return MLBrush(gradient, MLLinearGradientInfo(start, end));
+		return Brush(gradient, LinearGradientInfo(start, end));
 	}
 	
-	static MLBrush fromRadialGradient(const MLColorGradient &gradient, const MLVec2D &center, double radius, const MLVec2D &focal)
+	static Brush fromRadialGradient(const ColorGradient &gradient, const Vec2D &center, double radius, const Vec2D &focal)
 	{
-		return MLBrush(gradient, MLRadialGradientInfo(center, radius, focal));
+		return Brush(gradient, RadialGradientInfo(center, radius, focal));
 	}
 	
-	static MLBrush fromRadialGradient(const MLColorGradient &gradient, const MLVec2D &center, const MLVec2D &radius, const MLVec2D &focal)
+	static Brush fromRadialGradient(const ColorGradient &gradient, const Vec2D &center, const Vec2D &radius, const Vec2D &focal)
 	{
-		return MLBrush(gradient, MLRadialGradientInfo(center, radius, focal));
+		return Brush(gradient, RadialGradientInfo(center, radius, focal));
 	}
 	
-	static MLBrush fromRadialGradient(const MLColorGradient &gradient, const MLVec2D &center, double radius)
+	static Brush fromRadialGradient(const ColorGradient &gradient, const Vec2D &center, double radius)
 	{
-		return MLBrush(gradient, MLRadialGradientInfo(center, radius));
+		return Brush(gradient, RadialGradientInfo(center, radius));
 	}
 	
-	static MLBrush fromRadialGradient(const MLColorGradient &gradient, const MLVec2D &center, const MLVec2D &radius)
+	static Brush fromRadialGradient(const ColorGradient &gradient, const Vec2D &center, const Vec2D &radius)
 	{
-		return MLBrush(gradient, MLRadialGradientInfo(center, radius));
+		return Brush(gradient, RadialGradientInfo(center, radius));
 	}
 	
 	bool isValid() { return d; }
 	
-	ML::BrushType type() const { return d->type; }
+	Malachite::BrushType type() const { return d->type; }
 	
-	void setSpreadType(ML::SpreadType type) { d->spreadType = type; }
-	ML::SpreadType spreadType() const { return d->spreadType; }
+	void setSpreadType(Malachite::SpreadType type) { d->spreadType = type; }
+	Malachite::SpreadType spreadType() const { return d->spreadType; }
 	
-	MLVec4F argb() const { return d->type == ML::BrushTypeColor ? d->data.value<MLVec4F>() : MLVec4F(0); }
-	MLImage image() const { return d->type == ML::BrushTypeImage ? d->data.value<MLImage>() : MLImage(); }
-	MLSurface surface() const { return d->type == ML::BrushTypeSurface ? d->data.value<MLSurface>() : MLSurface(); }
+	Vec4F argb() const { return d->type == Malachite::BrushTypeColor ? d->data.value<Vec4F>() : Vec4F(0); }
+	Image image() const { return d->type == Malachite::BrushTypeImage ? d->data.value<Image>() : Image(); }
+	Surface surface() const { return d->type == Malachite::BrushTypeSurface ? d->data.value<Surface>() : Surface(); }
 	
-	MLLinearGradientInfo linearGradientInfo() const { return d->type == ML::BrushTypeLinearGradient ? d->data.value<MLLinearGradientInfo>() : MLLinearGradientInfo(); }
-	MLRadialGradientInfo radialGradientInfo() const { return d->type == ML::BrushTypeRadialGradient ? d->data.value<MLRadialGradientInfo>() : MLRadialGradientInfo(); }
+	LinearGradientInfo linearGradientInfo() const { return d->type == Malachite::BrushTypeLinearGradient ? d->data.value<LinearGradientInfo>() : LinearGradientInfo(); }
+	RadialGradientInfo radialGradientInfo() const { return d->type == Malachite::BrushTypeRadialGradient ? d->data.value<RadialGradientInfo>() : RadialGradientInfo(); }
 	
-	const MLColorGradient *gradient() const { return d->gradient.data(); }
+	const ColorGradient *gradient() const { return d->gradient.data(); }
 	
 	void setTransform(const QTransform &transform) { d->transform = transform; }
 	QTransform transform() const { return d->transform; }
@@ -155,9 +158,11 @@ public:
 	
 private:
 	
-	QSharedDataPointer<MLBrushData> d;
+	QSharedDataPointer<BrushData> d;
 };
 
-Q_DECLARE_METATYPE(MLBrush)
+}
+
+Q_DECLARE_METATYPE(Malachite::Brush)
 
 #endif // MLBRUSH_H
