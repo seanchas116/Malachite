@@ -78,7 +78,7 @@ void SurfacePaintEngine::drawTransformedSurface(const QPoint &point, const Surfa
 {
 	if (point == QPoint())
 	{
-		QPointSet keys = surface.keys() & _editor->surface()->keys();
+		QPointSet keys = surface.keys() | _editor->surface()->keys();
 		
 		if (!_keyClip.isEmpty())
 			keys &= _keyClip;

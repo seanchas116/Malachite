@@ -75,26 +75,6 @@ inline TypeDst &blindCast(TypeSrc &src)
 }
 
 template <typename T>
-QList<const T *> constList(const QList<T *> &list)
-{
-	return blindCast<const QList<const T* > >(list);
-}
-
-template <typename T>
-QList<T *> nonConstList(const QList<const T *> &list)
-{
-	return blindCast<const QList<T* > >(list);
-}
-
-template <typename Container>
-Container reversedContainer(const Container &container) {
-	Container reversed;
-	reversed.reserve(container.size());
-	std::reverse_copy(container.begin(), container.end(), std::back_inserter(reversed));
-	return reversed;
-}
-
-template <typename T>
 class QVectorCountableIterator
 {
 public:

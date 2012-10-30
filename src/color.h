@@ -183,6 +183,11 @@ public:
 				_v == other._v;
 	}
 	
+	bool operator!=(const Color &other)
+	{
+		return !operator==(other);
+	}
+	
 private:
 	
 	void rgbChanged();
