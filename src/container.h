@@ -21,6 +21,59 @@ QList<T *> nonConstList(const QList<const T *> &list)
 }
 
 template <typename Container>
+void forwardShiftContainer(Container &container, int start, int end)
+{
+	Q_ASSERT(0 <= start && start < container.size());
+	Q_ASSERT(0 <= end && end < container.size());
+	Q_ASSERT(start < end);
+	
+	typename Container::value_type v = container[end];
+	for (int i = start; i != end; ++i)
+		container[i+1] = container[i];
+	container[start] = v;
+}
+
+template <typename Container>
+void backwardShiftContainer(Container &container, int start, int end)
+{
+	Q_ASSERT(0 <= start && start < container.size());
+	Q_ASSERT(0 <= end && end < container.size());
+	Q_ASSERT(start < end);
+	
+	typename Container::value_type v = container[start];
+	for (int i = end; i != start; --i)
+		container[i-1] = container[i];
+	container[end] = v;
+}
+
+template <typename Container>
+void shiftContainer(Container &container, int start, int end, int count)
+{
+	if (start == end)
+		return;
+	
+	if (start > end)
+	{
+		qSwap(start, end);
+		count = -count;
+	}
+	
+	count = count % (end - start + 1);
+	
+	if (count > 0)
+	{
+		while (count--)
+			forwardShiftContainer(container, start, end);
+	}
+	else
+	{
+		count = -count;
+		while (count--)
+			backwardShiftContainer(container, start, end);
+	}
+}
+
+template <typename Container>
 class ReverseContainer
 {
 public:
