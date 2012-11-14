@@ -89,30 +89,46 @@ public:
 	void detach() { p.detach(); }
 	bool isValid() const { return p; }
 	
-	QSize size() const { return p ? p->bitmap.size() : QSize(); }
-	QRect rect() const { return QRect(QPoint(), size()); }
-	int width() const { return p ? p->bitmap.width() : 0; }
-	int height() const { return p ? p->bitmap.height() : 0; }
-	int bytesPerLine() const { return p ? p->bitmap.bytesPerLine() : 0; }
-	int area() const { return p ? p->bitmap.area() : 0; }
+	QSize size() const
+		{ return p ? p->bitmap.size() : QSize(); }
+	QRect rect() const
+		{ return QRect(QPoint(), size()); }
+	int width() const
+		{ return p ? p->bitmap.width() : 0; }
+	int height() const
+		{ return p ? p->bitmap.height() : 0; }
+	int bytesPerLine() const
+		{ return p ? p->bitmap.bytesPerLine() : 0; }
+	int area() const
+		{ return p ? p->bitmap.area() : 0; }
 	
 	Bitmap<T_Color> bitmap() { return p ? p->bitmap : Bitmap<T_Color>(); }
 	const Bitmap<T_Color> constBitmap() const { return p ? p->bitmap : Bitmap<T_Color>(); }
 	
-	Pointer<T_Color> bits() { return p->bitmap.bits(); }
-	Pointer<const T_Color> constBits() const { return p->bitmap.constBits(); }
+	Pointer<T_Color> bits()
+		{ Q_ASSERT(p); return p->bitmap.bits(); }
+	Pointer<const T_Color> constBits() const
+		{ Q_ASSERT(p); return p->bitmap.constBits(); }
 	
-	Pointer<T_Color> scanline(int y) { return p->bitmap.scanline(y); }
-	Pointer<const T_Color> constScanline(int y) const { return p->bitmap.constScanline(y); }
+	Pointer<T_Color> scanline(int y)
+		{ Q_ASSERT(p); return p->bitmap.scanline(y); }
+	Pointer<const T_Color> constScanline(int y) const
+		{ Q_ASSERT(p); return p->bitmap.constScanline(y); }
 	
-	Pointer<T_Color> invertedScanline(int invertedY) { return p->bitmap.invertedScanline(invertedY); }
-	Pointer<const T_Color> invertedConstScanline(int invertedY) const { return p->bitmap.invertedConstScanline(invertedY); }
+	Pointer<T_Color> invertedScanline(int invertedY)
+		{ Q_ASSERT(p); return p->bitmap.invertedScanline(invertedY); }
+	Pointer<const T_Color> invertedConstScanline(int invertedY) const
+		{ Q_ASSERT(p); return p->bitmap.invertedConstScanline(invertedY); }
 	
-	Pointer<T_Color> pixelPointer(int x, int y) { return p->bitmap.pixelPointer(x, y); }
-	Pointer<T_Color> pixelPointer(const QPoint &point) { return pixelPointer(point.x(), point.y()); }
+	Pointer<T_Color> pixelPointer(int x, int y)
+		{ Q_ASSERT(p); return p->bitmap.pixelPointer(x, y); }
+	Pointer<T_Color> pixelPointer(const QPoint &point)
+		{ return pixelPointer(point.x(), point.y()); }
 	
-	Pointer<const T_Color> constPixelPointer(int x, int y) const { return p->bitmap.constPixelPointer(x, y); }
-	Pointer<const T_Color> constPixelPointer(const QPoint &point) const { return constPixelPointer(point.x(), point.y()); }
+	Pointer<const T_Color> constPixelPointer(int x, int y) const
+		{ Q_ASSERT(p); return p->bitmap.constPixelPointer(x, y); }
+	Pointer<const T_Color> constPixelPointer(const QPoint &point) const
+		{ return constPixelPointer(point.x(), point.y()); }
 	
 	ColorType pixel(int x, int y) const { return *constPixelPointer(x, y); }
 	ColorType pixel(const QPoint &point) const { return pixel(point.x(), point.y()); }
@@ -128,7 +144,7 @@ public:
 	
 	void fill(const ColorType &c)
 	{
-		if (!p) return;
+		Q_ASSERT(p);
 		
 		QSize s = size();
 		for (int y = 0; y < s.height(); ++y)
@@ -179,8 +195,7 @@ public:
 		if (isValid() != other.isValid())
 			return false;
 		
-		if (!isValid() && other.isValid())
-			return false;
+		Q_ASSERT(p);
 		
 		QSize size = p->bitmap.size();
 		

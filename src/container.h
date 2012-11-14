@@ -4,6 +4,7 @@
 //ExportName: Container
 
 #include "misc.h"
+//#include "list.h"
 
 namespace Malachite
 {
@@ -104,77 +105,6 @@ inline ReverseContainer<Container> reverseContainer(const Container &container)
 {
 	return ReverseContainer<Container>(container);
 }
-
-/*
-template <typename Container, typename Predicate>
-class FilterContainer
-{
-public:
-	
-	typedef Container::value_type value_type;
-	
-	class const_iterator
-	{
-	public:
-		
-		typedef iterator_category std::forward_iterator_tag;
-		
-		const value_type &operator*() const { return *_iter; }
-		const value_type *operator->() const { return _iter.operator->(); }
-		
-		const_iterator &operator++()
-		{
-			_iter = std::find_if(_iter, _container->end(), _container->_predicate);
-		}
-		
-		const_iterator operator++(int)
-		{
-			const_iterator tmp = *this;
-			operator++();
-			return tmp;
-		}
-		
-		const_iterator &operator+=(int i) { while (i--) operator++(); }
-		
-		const_iterator operator+(int i) const
-		{
-			const_iterator result = *this;
-			return result += i;
-		}
-		
-		bool operator==(const const_iterator &other) const { return _iter == other._iter; }
-		bool operator!=(const const_iterator &other) const { return _iter != other._iter; }
-		
-	private:
-		
-		const_iterator(const Container::const_iterator &iter) : _iter(iter) {}
-		
-		Container::const_iterator _iter;
-		const FilterContainer *_container = 0;
-	};
-	
-	FilterContainer(const Container &container, const Predicate &predicate) :
-		_container(container),
-		_predicate(predicate)
-	{
-		_begin = const_iterator(_container.begin()) + 1;
-	}
-	
-	const_iterator begin() const { return _begin; }
-	const_iterator end() const { return const_iterator(_container.end()); }
-	
-	bool empty() const { return begin() == end(); }
-	bool isEmpty() const { return empty(); }
-	
-	value_type front() const { return *_begin; }
-	value_type first() const { return front(); }
-	
-private:
-	
-	const Container _container;
-	Predicate _predicate;
-	const_iterator _begin;
-};*/
 
 }
 

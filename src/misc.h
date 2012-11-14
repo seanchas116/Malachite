@@ -3,7 +3,6 @@
 
 //ExportName: Misc
 
-#include <QList>
 #include <QVector>
 #include <QSet>
 #include <QPoint>
@@ -51,14 +50,6 @@ inline T min3(const T &a, const T &b, const T &c)
 		else
 			return c;
 	}
-}
-
-template <typename T>
-QList<T> listFromValue(const T &value)
-{
-	QList<T> list;
-	list << value;
-	return list;
 }
 
 /**

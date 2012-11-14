@@ -71,7 +71,8 @@ HEADERS += bitmap.h \
     private/imagepaintengine.h \
     private/renderer.h \
     private/scalinggenerator.h \
-    private/surfacepaintengine.h
+    private/surfacepaintengine.h \
+    list.h
 SOURCES += blendmode.cpp \
            blendop.cpp \
            brush.cpp \

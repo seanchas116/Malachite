@@ -57,7 +57,8 @@ public:
             int x = span->x;
             if(span->len > 0)
             {
-                _ren->blendRasterizerSpan(x, y,span->len, span->covers);
+                //_ren->blendRasterizerSpan(x, y,span->len, span->covers);
+				_ren->blendRasterizerSpan(x, y,span->len, Pointer<typename Scanline::cover_type>(span->covers, span->len * sizeof(typename Scanline::cover_type)));
             }
             else
             {
@@ -96,7 +97,7 @@ public:
 		_filler(filler)
 	{}
 	
-	void blendRasterizerSpan(int x, int y, int count, const uint8_t *covers)
+	void blendRasterizerSpan(int x, int y, int count, Pointer<const uint8_t> covers)
 	{
 		if (y < _bitmap.rect().top() || _bitmap.rect().bottom() < y)
 			return;
@@ -151,7 +152,7 @@ public:
 		_filler(filler)
 	{}
 	
-	void blendRasterizerSpan(int x, int y, int count, float *covers)
+	void blendRasterizerSpan(int x, int y, int count, Pointer<float> covers)
 	{
 		if (y < _bitmap.rect().top() || _bitmap.rect().bottom() < y)
 			return;
