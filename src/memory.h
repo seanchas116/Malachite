@@ -56,9 +56,11 @@ public: \
 #define ML_DEBUG_MEMORY
 #endif
 
+/*
 #ifdef ML_DEBUG_MEMORY
 #warning ML_DEBUG_MEMORY enabled.
 #endif
+*/
 
 /*
 
