@@ -17,6 +17,9 @@ public:
 	void setKeyClip(const QPointSet &keys);
 	QPointSet keyClip() const;
 	
+	void setKeyRectClip(const QHash<QPoint, QRect> &keyRectClip);
+	QHash<QPoint, QRect> keyRectClip() const;
+	
 	QPointSet editedKeys() const;
 };
 

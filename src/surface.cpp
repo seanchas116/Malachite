@@ -16,7 +16,7 @@ SurfaceData::SurfaceData(const SurfaceData &other)
     : QSharedData(other),
       tileHash(other.tileHash)
 {
-	MLSurfaceHash::iterator i;
+	SurfaceHash::iterator i;
 	for (i = tileHash.begin(); i != tileHash.end(); ++i)
 	{
 		i.value() = new Image(*(i.value()));
@@ -39,7 +39,7 @@ bool Surface::save(QIODevice *device) const
 	if (!d)
 		return true;
 	
-	MLSurfaceHash::const_iterator i;
+	SurfaceHash::const_iterator i;
 	for (i = d->tileHash.begin(); i != d->tileHash.end(); ++i)
 	{
 		const Image *tile = i.value();
@@ -158,12 +158,22 @@ QPointSet Surface::keysForRect(const QRect &rect)
 	return set;
 }
 
+QPointHashToQRect Surface::divideRect(const QRect &rect)
+{
+	QPointHashToQRect result;
+	
+	for (const QPoint &key : keysForRect(rect))
+		result.insert(key, QRect(0, 0, TileSize, TileSize) & rect.translated(key * -TileSize));
+	
+	return result;
+}
+
 QRect Surface::boundingKeyRect() const
 {
 	if (isNull())
 		return QRect();
 	
-	MLSurfaceHash::const_iterator iterator = d->tileHash.begin();
+	SurfaceHash::const_iterator iterator = d->tileHash.begin();
 	
 	int left, right, top, bottom;
 	left = right = iterator.key().x();

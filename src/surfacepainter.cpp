@@ -20,5 +20,15 @@ QPointSet SurfacePainter::editedKeys() const
 	return static_cast<const SurfacePaintEngine *>(paintEngine())->editedKeys();
 }
 
+void SurfacePainter::setKeyRectClip(const QHash<QPoint, QRect> &keyRectClip)
+{
+	static_cast<SurfacePaintEngine *>(paintEngine())->setKeyRectClip(keyRectClip);
+}
+
+QHash<QPoint, QRect> SurfacePainter::keyRectClip() const
+{
+	return static_cast<const SurfacePaintEngine *>(paintEngine())->keyRectClip();
+}
+
 }
 

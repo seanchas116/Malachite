@@ -73,21 +73,21 @@ public:
 	const PaintEngineState *state() const { Q_ASSERT(_paintEngine); return _paintEngine->state(); }
 	
 	/**
-	 * Draws polygons without applying the transform.
+	 * Draws polygons without applying transform.
 	 * @param polygons
 	 */
 	void drawTransformedPolygons(const FixedMultiPolygon &polygons)
 		{ Q_ASSERT(_paintEngine); _paintEngine->drawTransformedPolygons(polygons); }
 	
 	/**
-	 * Draws polygons without applying the transform.
+	 * Draws polygons without applying transform.
 	 * @param polygons
 	 */
 	void drawTransformedPolygons(const MultiPolygon &polygons)
 		{ Q_ASSERT(_paintEngine); _paintEngine->drawTransformedPolygons(polygons); }
 	
 	/**
-	 * Draws an image without applying the transform.
+	 * Draws an image without applying transform.
 	 * @param pos
 	 * @param image
 	 */
@@ -95,7 +95,16 @@ public:
 		{ Q_ASSERT(_paintEngine); _paintEngine->drawTransformedImage(pos, image); }
 	
 	/**
-	 * Draws a surface without applying the transform.
+	 * Draws an image without applying transform.
+	 * @param pos
+	 * @param image
+	 * @param imageMaskRect	The rectangle region in "image", which will be painted.
+	 */
+	void drawTransformedImage(const QPoint &pos, const Image &image, const QRect &imageMaskRect)
+		{ Q_ASSERT(_paintEngine); _paintEngine->drawTransformedImage(pos, image, imageMaskRect); }
+	
+	/**
+	 * Draws a surface without applying transform.
 	 * @param pos
 	 * @param surface
 	 */

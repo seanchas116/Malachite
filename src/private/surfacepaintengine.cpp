@@ -43,7 +43,7 @@ void SurfacePaintEngine::drawTransformedPolygons(const FixedMultiPolygon &polygo
 	if (!_keyClip.isEmpty())
 		keys &= _keyClip;
 	
-	foreach (const QPoint &key, keys)
+	for (const QPoint &key : keys)
 	{
 		FixedMultiPolygon rectShape = FixedPolygon::fromRect(Surface::keyToRect(key));
 		FixedMultiPolygon clippedShape = rectShape & polygons;
@@ -66,11 +66,28 @@ void SurfacePaintEngine::drawTransformedImage(const QPoint &point, const Image &
 	if (!_keyClip.isEmpty())
 		keys &= _keyClip;
 	
-	foreach (const QPoint &key, keys)
+	for (const QPoint &key : keys)
 	{
 		Painter painter(_editor->tileRefForKey(key));
 		*painter.state() = *state();
 		painter.drawTransformedImage(point - key * Surface::TileSize, image);
+	}
+}
+
+void SurfacePaintEngine::drawTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect)
+{
+	QPointSet keys = Surface::keysForRect((imageMaskRect & image.rect()).translated(point));
+	if (!_keyClip.isEmpty())
+		keys &= _keyClip;
+	
+	for (const QPoint &key : keys)
+	{
+		Painter painter(_editor->tileRefForKey(key));
+		*painter.state() = *state();
+		
+		QPoint delta = key * Surface::TileSize;
+		
+		painter.drawTransformedImage(point - delta, image, imageMaskRect.translated(-delta));
 	}
 }
 
@@ -80,10 +97,15 @@ void SurfacePaintEngine::drawTransformedSurface(const QPoint &point, const Surfa
 	{
 		QPointSet keys = surface.keys() | _editor->surface()->keys();
 		
-		if (!_keyClip.isEmpty())
-			keys &= _keyClip;
+		if (!_keyRectClip.isEmpty())
+			keys &= _keyRectClip.keys().toSet();
+		else
+		{
+			if (!_keyClip.isEmpty())
+				keys &= _keyClip;
+		}
 		
-		foreach (const QPoint &key, keys)
+		for (const QPoint &key : keys)
 		{
 			BlendOp::TileCombination combination = BlendOp::NoTile;
 			
@@ -111,14 +133,18 @@ void SurfacePaintEngine::drawTransformedSurface(const QPoint &point, const Surfa
 					Painter painter(_editor->tileRefForKey(key));
 					painter.setBlendMode(state()->blendMode);
 					painter.setOpacity(state()->opacity);
-					painter.drawTransformedImage(QPoint(), surface.tileForKey(key));
+					
+					if (!_keyRectClip.isEmpty())
+						painter.drawTransformedImage(QPoint(), surface.tileForKey(key), _keyRectClip[key]);
+					else
+						painter.drawTransformedImage(QPoint(), surface.tileForKey(key));
 					break;
 			}
 		}
 	}
 	else
 	{
-		foreach (const QPoint &key, surface.keys())
+		for (const QPoint &key : surface.keys())
 			drawTransformedImage(point + key * Surface::TileSize, surface.tileForKey(key));
 	}
 }

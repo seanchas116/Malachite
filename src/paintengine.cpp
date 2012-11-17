@@ -14,7 +14,7 @@ PaintEngine::PaintEngine()
 
 void PaintEngine::drawTransformedPolygons(const MultiPolygon &polygons)
 {
-	drawTransformedPolygons(FixedMultiPolygon::fromMLPolygons(polygons));
+	drawTransformedPolygons(FixedMultiPolygon::fromPolygons(polygons));
 }
 
 void PaintEngine::drawPolygons(const MultiPolygon &polygons)

@@ -34,7 +34,7 @@ FixedPolygon FixedPolygon::fromRect(const QRect &rect)
 	return result;
 }
 
-FixedMultiPolygon FixedMultiPolygon::fromMLPolygons(const MultiPolygon &polygons)
+FixedMultiPolygon FixedMultiPolygon::fromPolygons(const MultiPolygon &polygons)
 {
 	FixedMultiPolygon result;
 	foreach (const Polygon &polygon, polygons)
@@ -86,6 +86,12 @@ using namespace ClipperLib;
 
 FixedMultiPolygon operator|(const FixedMultiPolygon &polygons1, const FixedMultiPolygon &polygons2)
 {
+	if (polygons1.size() == 0)
+		return polygons2;
+	
+	if (polygons2.size() == 0)
+		return polygons1;
+	
 	FixedMultiPolygon result;
 	
 	Clipper clipper;
@@ -98,6 +104,9 @@ FixedMultiPolygon operator|(const FixedMultiPolygon &polygons1, const FixedMulti
 
 FixedMultiPolygon operator&(const FixedMultiPolygon &polygons1, const FixedMultiPolygon &polygons2)
 {
+	if (polygons1.size() == 0 || polygons2.size() == 0)
+		return FixedMultiPolygon();
+	
 	FixedMultiPolygon result;
 	
 	Clipper clipper;
@@ -110,6 +119,12 @@ FixedMultiPolygon operator&(const FixedMultiPolygon &polygons1, const FixedMulti
 
 FixedMultiPolygon operator^(const FixedMultiPolygon &polygons1, const FixedMultiPolygon &polygons2)
 {
+	if (polygons1.size() == 0)
+		return polygons2;
+	
+	if (polygons2.size() == 0)
+		return polygons1;
+	
 	FixedMultiPolygon result;
 	
 	Clipper clipper;
@@ -122,6 +137,9 @@ FixedMultiPolygon operator^(const FixedMultiPolygon &polygons1, const FixedMulti
 
 FixedMultiPolygon operator-(const FixedMultiPolygon &polygons1, const FixedMultiPolygon &polygons2)
 {
+	if (polygons1.size() == 0)
+		return FixedMultiPolygon();
+	
 	if (polygons2.size() == 0)
 		return polygons1;
 	

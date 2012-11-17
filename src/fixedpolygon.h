@@ -92,8 +92,8 @@ public:
 	
 	QRectF boundingRect() const;
 	
-	static FixedMultiPolygon fromMLPolygons(const MultiPolygon &polygons);
-	static FixedMultiPolygon fromQPainterPath(const QPainterPath &path) { return fromMLPolygons(MultiPolygon::fromQPainterPath(path)); }
+	static FixedMultiPolygon fromPolygons(const MultiPolygon &polygons);
+	static FixedMultiPolygon fromQPainterPath(const QPainterPath &path) { return fromPolygons(MultiPolygon::fromQPainterPath(path)); }
 };
 
 MALACHITESHARED_EXPORT FixedMultiPolygon operator|(const FixedMultiPolygon &polygons1, const FixedMultiPolygon &polygons2);

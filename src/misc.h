@@ -15,6 +15,7 @@
 
 typedef QList<QPoint>	QPointList;
 typedef QSet<QPoint>	QPointSet;
+typedef QHash<QPoint, QRect>	QPointHashToQRect;
 
 namespace Malachite
 {

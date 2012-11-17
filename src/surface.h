@@ -17,7 +17,7 @@
 namespace Malachite
 {
 
-typedef QHash<QPoint, Image *>	MLSurfaceHash;
+typedef QHash<QPoint, Image *>	SurfaceHash;
 
 class SurfaceData : public QSharedData
 {
@@ -26,7 +26,7 @@ public:
 	SurfaceData(const SurfaceData &other);
 	~SurfaceData() { qDeleteAll(tileHash); }
 	
-	MLSurfaceHash tileHash;
+	SurfaceHash tileHash;
 };
 
 class SurfaceEditor;
@@ -81,6 +81,8 @@ public:
 	static QRect keyToRect(const QPoint &point) { return keyToRect(point.x(), point.y()); }
 	
 	static QPointSet keysForRect(const QRect &rect);
+	
+	static QPointHashToQRect divideRect(const QRect &rect);
 	
 	Surface section(const QPointSet &keys) const;
 	Surface exclusion(const QPointSet &keys) const;

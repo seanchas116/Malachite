@@ -241,10 +241,10 @@ void ImagePaintEngine::drawTransformedPolygons(const FixedMultiPolygon &polygons
 	}
 }
 
-void ImagePaintEngine::drawTransformedImage(const QPoint &point, const Image &image)
+void ImagePaintEngine::drawTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect)
 {
-	QRect dstRect = QRect(QPoint(), _image->size());
-	QRect srcRect = QRect(point, image.size());
+	QRect dstRect = _image->rect();
+	QRect srcRect = (image.rect() & imageMaskRect).translated(point);
 	
 	QRect targetRect = dstRect & srcRect;
 	
