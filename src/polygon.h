@@ -18,6 +18,7 @@ public:
 	Polygon(const QVector<QPointF> &points);
 	
 	static Polygon fromRect(const QRectF &rect);
+	static Polygon fromEllipse(const Vec2D &center, const Vec2D &radius);
 	
 	Polygon &operator*=(const QTransform &transform);
 	

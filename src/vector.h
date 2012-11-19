@@ -443,7 +443,13 @@ struct Vec4F
 	ML_ALIGN_16BYTE
 	
 	Vec4F() {}
-	Vec4F(float s) { e[0] = s; e[1] = s; e[2] = s; e[3] = s; }
+	//Vec4F(float s) { e[0] = s; e[1] = s; e[2] = s; e[3] = s; }
+	Vec4F(float s)
+	{
+		e[0] = s;
+		*this = extract0();
+	}
+
 	Vec4F(float e0, float e1, float e2, float e3) { e[0] = e0; e[1] = e1; e[2] = e2; e[3] = e3; }
 	Vec4F(__v4sf v) : v(v) {}
 	
@@ -454,10 +460,38 @@ struct Vec4F
 	static Vec4I32 greaterThan(const Vec4F &v0, const Vec4F &v1) { return Vec4I32((__v4si)__builtin_ia32_cmpltps(v1, v0)); }
 	static Vec4I32 greaterThanOrEqual(const Vec4F &v0, const Vec4F &v1) { return Vec4I32((__v4si)__builtin_ia32_cmpleps(v1, v0)); }
 	
-	float &operator[](int i) { return e[i]; }
-	const float &operator[](int i) const { return e[i]; }
+	float &operator[](size_t i) { return e[i]; }
+	const float &operator[](size_t i) const { return e[i]; }
 	operator __v4sf() { return v; }
 	operator const __v4sf() const { return v; }
+	
+	Vec4F extract0() const
+	{
+		__m128 rd = __builtin_ia32_unpcklps(v, v);
+		rd = __builtin_ia32_unpcklps(rd, rd);
+		return rd;
+	}
+	
+	Vec4F extract1() const
+	{
+		__m128 rd = __builtin_ia32_unpcklps(v, v);
+		rd = __builtin_ia32_unpckhps(rd, rd);
+		return rd;
+	}
+	
+	Vec4F extract2() const
+	{
+		__m128 rd = __builtin_ia32_unpckhps(v, v);
+		rd = __builtin_ia32_unpcklps(rd, rd);
+		return rd;
+	}
+	
+	Vec4F extract3() const
+	{
+		__m128 rd = __builtin_ia32_unpckhps(v, v);
+		rd = __builtin_ia32_unpckhps(rd, rd);
+		return rd;
+	}
 	
 	Vec4F &operator+=(const Vec4F &other) { v += other.v; return *this; }
 	Vec4F &operator-=(const Vec4F &other) { v -= other.v; return *this; }
@@ -530,10 +564,20 @@ struct Vec2D
 	static Vec2I64 greaterThan(const Vec2D &v0, const Vec2D &v1) { return Vec2I64((__v2di)__builtin_ia32_cmpltpd(v1, v0)); }
 	static Vec2I64 greaterThanOrEqual(const Vec2D &v0, const Vec2D &v1) { return Vec2I64((__v2di)__builtin_ia32_cmplepd(v1, v0)); }
 	
-	double &operator[](int i) { return e[i]; }
-	const double &operator[](int i) const { return e[i]; }
+	double &operator[](size_t i) { return e[i]; }
+	const double &operator[](size_t i) const { return e[i]; }
 	operator __v2df() { return v; }
 	operator const __v2df() const { return v; }
+	
+	Vec2D extract0() const
+	{
+		return __builtin_ia32_unpcklpd(v, v);
+	}
+	
+	Vec2D extract1() const
+	{
+		return __builtin_ia32_unpckhpd(v, v);
+	}
 	
 	Vec2D &operator+=(const Vec2D &other) { v += other.v; return *this; }
 	Vec2D &operator-=(const Vec2D &other) { v -= other.v; return *this; }

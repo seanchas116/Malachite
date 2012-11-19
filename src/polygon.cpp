@@ -1,6 +1,87 @@
+#include <QDebug>
+
+#include "private/agg_basics.h"
 #include "curvesubdivision.h"
 
 #include "polygon.h"
+
+using namespace Malachite;
+
+// Anti-Grain Geometry - Version 2.4
+// Copyright (C) 2002-2005 Maxim Shemanarev (http://www.antigrain.com)
+
+namespace agg
+{
+//----------------------------------------------------------------ellipse
+class ellipse
+{
+public:
+
+	ellipse(const Vec2D &center, const Vec2D &radius) :
+		m_center(center),
+		m_radius(radius),
+		m_scale(1.0),
+		m_step(0)
+	{
+		calc_num_steps();
+	}
+
+    void approximation_scale(double scale);
+    void rewind(unsigned path_id);
+	unsigned vertex(Vec2D *vec);
+	unsigned count() const { return m_num; }
+
+private:
+    void calc_num_steps();
+
+	Vec2D m_center;
+	Vec2D m_radius;
+    double m_scale;
+    unsigned m_num;
+    unsigned m_step;
+	double m_num_inv_2pi;
+};
+
+//------------------------------------------------------------------------
+inline void ellipse::approximation_scale(double scale)
+{   
+    m_scale = scale;
+    calc_num_steps();
+}
+
+//------------------------------------------------------------------------
+inline void ellipse::calc_num_steps()
+{
+    double ra = (fabs(m_radius.x) + fabs(m_radius.y)) / 2;
+    double da = acos(ra / (ra + 0.125 / m_scale)) * 2;
+    m_num = uround(2.0 * M_PI / da);
+	m_num_inv_2pi = 1.0 / double(m_num) * 2.0 * M_PI;
+}
+
+//------------------------------------------------------------------------
+inline void ellipse::rewind(unsigned)
+{
+    m_step = 0;
+}
+
+inline unsigned ellipse::vertex(Vec2D *vec)
+{
+	if(m_step == m_num) 
+    {
+        ++m_step;
+        return path_cmd_end_poly | path_flags_close | path_flags_ccw;
+    }
+    if(m_step > m_num) return path_cmd_stop;
+    double angle = double(m_step) * m_num_inv_2pi;
+	
+	Vec2D r(cos(angle), sin(angle));
+	*vec = m_center + r * m_radius;
+	
+    m_step++;
+    return ((m_step == 1) ? path_cmd_move_to : path_cmd_line_to);
+}
+
+}
 
 namespace Malachite
 {
@@ -42,6 +123,17 @@ Polygon Polygon::fromRect(const QRectF &rect)
 	return polygon;
 }
 
+Polygon Polygon::fromEllipse(const Vec2D &center, const Vec2D &radius)
+{
+	agg::ellipse ellipse(center, radius);
+	
+	Polygon poly(ellipse.count());
+	
+	for (auto iter = poly.begin(); iter != poly.end(); ++iter)
+		ellipse.vertex(iter);
+	
+	return poly;
+}
 
 MultiPolygon MultiPolygon::fromQPainterPath(const QPainterPath &path)
 {

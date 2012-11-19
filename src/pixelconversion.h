@@ -10,7 +10,7 @@
 namespace Malachite
 {
 
-template <Malachite::ImageFormat DstFormat, class DstColor, Malachite::ImageFormat SrcFormat, class SrcColor>
+template <ImageFormat DstFormat, class DstColor, ImageFormat SrcFormat, class SrcColor>
 inline void convertPixel(DstColor &dst, const SrcColor &src)
 {
 	Q_UNUSED(dst); Q_UNUSED(src);
@@ -19,7 +19,7 @@ inline void convertPixel(DstColor &dst, const SrcColor &src)
 
 // 8bit unsigned rgb -> 32bit float argb premultiplied
 template < >
-inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::ImageFormatRgb, Vec3U8>(Vec4F &dst, const Vec3U8 &src)
+inline void convertPixel<ImageFormatArgbFast, Vec4F, ImageFormatRgb, Vec3U8>(Vec4F &dst, const Vec3U8 &src)
 {
 	dst.a = 0xFF;
 	dst.r = src.r;
@@ -30,7 +30,7 @@ inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::Image
 
 // 16bit unsigned rgb -> 32bit float argb premultiplied
 template < >
-inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::ImageFormatRgb, Vec3U16>(Vec4F &dst, const Vec3U16 &src)
+inline void convertPixel<ImageFormatArgbFast, Vec4F, ImageFormatRgb, Vec3U16>(Vec4F &dst, const Vec3U16 &src)
 {
 	dst.a = 0xFFFF;
 	dst.r = src.r;
@@ -41,7 +41,7 @@ inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::Image
 
 // 8bit unsigned argb -> 32bit float argb premultiplied
 template < >
-inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::ImageFormatArgb, Vec4U8>(Vec4F &dst, const Vec4U8 &src)
+inline void convertPixel<ImageFormatArgbFast, Vec4F, ImageFormatArgb, Vec4U8>(Vec4F &dst, const Vec4U8 &src)
 {
 	dst.a = src.a;
 	dst.r = src.r;
@@ -55,7 +55,7 @@ inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::Image
 
 // 16bit unsigned argb -> 32bit float argb premultiplied
 template < >
-inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::ImageFormatArgb, Vec4U16>(Vec4F &dst, const Vec4U16 &src)
+inline void convertPixel<ImageFormatArgbFast, Vec4F, ImageFormatArgb, Vec4U16>(Vec4F &dst, const Vec4U16 &src)
 {
 	dst.a = src.a;
 	dst.r = src.r;
@@ -69,7 +69,7 @@ inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::Image
 
 // 8bit unsigned argb premultiplied -> 32bit float argb premultiplied
 template < >
-inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::ImageFormatArgbFast, Vec4U8>(Vec4F &dst, const Vec4U8 &src)
+inline void convertPixel<ImageFormatArgbFast, Vec4F, ImageFormatArgbFast, Vec4U8>(Vec4F &dst, const Vec4U8 &src)
 {
 	dst.a = src.a;
 	dst.r = src.r;
@@ -80,7 +80,7 @@ inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::Image
 
 // 16bit unsigned argb premultiplied -> 32bit float argb premultiplied
 template < >
-inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::ImageFormatArgbFast, Vec4U16>(Vec4F &dst, const Vec4U16 &src)
+inline void convertPixel<ImageFormatArgbFast, Vec4F, ImageFormatArgbFast, Vec4U16>(Vec4F &dst, const Vec4U16 &src)
 {
 	dst.a = src.a;
 	dst.r = src.r;
@@ -91,7 +91,7 @@ inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::Image
 
 // 32bit float argb premultiplied -> 8bit unsigned rgb
 template < >
-inline void convertPixel<Malachite::ImageFormatRgb, Vec3U8, Malachite::ImageFormatArgbFast, Vec4F>(Vec3U8 &dst, const Vec4F &src)
+inline void convertPixel<ImageFormatRgb, Vec3U8, ImageFormatArgbFast, Vec4F>(Vec3U8 &dst, const Vec4F &src)
 {
 	Vec4F v = src * 0xFF;
 	Vec4I32 iv = vecRound(v);
@@ -103,7 +103,7 @@ inline void convertPixel<Malachite::ImageFormatRgb, Vec3U8, Malachite::ImageForm
 
 // 32bit float argb premultiplied -> 16bit unsigned rgb
 template < >
-inline void convertPixel<Malachite::ImageFormatRgb, Vec3U16, Malachite::ImageFormatArgbFast, Vec4F>(Vec3U16 &dst, const Vec4F &src)
+inline void convertPixel<ImageFormatRgb, Vec3U16, ImageFormatArgbFast, Vec4F>(Vec3U16 &dst, const Vec4F &src)
 {
 	Vec4F v = src * 0xFFFF;
 	Vec4I32 iv = vecRound(v);
@@ -115,7 +115,7 @@ inline void convertPixel<Malachite::ImageFormatRgb, Vec3U16, Malachite::ImageFor
 
 // 32bit float argb premultiplied -> 8bit unsigned argb
 template < >
-inline void convertPixel<Malachite::ImageFormatArgb, Vec4U8, Malachite::ImageFormatArgbFast, Vec4F>(Vec4U8 &dst, const Vec4F &src)
+inline void convertPixel<ImageFormatArgb, Vec4U8, ImageFormatArgbFast, Vec4F>(Vec4U8 &dst, const Vec4F &src)
 {
 	Vec4F v = src;
 	v.r *= v.a;
@@ -134,7 +134,7 @@ inline void convertPixel<Malachite::ImageFormatArgb, Vec4U8, Malachite::ImageFor
 
 // 32bit float argb premultiplied -> 16bit unsigned argb
 template < >
-inline void convertPixel<Malachite::ImageFormatArgb, Vec4U16, Malachite::ImageFormatArgbFast, Vec4F>(Vec4U16 &dst, const Vec4F &src)
+inline void convertPixel<ImageFormatArgb, Vec4U16, ImageFormatArgbFast, Vec4F>(Vec4U16 &dst, const Vec4F &src)
 {
 	Vec4F v = src;
 	v.r *= v.a;
@@ -153,7 +153,7 @@ inline void convertPixel<Malachite::ImageFormatArgb, Vec4U16, Malachite::ImageFo
 
 // 32bit float argb premultiplied -> 8bit unsigned argb premultiplied
 template < >
-inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4U8, Malachite::ImageFormatArgbFast, Vec4F>(Vec4U8 &dst, const Vec4F &src)
+inline void convertPixel<ImageFormatArgbFast, Vec4U8, ImageFormatArgbFast, Vec4F>(Vec4U8 &dst, const Vec4F &src)
 {
 	Vec4F v = src * 0xFF;
 	Vec4I32 iv = vecRound(v);
@@ -166,7 +166,7 @@ inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4U8, Malachite::Imag
 
 // 32bit float argb premultiplied -> 16bit unsigned argb premultiplied
 template < >
-inline void convertPixel<Malachite::ImageFormatArgbFast, Vec4U16, Malachite::ImageFormatArgbFast, Vec4F>(Vec4U16 &dst, const Vec4F &src)
+inline void convertPixel<ImageFormatArgbFast, Vec4U16, ImageFormatArgbFast, Vec4F>(Vec4U16 &dst, const Vec4F &src)
 {
 	Vec4F v = src * 0xFFFF;
 	Vec4I32 iv = vecRound(v);

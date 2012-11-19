@@ -74,7 +74,8 @@ class BlendFunctionsSourceOver
 public:
 	static void blend(Vec4F &dst, const Vec4F &src)
 	{
-		dst = src + (1.0f - src.a) * dst;
+		dst = src + (Vec4F(1.0f) - src.extract3()) * dst;
+		//dst = src + (1.0f - src.a) * dst;
 	}
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
