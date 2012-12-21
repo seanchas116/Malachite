@@ -60,7 +60,7 @@ public:
 */
 
 template <typename BlendFunctions>
-class MLTemplateBlendOp : public BlendOp
+class TemplateBlendOp : public BlendOp
 {
 public:
 	void blend(int count, Pointer<Vec4F> dst, Pointer<const Vec4F> src)

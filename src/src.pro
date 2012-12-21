@@ -72,7 +72,6 @@ HEADERS += bitmap.h \
     private/renderer.h \
     private/scalinggenerator.h \
     private/surfacepaintengine.h \
-    list.h \
     vector_generic.h \
     vector_sse.h \
     argb.h

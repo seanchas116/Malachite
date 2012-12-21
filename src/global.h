@@ -106,7 +106,7 @@ enum BlendMode
 	
 	/**
 	  Pass Through
-	  This value is for group layers only.
+	  This value is only for group layers.
 	  This value means that the group layer will not affect layer blending order.
 	*/
 	BlendModePassThrough = 256

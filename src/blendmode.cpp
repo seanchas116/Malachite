@@ -5,36 +5,62 @@ namespace Malachite
 
 BlendModeDictionary::BlendModeDictionary()
 {
-	nameHash.reserve(17);
-	qtCompositionModeHash.reserve(17);
+	nameHash.reserve(27);
+	qtCompositionModeHash.reserve(27);
 	
-	nameHash.insert(Malachite::BlendModeNormal, "normal");
-	nameHash.insert(Malachite::BlendModePlus, "plus");
-	nameHash.insert(Malachite::BlendModeMultiply, "multiply");
-	nameHash.insert(Malachite::BlendModeScreen, "screen");
-	nameHash.insert(Malachite::BlendModeOverlay, "overlay");
-	nameHash.insert(Malachite::BlendModeDarken, "darken");
-	nameHash.insert(Malachite::BlendModeLighten, "lighten");
-	nameHash.insert(Malachite::BlendModeColorDodge, "color-dodge");
-	nameHash.insert(Malachite::BlendModeColorBurn, "color-burn");
-	nameHash.insert(Malachite::BlendModeHardLight, "hard-light");
-	nameHash.insert(Malachite::BlendModeSoftLight, "soft-light");
-	nameHash.insert(Malachite::BlendModeDifference, "difference");
-	nameHash.insert(Malachite::BlendModeExclusion, "exclusion");
+	nameHash[BlendModeNormal] = "normal";
+	nameHash[BlendModePlus] = "plus";
+	nameHash[BlendModeMultiply] = "multiply";
+	nameHash[BlendModeScreen] = "screen";
+	nameHash[BlendModeOverlay] = "overlay";
+	nameHash[BlendModeDarken] = "darken";
+	nameHash[BlendModeLighten] = "lighten";
+	nameHash[BlendModeColorDodge] = "color-dodge";
+	nameHash[BlendModeColorBurn] = "color-burn";
+	nameHash[BlendModeHardLight] = "hard-light";
+	nameHash[BlendModeSoftLight] = "soft-light";
+	nameHash[BlendModeDifference] = "difference";
+	nameHash[BlendModeExclusion] = "exclusion";
 	
-	qtCompositionModeHash.insert(Malachite::BlendModeNormal, QPainter::CompositionMode_SourceOver);
-	qtCompositionModeHash.insert(Malachite::BlendModePlus, QPainter::CompositionMode_Plus);
-	qtCompositionModeHash.insert(Malachite::BlendModeMultiply, QPainter::CompositionMode_Multiply);
-	qtCompositionModeHash.insert(Malachite::BlendModeScreen, QPainter::CompositionMode_Screen);
-	qtCompositionModeHash.insert(Malachite::BlendModeOverlay, QPainter::CompositionMode_Overlay);
-	qtCompositionModeHash.insert(Malachite::BlendModeDarken, QPainter::CompositionMode_Darken);
-	qtCompositionModeHash.insert(Malachite::BlendModeLighten, QPainter::CompositionMode_Lighten);
-	qtCompositionModeHash.insert(Malachite::BlendModeColorDodge, QPainter::CompositionMode_ColorDodge);
-	qtCompositionModeHash.insert(Malachite::BlendModeColorBurn, QPainter::CompositionMode_ColorBurn);
-	qtCompositionModeHash.insert(Malachite::BlendModeHardLight, QPainter::CompositionMode_HardLight);
-	qtCompositionModeHash.insert(Malachite::BlendModeSoftLight, QPainter::CompositionMode_SoftLight);
-	qtCompositionModeHash.insert(Malachite::BlendModeDifference, QPainter::CompositionMode_Difference);
-	qtCompositionModeHash.insert(Malachite::BlendModeExclusion, QPainter::CompositionMode_Exclusion);
+	nameHash[BlendModeClear] = "clear";
+	nameHash[BlendModeSource] = "source";
+	nameHash[BlendModeDestination] = "destination";
+	nameHash[BlendModeSourceOver] = "source-over";
+	nameHash[BlendModeDestinationOver] = "destination-over";
+	nameHash[BlendModeSourceIn] = "source-in";
+	nameHash[BlendModeDestinationIn] = "destination-in";
+	nameHash[BlendModeSourceOut] = "source-out";
+	nameHash[BlendModeDestinationOut] = "destination-out";
+	nameHash[BlendModeSourceAtop] = "source-atop";
+	nameHash[BlendModeDestinationAtop] = "destination-atop";
+	nameHash[BlendModeXor] = "xor";
+	
+	qtCompositionModeHash[BlendModeNormal] = QPainter::CompositionMode_SourceOver;
+	qtCompositionModeHash[BlendModePlus] = QPainter::CompositionMode_Plus;
+	qtCompositionModeHash[BlendModeMultiply] = QPainter::CompositionMode_Multiply;
+	qtCompositionModeHash[BlendModeScreen] = QPainter::CompositionMode_Screen;
+	qtCompositionModeHash[BlendModeOverlay] = QPainter::CompositionMode_Overlay;
+	qtCompositionModeHash[BlendModeDarken] = QPainter::CompositionMode_Darken;
+	qtCompositionModeHash[BlendModeLighten] = QPainter::CompositionMode_Lighten;
+	qtCompositionModeHash[BlendModeColorDodge] = QPainter::CompositionMode_ColorDodge;
+	qtCompositionModeHash[BlendModeColorBurn] = QPainter::CompositionMode_ColorBurn;
+	qtCompositionModeHash[BlendModeHardLight] = QPainter::CompositionMode_HardLight;
+	qtCompositionModeHash[BlendModeSoftLight] = QPainter::CompositionMode_SoftLight;
+	qtCompositionModeHash[BlendModeDifference] = QPainter::CompositionMode_Difference;
+	qtCompositionModeHash[BlendModeExclusion] = QPainter::CompositionMode_Exclusion;
+	
+	qtCompositionModeHash[BlendModeClear] = QPainter::CompositionMode_Clear;
+	qtCompositionModeHash[BlendModeSource] = QPainter::CompositionMode_Source;
+	qtCompositionModeHash[BlendModeDestination] = QPainter::CompositionMode_Destination;
+	qtCompositionModeHash[BlendModeSourceOver] = QPainter::CompositionMode_SourceOver;
+	qtCompositionModeHash[BlendModeDestinationOver] = QPainter::CompositionMode_DestinationOver;
+	qtCompositionModeHash[BlendModeSourceIn] = QPainter::CompositionMode_SourceIn;
+	qtCompositionModeHash[BlendModeDestinationIn] = QPainter::CompositionMode_DestinationIn;
+	qtCompositionModeHash[BlendModeSourceOut] = QPainter::CompositionMode_SourceOut;
+	qtCompositionModeHash[BlendModeDestinationOut] = QPainter::CompositionMode_DestinationOut;
+	qtCompositionModeHash[BlendModeSourceAtop] = QPainter::CompositionMode_SourceAtop;
+	qtCompositionModeHash[BlendModeDestinationAtop] = QPainter::CompositionMode_DestinationAtop;
+	qtCompositionModeHash[BlendModeXor] = QPainter::CompositionMode_Xor;
 }
 
 BlendModeDictionary BlendModeUtil::_dict;

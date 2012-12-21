@@ -641,35 +641,35 @@ public:
 
 BlendOpDictionary::BlendOpDictionary()
 {
-	_blendOps[Malachite::BlendModeClear] = new MLTemplateBlendOp<BlendFunctionsClear>;
-	_blendOps[Malachite::BlendModeSource] = new MLTemplateBlendOp<BlendFunctionsSource>;
-	_blendOps[Malachite::BlendModeDestination] = new MLTemplateBlendOp<BlendFunctionsDestination>;
-	_blendOps[Malachite::BlendModeSourceOver] = new MLTemplateBlendOp<BlendFunctionsSourceOver>;
-	_blendOps[Malachite::BlendModeDestinationOver] = new MLTemplateBlendOp<BlendFunctionsDestinationOver>;
-	_blendOps[Malachite::BlendModeSourceIn] = new MLTemplateBlendOp<BlendFunctionsSourceIn>;
-	_blendOps[Malachite::BlendModeDestinationIn] = new MLTemplateBlendOp<BlendFunctionsDestinationIn>;
-	_blendOps[Malachite::BlendModeSourceOut] = new MLTemplateBlendOp<BlendFunctionsSourceOut>;
-	_blendOps[Malachite::BlendModeDestinationOut] = new MLTemplateBlendOp<BlendFunctionsDestinationOut>;
-	_blendOps[Malachite::BlendModeSourceAtop] = new MLTemplateBlendOp<BlendFunctionsSourceAtop>;
-	_blendOps[Malachite::BlendModeDestinationAtop] = new MLTemplateBlendOp<BlendFunctionsDestinationAtop>;
-	_blendOps[Malachite::BlendModeXor] = new MLTemplateBlendOp<BlendFunctionsXor>;
+	_blendOps[BlendModeClear] = new TemplateBlendOp<BlendFunctionsClear>;
+	_blendOps[BlendModeSource] = new TemplateBlendOp<BlendFunctionsSource>;
+	_blendOps[BlendModeDestination] = new TemplateBlendOp<BlendFunctionsDestination>;
+	_blendOps[BlendModeSourceOver] = new TemplateBlendOp<BlendFunctionsSourceOver>;
+	_blendOps[BlendModeDestinationOver] = new TemplateBlendOp<BlendFunctionsDestinationOver>;
+	_blendOps[BlendModeSourceIn] = new TemplateBlendOp<BlendFunctionsSourceIn>;
+	_blendOps[BlendModeDestinationIn] = new TemplateBlendOp<BlendFunctionsDestinationIn>;
+	_blendOps[BlendModeSourceOut] = new TemplateBlendOp<BlendFunctionsSourceOut>;
+	_blendOps[BlendModeDestinationOut] = new TemplateBlendOp<BlendFunctionsDestinationOut>;
+	_blendOps[BlendModeSourceAtop] = new TemplateBlendOp<BlendFunctionsSourceAtop>;
+	_blendOps[BlendModeDestinationAtop] = new TemplateBlendOp<BlendFunctionsDestinationAtop>;
+	_blendOps[BlendModeXor] = new TemplateBlendOp<BlendFunctionsXor>;
 	
-	_blendOps[Malachite::BlendModeNormal] = _blendOps.value(Malachite::BlendModeSourceOver);
-	_blendOps[Malachite::BlendModePlus] = new MLTemplateBlendOp<BlendFunctionsPlus>;
-	_blendOps[Malachite::BlendModeMultiply] = new MLTemplateBlendOp<BlendFunctionsMultiply>;
-	_blendOps[Malachite::BlendModeScreen] = new MLTemplateBlendOp<BlendFunctionsScreen>;
-	_blendOps[Malachite::BlendModeOverlay] = new MLTemplateBlendOp<BlendFunctionsOverlay>;
-	_blendOps[Malachite::BlendModeDarken] = new MLTemplateBlendOp<BlendFunctionsDarken>;
-	_blendOps[Malachite::BlendModeLighten] = new MLTemplateBlendOp<BlendFunctionsLighten>;
-	_blendOps[Malachite::BlendModeColorDodge] = new MLTemplateBlendOp<BlendFunctionsColorDodge>;
-	_blendOps[Malachite::BlendModeColorBurn] = new MLTemplateBlendOp<BlendFunctionsColorBurn>;
-	_blendOps[Malachite::BlendModeHardLight] = new MLTemplateBlendOp<BlendFunctionsHardLight>;
-	_blendOps[Malachite::BlendModeSoftLight] = new MLTemplateBlendOp<BlendFunctionsSoftLight>;
-	_blendOps[Malachite::BlendModeDifference] = new MLTemplateBlendOp<BlendFunctionsDifference>;
-	_blendOps[Malachite::BlendModeExclusion] = new MLTemplateBlendOp<BlendFunctionsExclusion>;
+	_blendOps[BlendModeNormal] = _blendOps[Malachite::BlendModeSourceOver];
+	_blendOps[BlendModePlus] = new TemplateBlendOp<BlendFunctionsPlus>;
+	_blendOps[BlendModeMultiply] = new TemplateBlendOp<BlendFunctionsMultiply>;
+	_blendOps[BlendModeScreen] = new TemplateBlendOp<BlendFunctionsScreen>;
+	_blendOps[BlendModeOverlay] = new TemplateBlendOp<BlendFunctionsOverlay>;
+	_blendOps[BlendModeDarken] = new TemplateBlendOp<BlendFunctionsDarken>;
+	_blendOps[BlendModeLighten] = new TemplateBlendOp<BlendFunctionsLighten>;
+	_blendOps[BlendModeColorDodge] = new TemplateBlendOp<BlendFunctionsColorDodge>;
+	_blendOps[BlendModeColorBurn] = new TemplateBlendOp<BlendFunctionsColorBurn>;
+	_blendOps[BlendModeHardLight] = new TemplateBlendOp<BlendFunctionsHardLight>;
+	_blendOps[BlendModeSoftLight] = new TemplateBlendOp<BlendFunctionsSoftLight>;
+	_blendOps[BlendModeDifference] = new TemplateBlendOp<BlendFunctionsDifference>;
+	_blendOps[BlendModeExclusion] = new TemplateBlendOp<BlendFunctionsExclusion>;
 	
-	_blendOps[Malachite::BlendModeSourcePadding] = new MLTemplateBlendOp<BlendFunctionsSourcePadding>;
-	_blendOps[Malachite::BlendModeDestinationPadding] = new MLTemplateBlendOp<BlendFunctionsDestinationPadding>;
+	_blendOps[BlendModeSourcePadding] = new TemplateBlendOp<BlendFunctionsSourcePadding>;
+	_blendOps[BlendModeDestinationPadding] = new TemplateBlendOp<BlendFunctionsDestinationPadding>;
 }
 
 BlendOpDictionary _BlendOpDictionary;

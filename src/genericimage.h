@@ -211,6 +211,11 @@ public:
 		return true;
 	}
 	
+	bool operator!=(const GenericImage<T_Format, T_Color> &other) const
+	{
+		return !(*this == other);
+	}
+	
 	bool referenceIsEqualTo(const GenericImage<T_Format, T_Color> &other) const
 	{
 		return p == other.p;

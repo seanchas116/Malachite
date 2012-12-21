@@ -361,6 +361,25 @@ int Surface::commonBottomBound(const QPointSet &keys) const
 	return -1;
 }
 
+bool Surface::operator==(const Surface &other) const
+{
+	if (d == other.d)
+		return true;
+	
+	if (!d || !other.d)
+		return false;
+	
+	QPointSet keys = this->keys() & other.keys();
+	
+	for (auto key : keys)
+	{
+		if (this->tileForKey(key) != other.tileForKey(key))
+			return false;
+	}
+	
+	return true;
+}
+
 Image Surface::DefaultTile;
 Image Surface::WhiteTile;
 

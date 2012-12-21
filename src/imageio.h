@@ -28,6 +28,8 @@ public:
 	Image toImage() const;
 	Surface toSurface(const QPoint &p = QPoint()) const;
 	
+	static QStringList importableExtensions();
+	
 private:
 	
 	FIBITMAP *_bitmap;

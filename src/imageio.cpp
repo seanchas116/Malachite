@@ -66,6 +66,11 @@ Surface ImageImporter::toSurface(const QPoint &p) const
 	return surface;
 }
 
+QStringList ImageImporter::importableExtensions()
+{
+	return { "bmp", "png", "jpg", "jpeg" };
+}
+
 ImageExporter::ImageExporter(const QSize &size, const QString &format) :
 	_size(size),
 	_format(format)

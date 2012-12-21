@@ -92,6 +92,8 @@ public:
 	//template <typename Image> void paste(const Image &image, bool inverted = false, const QPoint &point = QPoint());
 	//template <typename Image> void paste(const Image &image) { fromImage(QPoint(), image); }
 	
+	bool operator==(const Surface &other) const;
+	
 	static Image DefaultTile;
 	static Image WhiteTile;
 	
