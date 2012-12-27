@@ -39,6 +39,14 @@ public:
 	
 	static Curve4 fromCatmullRom(const Polygon &polygon, int indexStart);
 	
+	static Curve4 fromBSpline(const Vec2D &c0, const Vec2D &c1, const Vec2D &c2, const Vec2D &c3)
+	{
+		return Curve4((c0 + 4.0*c1 + c2)/6.0,
+		              (2.0*c1 + c2)/3.0,
+		              (c1 + 2.0*c2)/3.0,
+		              (c1 + 4.0*c2 + c3)/6.0);
+	}
+	
 	Vec2D start, control1, control2, end;
 };
 
