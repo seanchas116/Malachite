@@ -655,6 +655,8 @@ inline Vec4I32 vecRound(const Vec2D &v) { return Vec4I32(__builtin_ia32_cvtpd2dq
 inline Vec4F vecSqrt(const Vec4F &v) { return Vec4F(__builtin_ia32_sqrtps(v)); }
 inline Vec2D vecSqrt(const Vec2D &v) { return Vec2D(__builtin_ia32_sqrtpd(v)); }
 
+inline Vec4F vecRsqrt(const Vec4F &v) { return Vec4F(__builtin_ia32_rsqrtps(v)); }
+
 inline double vecDot(const Vec2D &v1, const Vec2D & v2)
 {
 	Vec2D v = v1 * v2;

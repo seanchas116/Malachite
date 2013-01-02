@@ -110,7 +110,7 @@ Surface Surface::loaded(QIODevice *device)
 		else
 		{
 			Painter painter(&surface);
-			painter.setBlendMode(Malachite::BlendModeSource);
+			painter.setBlendMode(BlendMode::Source);
 			painter.drawTransformedImage(key * (int)tileSize, *tile);
 		}
 		delete tile;
@@ -158,9 +158,9 @@ QPointSet Surface::keysForRect(const QRect &rect)
 	return set;
 }
 
-QPointHashToQRect Surface::divideRect(const QRect &rect)
+QHash<QPoint, QRect> Surface::divideRect(const QRect &rect)
 {
-	QPointHashToQRect result;
+	QHash<QPoint, QRect> result;
 	
 	for (const QPoint &key : keysForRect(rect))
 		result.insert(key, QRect(0, 0, TileSize, TileSize) & rect.translated(key * -TileSize));
@@ -291,6 +291,22 @@ Surface Surface::exclusion(const QPointSet &keys) const
 	return surface;
 }
 
+void Surface::squeeze(const QPointSet &keys)
+{
+	if (isNull()) return;
+	
+	for (const QPoint &key : keys)
+	{
+		if (d->tileHash.contains(key))
+		{
+			if (d->tileHash.value(key)->isBlank())
+			{
+				delete d->tileHash.take(key);
+			}
+		}
+	}
+}
+
 int Surface::commonLeftBound(const QPointSet &keys) const
 {
 	for (int x = 0; x < Surface::TileSize; ++x)
@@ -402,7 +418,6 @@ MLSurfaceInitializer fsSurfaceInitializer;
 
 SurfaceEditor::~SurfaceEditor()
 {
-	squeeze(_editedKeys);
 }
 
 void SurfaceEditor::deleteTile(const QPoint &key)
@@ -483,27 +498,6 @@ const Image *SurfaceEditor::constTileRefForKey(const QPoint &key) const
 		return _surface->d->tileHash[key];
 	else
 		return &Surface::DefaultTile;
-}
-
-void SurfaceEditor::squeeze(const QPointSet &keys)
-{
-	if (_surface->isNull()) return;
-	
-	QPointList deleteList;
-	
-	foreach (const QPoint &key, keys)
-	{
-		if (_surface->d->tileHash.contains(key))
-		{
-			if (_surface->d->tileHash.value(key)->isBlank())
-				deleteList << key;
-		}
-	}
-	
-	foreach (const QPoint &key, deleteList)
-	{
-		delete _surface->d->tileHash.take(key);
-	}
 }
 
 }

@@ -6,7 +6,7 @@ namespace Malachite
 
 PaintEngine::PaintEngine()
 {
-	_state.blendMode = Malachite::BlendModeNormal;
+	_state.blendMode = BlendMode::Normal;
 	_state.brush = Brush(Color::fromRgbValue(0, 0, 0));
 	_state.opacity = 1.0;
 	_state.imageTransformType = Malachite::ImageTransformTypeBicubic;

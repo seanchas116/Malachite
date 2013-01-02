@@ -70,7 +70,8 @@ HEADERS += bitmap.h \
     private/surfacepaintengine.h \
     vector_generic.h \
     vector_sse.h \
-    argb.h
+    argb.h \
+    interval.h
 SOURCES += blendmode.cpp \
            blendop.cpp \
            brush.cpp \

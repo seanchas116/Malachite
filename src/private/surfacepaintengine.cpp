@@ -114,7 +114,7 @@ void SurfacePaintEngine::drawTransformedSurface(const QPoint &point, const Surfa
 			if (surface.contains(key))
 				combination |= BlendOp::TileSource;
 			
-			switch (BlendModeUtil(state()->blendMode).op()->tileRequirement(combination))
+			switch (BlendMode(state()->blendMode).op()->tileRequirement(combination))
 			{
 				case BlendOp::TileSource:
 					*_editor->tileRefForKey(key) = surface.tileForKey(key) * state()->opacity;

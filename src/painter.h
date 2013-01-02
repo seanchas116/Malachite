@@ -37,8 +37,7 @@ public:
 	 */
 	void end();
 	
-	void setBlendMode(int modeIndex) { state()->blendMode = BlendMode(modeIndex); }
-	void setBlendMode(const BlendMode &mode) { state()->blendMode = mode; }
+	void setBlendMode(BlendMode mode) { state()->blendMode = mode; }
 	BlendMode blendMode() const { return state()->blendMode; }
 	
 	void setBrush(const Brush &brush) { state()->brush = brush; }

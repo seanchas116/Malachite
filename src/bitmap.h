@@ -38,16 +38,32 @@ public:
 	int area() const { return _size.height() * _size.width(); }
 	QRect rect() const { return QRect(QPoint(), _size); }
 	
-	Pointer<T_Color> scanline(int y) { return _bits.byteOffset(_bytesPerLine * y); }
-	Pointer<const T_Color> constScanline(int y) const { return _bits.byteOffset(_bytesPerLine * y); }
+	Pointer<T_Color> scanline(int y)
+	{
+		Q_ASSERT(0 <= y && y < _size.height());
+		return _bits.byteOffset(_bytesPerLine * y);
+	}
+	Pointer<const T_Color> constScanline(int y) const
+	{
+		Q_ASSERT(0 <= y && y < _size.height());
+		return _bits.byteOffset(_bytesPerLine * y);
+	}
 	
 	Pointer<T_Color> invertedScanline(int invertedY) { return scanline(height() - invertedY - 1); }
 	Pointer<const T_Color> invertedConstScanline(int invertedY) const { return constScanline(height() - invertedY - 1); }
 	
-	Pointer<T_Color> pixelPointer(int x, int y) { return scanline(y) + x; }
+	Pointer<T_Color> pixelPointer(int x, int y)
+	{
+		Q_ASSERT(0 <= x && x < _size.width());
+		return scanline(y) + x;
+	}
 	Pointer<T_Color> pixelPointer(const QPoint &p) { return pixelPointer(p.x(), p.y()); }
 	
-	Pointer<const T_Color> constPixelPointer(int x, int y) const { return constScanline(y) + x; }
+	Pointer<const T_Color> constPixelPointer(int x, int y) const
+	{
+		Q_ASSERT(0 <= x && x < _size.width());
+		return constScanline(y) + x;
+	}
 	Pointer<const T_Color> constPixelPointer(const QPoint &p) const { return constPixelPointer((p.x(), p.y())); }
 	
 	T_Color pixel(int x, int y) const { return *constPixelPointer(x, y); }

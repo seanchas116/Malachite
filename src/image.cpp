@@ -39,7 +39,7 @@ Image Image::toOpaqueImage() const
 	
 	Painter painter(&image);
 	painter.setColor(Color::white());
-	painter.setBlendMode(Malachite::BlendModeDestinationOver);
+	painter.setBlendMode(BlendMode::DestinationOver);
 	painter.drawRect(image.rect());
 	
 	painter.end();

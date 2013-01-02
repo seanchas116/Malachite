@@ -223,7 +223,7 @@ void ImagePaintEngine::drawTransformedPolygons(const FixedMultiPolygon &polygons
 		}
 	}
 	
-	BlendOp *op = BlendModeUtil(state()->blendMode).op();
+	BlendOp *op = BlendMode(state()->blendMode).op();
 	
 	switch (state()->brush.spreadType())
 	{
@@ -251,7 +251,7 @@ void ImagePaintEngine::drawTransformedImage(const QPoint &point, const Image &im
 	if (targetRect.isEmpty())
 		return;
 	
-	BlendOp *op = BlendModeUtil(state()->blendMode).op();
+	BlendOp *op = BlendMode(state()->blendMode).op();
 	if (!op)
 		return;
 	

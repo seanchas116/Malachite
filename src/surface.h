@@ -82,10 +82,12 @@ public:
 	
 	static QPointSet keysForRect(const QRect &rect);
 	
-	static QPointHashToQRect divideRect(const QRect &rect);
+	static QHash<QPoint, QRect> divideRect(const QRect &rect);
 	
 	Surface section(const QPointSet &keys) const;
 	Surface exclusion(const QPointSet &keys) const;
+	
+	void squeeze(const QPointSet &keys);
 	
 	template <bool DstInverted = false, bool SrcInverted = false, typename Image>
 	void paste(const Image &image, const QPoint &point = QPoint());

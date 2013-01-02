@@ -25,7 +25,7 @@ Surface SurfaceSelection::clip(const Surface &surface) const
 	
 	Surface result = surface;
 	SurfacePainter painter(&result);
-	painter.setBlendMode(Malachite::BlendModeDestinationIn);
+	painter.setBlendMode(BlendMode::DestinationIn);
 	
 	switch (_type)
 	{

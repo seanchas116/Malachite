@@ -235,7 +235,7 @@ public:
 		_p(0)
 	{}
 	
-	Pointer(void *rangeStart, int rangeByteSize, T *p) :
+	Pointer(const void *rangeStart, int rangeByteSize, T *p) :
 		_p(p)
 	{ Q_UNUSED(rangeStart); Q_UNUSED(rangeByteSize); }
 	
@@ -386,6 +386,18 @@ private:
 #endif
 	T *_p;
 };
+
+template <class T>
+inline Pointer<T> wrapPointer(const void *rangeStart, int rangeByteSize, T *p)
+{
+	return Pointer<T>(rangeStart, rangeByteSize, p);
+}
+
+template <class T>
+inline Pointer<const T> wrapPointer(const void *rangeStart, int rangeByteSize, const T *p)
+{
+	return Pointer<const T>(rangeStart, rangeByteSize, p);
+}
 
 
 

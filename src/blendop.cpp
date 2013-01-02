@@ -1,3 +1,4 @@
+#include "blendmode.h"
 #include "blendop.h"
 
 // Pixel blend mode based on SVG compositing specification
@@ -641,35 +642,32 @@ public:
 
 BlendOpDictionary::BlendOpDictionary()
 {
-	_blendOps[BlendModeClear] = new TemplateBlendOp<BlendFunctionsClear>;
-	_blendOps[BlendModeSource] = new TemplateBlendOp<BlendFunctionsSource>;
-	_blendOps[BlendModeDestination] = new TemplateBlendOp<BlendFunctionsDestination>;
-	_blendOps[BlendModeSourceOver] = new TemplateBlendOp<BlendFunctionsSourceOver>;
-	_blendOps[BlendModeDestinationOver] = new TemplateBlendOp<BlendFunctionsDestinationOver>;
-	_blendOps[BlendModeSourceIn] = new TemplateBlendOp<BlendFunctionsSourceIn>;
-	_blendOps[BlendModeDestinationIn] = new TemplateBlendOp<BlendFunctionsDestinationIn>;
-	_blendOps[BlendModeSourceOut] = new TemplateBlendOp<BlendFunctionsSourceOut>;
-	_blendOps[BlendModeDestinationOut] = new TemplateBlendOp<BlendFunctionsDestinationOut>;
-	_blendOps[BlendModeSourceAtop] = new TemplateBlendOp<BlendFunctionsSourceAtop>;
-	_blendOps[BlendModeDestinationAtop] = new TemplateBlendOp<BlendFunctionsDestinationAtop>;
-	_blendOps[BlendModeXor] = new TemplateBlendOp<BlendFunctionsXor>;
+	_blendOps[BlendMode::Clear] = new TemplateBlendOp<BlendFunctionsClear>;
+	_blendOps[BlendMode::Source] = new TemplateBlendOp<BlendFunctionsSource>;
+	_blendOps[BlendMode::Destination] = new TemplateBlendOp<BlendFunctionsDestination>;
+	_blendOps[BlendMode::SourceOver] = new TemplateBlendOp<BlendFunctionsSourceOver>;
+	_blendOps[BlendMode::DestinationOver] = new TemplateBlendOp<BlendFunctionsDestinationOver>;
+	_blendOps[BlendMode::SourceIn] = new TemplateBlendOp<BlendFunctionsSourceIn>;
+	_blendOps[BlendMode::DestinationIn] = new TemplateBlendOp<BlendFunctionsDestinationIn>;
+	_blendOps[BlendMode::SourceOut] = new TemplateBlendOp<BlendFunctionsSourceOut>;
+	_blendOps[BlendMode::DestinationOut] = new TemplateBlendOp<BlendFunctionsDestinationOut>;
+	_blendOps[BlendMode::SourceAtop] = new TemplateBlendOp<BlendFunctionsSourceAtop>;
+	_blendOps[BlendMode::DestinationAtop] = new TemplateBlendOp<BlendFunctionsDestinationAtop>;
+	_blendOps[BlendMode::Xor] = new TemplateBlendOp<BlendFunctionsXor>;
 	
-	_blendOps[BlendModeNormal] = _blendOps[Malachite::BlendModeSourceOver];
-	_blendOps[BlendModePlus] = new TemplateBlendOp<BlendFunctionsPlus>;
-	_blendOps[BlendModeMultiply] = new TemplateBlendOp<BlendFunctionsMultiply>;
-	_blendOps[BlendModeScreen] = new TemplateBlendOp<BlendFunctionsScreen>;
-	_blendOps[BlendModeOverlay] = new TemplateBlendOp<BlendFunctionsOverlay>;
-	_blendOps[BlendModeDarken] = new TemplateBlendOp<BlendFunctionsDarken>;
-	_blendOps[BlendModeLighten] = new TemplateBlendOp<BlendFunctionsLighten>;
-	_blendOps[BlendModeColorDodge] = new TemplateBlendOp<BlendFunctionsColorDodge>;
-	_blendOps[BlendModeColorBurn] = new TemplateBlendOp<BlendFunctionsColorBurn>;
-	_blendOps[BlendModeHardLight] = new TemplateBlendOp<BlendFunctionsHardLight>;
-	_blendOps[BlendModeSoftLight] = new TemplateBlendOp<BlendFunctionsSoftLight>;
-	_blendOps[BlendModeDifference] = new TemplateBlendOp<BlendFunctionsDifference>;
-	_blendOps[BlendModeExclusion] = new TemplateBlendOp<BlendFunctionsExclusion>;
-	
-	_blendOps[BlendModeSourcePadding] = new TemplateBlendOp<BlendFunctionsSourcePadding>;
-	_blendOps[BlendModeDestinationPadding] = new TemplateBlendOp<BlendFunctionsDestinationPadding>;
+	_blendOps[BlendMode::Normal] = _blendOps[BlendMode::SourceOver];
+	_blendOps[BlendMode::Plus] = new TemplateBlendOp<BlendFunctionsPlus>;
+	_blendOps[BlendMode::Multiply] = new TemplateBlendOp<BlendFunctionsMultiply>;
+	_blendOps[BlendMode::Screen] = new TemplateBlendOp<BlendFunctionsScreen>;
+	_blendOps[BlendMode::Overlay] = new TemplateBlendOp<BlendFunctionsOverlay>;
+	_blendOps[BlendMode::Darken] = new TemplateBlendOp<BlendFunctionsDarken>;
+	_blendOps[BlendMode::Lighten] = new TemplateBlendOp<BlendFunctionsLighten>;
+	_blendOps[BlendMode::ColorDodge] = new TemplateBlendOp<BlendFunctionsColorDodge>;
+	_blendOps[BlendMode::ColorBurn] = new TemplateBlendOp<BlendFunctionsColorBurn>;
+	_blendOps[BlendMode::HardLight] = new TemplateBlendOp<BlendFunctionsHardLight>;
+	_blendOps[BlendMode::SoftLight] = new TemplateBlendOp<BlendFunctionsSoftLight>;
+	_blendOps[BlendMode::Difference] = new TemplateBlendOp<BlendFunctionsDifference>;
+	_blendOps[BlendMode::Exclusion] = new TemplateBlendOp<BlendFunctionsExclusion>;
 }
 
 BlendOpDictionary _BlendOpDictionary;
