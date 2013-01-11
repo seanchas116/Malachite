@@ -208,26 +208,19 @@ public:
 		_start(rangeStart),
 		_byteSize(rangeByteSize),
 		_p(p)
-	{
-		Q_ASSERT(rangeStart);
-		Q_ASSERT(rangeCorrect());
-	}
+	{}
 	
 	Pointer(T *p, int rangeByteSize) :
 		_start(p),
 		_byteSize(rangeByteSize),
 		_p(p)
-	{
-		Q_ASSERT(p);
-	}
+	{}
 	
 	Pointer(T &value) :
 		_start(&value),
 		_byteSize(sizeof(T)),
 		_p(&value)
-	{
-		Q_ASSERT(&value);
-	}
+	{}
 	
 #else
 	
