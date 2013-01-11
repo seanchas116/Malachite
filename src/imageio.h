@@ -46,12 +46,12 @@ public:
 	
 	~ImageExporter();
 	
+	bool setImage(const Image &image, const QPoint &pos);
+	bool setSurface(const Surface &surface, const QPoint &pos);
+	
 	bool save(const QString &filePath, int quality = 80);
 	
 private:
-	
-	bool pasteImage(const Image &image, const QPoint &pos);
-	bool pasteSurface(const Surface &surface, const QPoint &pos);
 	
 	QSize _size;
 	FIBITMAP *_bitmap;

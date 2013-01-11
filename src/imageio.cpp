@@ -91,13 +91,13 @@ ImageExporter::ImageExporter(const QSize &size, const QString &format) :
 ImageExporter::ImageExporter(const Surface &surface, const QSize &size, const QString &format) :
 	ImageExporter(size, format)
 {
-	pasteSurface(surface, QPoint());
+	setSurface(surface, QPoint());
 }
 
 ImageExporter::ImageExporter(const Image &image, const QString &format) :
 	ImageExporter(image.size(), format)
 {
-	pasteImage(image, QPoint());
+	setImage(image, QPoint());
 }
 
 ImageExporter::~ImageExporter()
@@ -136,7 +136,7 @@ bool ImageExporter::save(const QString &filePath, int quality)
 	return FreeImage_Save(fif, _bitmap, filePath.toLocal8Bit(), flags);
 }
 
-bool ImageExporter::pasteImage(const Image &image, const QPoint &pos)
+bool ImageExporter::setImage(const Image &image, const QPoint &pos)
 {
 	if (!_bitmap)
 		return false;
@@ -144,18 +144,14 @@ bool ImageExporter::pasteImage(const Image &image, const QPoint &pos)
 	return pasteImageToFIBITMAP(pos, _bitmap, image);
 }
 
-bool ImageExporter::pasteSurface(const Surface &surface, const QPoint &pos)
+bool ImageExporter::setSurface(const Surface &surface, const QPoint &pos)
 {
 	if (!_bitmap)
 		return false;
 	
-	QPointSet keys = surface.keys();
-	
-	qDebug() << "tile count:" << keys.size();
-	
-	foreach (const QPoint &key, keys)
+	for (const QPoint &key : Surface::keysForRect(QRect(pos, _size)))
 	{
-		if (pasteImage(surface.tileForKey(key), key * Surface::TileSize + pos) == false)
+		if (setImage(surface.tileForKey(key), key * Surface::TileSize + pos) == false)
 			return false;
 	}
 	
