@@ -108,7 +108,7 @@ bool pasteImageToFIBITMAP(const QPoint &pos, FIBITMAP *dst, const T_Image &src)
 		}
 		case FIT_RGBA16:
 		{
-			auto wrapper = GenericImage<Malachite::ImageFormatArgb, Vec4U16>::wrap(dstBits, dstSize, dstPitch);
+			auto wrapper = GenericImage<Malachite::ImageFormatBgra, Vec4U16>::wrap(dstBits, dstSize, dstPitch);
 			wrapper.paste<true, false>(src, pos);
 			break;
 		}

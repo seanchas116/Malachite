@@ -93,7 +93,8 @@ inline void convertPixel<ImageFormatArgbFast, Vec4F, ImageFormatArgbFast, Vec4U1
 template < >
 inline void convertPixel<ImageFormatRgb, Vec3U8, ImageFormatArgbFast, Vec4F>(Vec3U8 &dst, const Vec4F &src)
 {
-	Vec4F v = src * 0xFF;
+	Vec4F v = src + (Vec4F(1.f) - src.extract3()) * Vec4F(1.f);
+	v *= 0xFF;
 	Vec4I32 iv = vecRound(v);
 	
 	dst.r = iv.r;
@@ -105,7 +106,8 @@ inline void convertPixel<ImageFormatRgb, Vec3U8, ImageFormatArgbFast, Vec4F>(Vec
 template < >
 inline void convertPixel<ImageFormatRgb, Vec3U16, ImageFormatArgbFast, Vec4F>(Vec3U16 &dst, const Vec4F &src)
 {
-	Vec4F v = src * 0xFFFF;
+	Vec4F v = src + (Vec4F(1.f) - src.extract3()) * Vec4F(1.f);
+	v *= 0xFFFF;
 	Vec4I32 iv = vecRound(v);
 	
 	dst.r = iv.r;
@@ -118,14 +120,17 @@ template < >
 inline void convertPixel<ImageFormatArgb, Vec4U8, ImageFormatArgbFast, Vec4F>(Vec4U8 &dst, const Vec4F &src)
 {
 	Vec4F v = src;
-	v.r *= v.a;
-	v.g *= v.a;
-	v.b *= v.a;
+	
+	float a = v.a;
+	if (a)
+	{
+		v /= a;
+		v.a = a;
+	}
 	
 	v *= 0xFF;
 	
 	Vec4I32 iv = vecRound(v);
-	
 	dst.a = iv.a;
 	dst.r = iv.r;
 	dst.g = iv.g;
@@ -137,9 +142,13 @@ template < >
 inline void convertPixel<ImageFormatArgb, Vec4U16, ImageFormatArgbFast, Vec4F>(Vec4U16 &dst, const Vec4F &src)
 {
 	Vec4F v = src;
-	v.r *= v.a;
-	v.g *= v.a;
-	v.b *= v.a;
+	
+	float a = v.a;
+	if (a)
+	{
+		v /= a;
+		v.a = a;
+	}
 	
 	v *= 0xFFFF;
 	
@@ -149,6 +158,29 @@ inline void convertPixel<ImageFormatArgb, Vec4U16, ImageFormatArgbFast, Vec4F>(V
 	dst.r = iv.r;
 	dst.g = iv.g;
 	dst.b = iv.b;
+}
+
+// 32bit float argb premultiplied -> 16bit unsigned bgra
+template < >
+inline void convertPixel<ImageFormatBgra, Vec4U16, ImageFormatArgbFast, Vec4F>(Vec4U16 &dst, const Vec4F &src)
+{
+	Vec4F v = src;
+	
+	float a = v.a;
+	if (a)
+	{
+		v /= a;
+		v.a = a;
+	}
+	
+	v *= 0xFFFF;
+	
+	Vec4I32 iv = vecRound(v);
+	
+	dst.a = iv.a;
+	dst.b = iv.r;
+	dst.g = iv.g;
+	dst.r = iv.b;
 }
 
 // 32bit float argb premultiplied -> 8bit unsigned argb premultiplied

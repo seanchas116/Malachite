@@ -20,7 +20,8 @@ enum ImageFormat
 {
 	ImageFormatArgb,
 	ImageFormatArgbFast,
-	ImageFormatRgb
+	ImageFormatRgb,
+	ImageFormatBgra
 };
 
 enum ImageComponentType
