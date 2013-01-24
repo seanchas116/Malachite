@@ -63,7 +63,6 @@ HEADERS += bitmap.h \
            private/clipper.hpp \
     private/filler.h \
     private/gradientgenerator.h \
-    private/imageioprivate.h \
     private/imagepaintengine.h \
     private/renderer.h \
     private/scalinggenerator.h \

@@ -1,68 +1,264 @@
 #include <QtGui>
 #include "imageio.h"
-#include "private/imageioprivate.h"
 
 #include <FreeImage.h>
 
 namespace Malachite
 {
 
-ImageImporter::ImageImporter(const QString &filePath) :
-	_bitmap(0)
+static unsigned readFromQIODevice(void *buffer, unsigned size, unsigned count, void *handle)
 {
-	QFileInfo fileInfo(filePath);
-	QString extension = fileInfo.fileName().section('.', -1).toLower();
-	
-	FREE_IMAGE_FORMAT format;
-	if (extension == "jpg" || extension == "jpeg") {
-		format = FIF_JPEG;
-	} else if (extension == "png") {
-		format = FIF_PNG;
-	} else if (extension == "bmp") {
-		format = FIF_BMP;
-	} else {
-		qWarning() << "MLImage::fromFile: Unknown file type";
-		return;
-	}
-	
-	int flags = 0;
-	if (format == FIF_JPEG)
-		flags = JPEG_ACCURATE;
-	
-	_bitmap = FreeImage_Load(format, filePath.toLocal8Bit(), flags);
-	
-	if (!_bitmap)
-	{
-		qDebug() << Q_FUNC_INFO << ": failed to load file";
-		return;
-	}
-	
-	_size = QSize(FreeImage_GetWidth(_bitmap), FreeImage_GetHeight(_bitmap));
+	auto ioDevice = static_cast<QIODevice *>(handle);
+	return ioDevice->read(static_cast<char *>(buffer), size * count);
 }
+
+static unsigned writeToQIODevice(void *buffer, unsigned size, unsigned count, void *handle)
+{
+	auto ioDevice = static_cast<QIODevice *>(handle);
+	return ioDevice->write(static_cast<const char *>(buffer), size * count);
+}
+
+static int seekQIODevice(void *handle, long offset, int origin)
+{
+	auto ioDevice = static_cast<QIODevice *>(handle);
+	
+	bool succeeded = false;
+	
+	switch (origin)
+	{
+		case SEEK_SET:
+			succeeded = ioDevice->seek(offset);
+			break;
+		case SEEK_CUR:
+			succeeded = ioDevice->seek(offset + ioDevice->pos());
+			break;
+		default:
+			Q_ASSERT(0);
+			break;
+	}
+	
+	return succeeded ? 0 : -1;
+}
+
+static long tellQIODevice(void *handle)
+{
+	auto ioDevice = static_cast<QIODevice *>(handle);
+	return ioDevice->pos();
+}
+
+
+template <class T_Image>
+static bool pasteFIBITMAPToImage(const QPoint &pos, T_Image *dst, FIBITMAP *src)
+{
+	FREE_IMAGE_TYPE srcType = FreeImage_GetImageType(src);
+	QSize srcSize(FreeImage_GetWidth(src), FreeImage_GetHeight(src));
+	const uint8_t *srcBits = FreeImage_GetBits(src);
+	int srcPitch = FreeImage_GetPitch(src);
+	
+	switch (srcType)
+	{
+		case FIT_BITMAP:
+		{
+			int bpp = FreeImage_GetBPP(src);
+			
+			switch (bpp)
+			{
+				case 24:
+				{
+					auto wrapped = GenericImage<Malachite::ImageFormatRgb, Vec3U8>::wrap(srcBits, srcSize, srcPitch);
+					dst->template paste<false, true>(wrapped, pos);
+					break;
+				}
+				case 32:
+				{
+					dst->template paste<false, true>(GenericImage<Malachite::ImageFormatArgb, Vec4U8>::wrap(srcBits, srcSize, srcPitch), pos);
+					break;
+				}
+				default:
+				{
+					FIBITMAP *newBitmap = FreeImage_ConvertTo32Bits(src);	// converted to RGBA8
+					dst->template paste<false, true>(GenericImage<Malachite::ImageFormatArgb, Vec4U8>::wrap(FreeImage_GetBits(newBitmap), srcSize, FreeImage_GetPitch(newBitmap)), pos);
+					FreeImage_Unload(newBitmap);
+					break;
+				}
+			}
+			
+			break;
+		}
+		case FIT_RGB16:
+		{
+			dst->template paste<false, true>(GenericImage<Malachite::ImageFormatRgb, Vec3U16>::wrap(srcBits, srcSize, srcPitch), pos);
+			break;
+		}
+		case FIT_RGBA16:
+		{
+			dst->template paste<false, true>(GenericImage<Malachite::ImageFormatArgb, Vec4U16>::wrap(srcBits, srcSize, srcPitch), pos);
+			break;
+		}
+		default:
+			qWarning() << Q_FUNC_INFO << ": Unsupported data type";
+			return false;
+	}
+	
+	return true;
+}
+
+template <class T_Image>
+static bool pasteImageToFIBITMAP(const QPoint &pos, FIBITMAP *dst, const T_Image &src)
+{
+	FREE_IMAGE_TYPE dstType = FreeImage_GetImageType(dst);
+	QSize dstSize(FreeImage_GetWidth(dst), FreeImage_GetHeight(dst));
+	int dstPitch = FreeImage_GetPitch(dst);
+	uint8_t *dstBits = FreeImage_GetBits(dst);
+	
+	switch (dstType)
+	{
+		case FIT_BITMAP:
+		{
+			int bpp = FreeImage_GetBPP(dst);
+			
+			switch (bpp)
+			{
+				case 24:
+				{
+					auto wrapper = GenericImage<Malachite::ImageFormatRgb, Vec3U8>::wrap(dstBits, dstSize, dstPitch);
+					wrapper.paste<true, false>(src, pos);
+					break;
+				}
+				case 32:
+				{
+					auto wrapper = GenericImage<Malachite::ImageFormatArgb, Vec4U8>::wrap(dstBits, dstSize, dstPitch);
+					wrapper.paste<true, false>(src, pos);
+					break;
+				}
+				default:
+					qWarning() << Q_FUNC_INFO << ": Unsupported data type";
+					return false;
+			}
+			
+			break;
+		}
+		case FIT_RGB16:
+		{
+			auto wrapper = GenericImage<Malachite::ImageFormatRgb, Vec3U16>::wrap(dstBits, dstSize, dstPitch);
+			wrapper.paste<true, false>(src, pos);
+			break;
+		}
+		case FIT_RGBA16:
+		{
+			auto wrapper = GenericImage<Malachite::ImageFormatBgra, Vec4U16>::wrap(dstBits, dstSize, dstPitch);
+			wrapper.paste<true, false>(src, pos);
+			break;
+		}
+		default:
+			qWarning() << Q_FUNC_INFO << ": Unsupported data type";
+			return false;
+	}
+	
+	return true;
+}
+
+
+struct ImageImporter::Data
+{
+	FIBITMAP *bitmap = 0;
+	QSize size;
+	
+	~Data()
+	{
+		deleteBitmap();
+	}
+	
+	void deleteBitmap()
+	{
+		if (bitmap)
+		{
+			FreeImage_Unload(bitmap);
+			bitmap = 0;
+		}
+	}
+};
+
+ImageImporter::ImageImporter() :
+    d(new Data)
+{}
 
 ImageImporter::~ImageImporter()
 {
-	if (_bitmap) FreeImage_Unload(_bitmap);
+	delete d;
+}
+
+bool ImageImporter::load(QIODevice *device)
+{
+	d->deleteBitmap();
+	
+	FreeImageIO io;
+	io.read_proc = readFromQIODevice;
+	io.write_proc = 0;
+	io.seek_proc = seekQIODevice;
+	io.tell_proc = tellQIODevice;
+	
+	auto format = FreeImage_GetFileTypeFromHandle(&io, device);
+	
+	if (format != FIF_UNKNOWN)
+	{
+		int flags = 0;
+		
+		if (format == FIF_JPEG)
+			flags = JPEG_ACCURATE;
+		
+		d->bitmap = FreeImage_LoadFromHandle(format, &io, device, flags);
+	}
+	
+	if (d->bitmap)
+	{
+		int w = FreeImage_GetWidth(d->bitmap);
+		int h = FreeImage_GetHeight(d->bitmap);
+		
+		d->size = QSize(w, h);
+	}
+	
+	return d->bitmap;
+}
+
+bool ImageImporter::load(const QString &filepath)
+{
+	QFile file(filepath);
+	
+	if (!file.open(QIODevice::ReadOnly))
+		return false;
+	
+	return load(&file);
+}
+
+bool ImageImporter::isValid() const
+{
+	return d->bitmap;
+}
+
+QSize ImageImporter::size() const
+{
+	return d->size;
 }
 
 Image ImageImporter::toImage() const
 {
-	if (!_bitmap)
+	if (!isValid())
 		return Image();
 	
 	Image image(size());
 	
-	pasteFIBITMAPToImage(QPoint(), &image, _bitmap);
+	pasteFIBITMAPToImage(QPoint(), &image, d->bitmap);
 	return image;
 }
 
 Surface ImageImporter::toSurface(const QPoint &p) const
 {
-	if (!_bitmap)
+	if (!isValid())
 		return Surface();
 	
 	Surface surface;
-	pasteFIBITMAPToImage(p, &surface, _bitmap);
+	pasteFIBITMAPToImage(p, &surface, d->bitmap);
 	return surface;
 }
 
@@ -71,91 +267,116 @@ QStringList ImageImporter::importableExtensions()
 	return { "bmp", "png", "jpg", "jpeg" };
 }
 
-ImageExporter::ImageExporter(const QSize &size, const QString &format) :
-	_size(size),
-	_format(format)
+
+
+struct ImageExporter::Data
 {
-	if (format == "png")
-		_bitmap = FreeImage_AllocateT(FIT_RGBA16, size.width(), size.height());
-	else if (format == "jpg")
-		_bitmap = FreeImage_Allocate(size.width(), size.height(), 24);
-	else if (format == "bmp")
-		_bitmap = FreeImage_Allocate(size.width(), size.height(), 24);
-	else
+	QSize size;
+	FIBITMAP *bitmap = 0;
+	FREE_IMAGE_FORMAT format;
+	
+	~Data()
 	{
-		_bitmap = 0;
-		qWarning() << Q_FUNC_INFO << ": unsupported format";
+		deleteBitmap();
 	}
-}
+	
+	void setFormatString(const QString &formatString)
+	{
+		if (formatString == "bmp")
+			format = FIF_BMP;
+		else if (formatString == "jpg" || formatString == "jpeg")
+			format = FIF_JPEG;
+		else if (formatString == "png")
+			format = FIF_PNG;
+		else
+			format = FIF_UNKNOWN;
+	}
+	
+	void deleteBitmap()
+	{
+		if (bitmap)
+		{
+			FreeImage_Unload(bitmap);
+			bitmap = 0;
+		}
+	}
+	
+	void allocate(const QSize &size)
+	{
+		deleteBitmap();
+		
+		switch (format)
+		{
+			case FIF_PNG:
+				bitmap = FreeImage_AllocateT(FIT_RGBA16, size.width(), size.height());
+				break;
+			default:
+				bitmap = FreeImage_Allocate(size.width(), size.height(), 24);
+		}
+	}
+};
 
-ImageExporter::ImageExporter(const Surface &surface, const QSize &size, const QString &format) :
-	ImageExporter(size, format)
+ImageExporter::ImageExporter(const QString &format) :
+    d(new Data)
 {
-	setSurface(surface, QPoint());
-}
-
-ImageExporter::ImageExporter(const Image &image, const QString &format) :
-	ImageExporter(image.size(), format)
-{
-	setImage(image, QPoint());
+	d->setFormatString(format);
 }
 
 ImageExporter::~ImageExporter()
 {
-	if (_bitmap)
-		FreeImage_Unload(_bitmap);
+	delete d;
 }
 
 bool ImageExporter::save(const QString &filePath, int quality)
 {
-	if (!_bitmap)
+	if (!d->bitmap)
 		return false;
 	
-	FREE_IMAGE_FORMAT fif;
+	if (d->format == FIF_UNKNOWN)
+		return false;
+	
 	int flags = 0;
 	
-	if (_format == "png")
-	{
-		fif = FIF_PNG;
-	}
-	else if (_format == "jpg")
-	{
-		fif = FIF_JPEG;
+	if (d->format == FIF_JPEG)
 		flags = quality;
-	}
-	else if (_format == "bmp")
-	{
-		fif = FIF_BMP;
-	}
-	else
-	{
-		qDebug() << Q_FUNC_INFO << ": unsupported format";
-		return false;
-	}
 	
-	return FreeImage_Save(fif, _bitmap, filePath.toLocal8Bit(), flags);
+	return FreeImage_Save(d->format, d->bitmap, filePath.toLocal8Bit(), flags);
 }
 
-bool ImageExporter::setImage(const Image &image, const QPoint &pos)
+bool ImageExporter::setImage(const Image &image)
 {
-	if (!_bitmap)
+	d->allocate(image.size());
+	if (!d->bitmap)
 		return false;
 	
-	return pasteImageToFIBITMAP(pos, _bitmap, image);
+	return pasteImage(image, QPoint());
 }
 
-bool ImageExporter::setSurface(const Surface &surface, const QPoint &pos)
+bool ImageExporter::setSurface(const Surface &surface, const QRect &rect)
 {
-	if (!_bitmap)
+	auto size = rect.size();
+	
+	d->allocate(size);
+	if (!d->bitmap)
 		return false;
 	
-	for (const QPoint &key : Surface::keysForRect(QRect(pos, _size)))
+	auto pos = rect.topLeft();
+	
+	for (const QPoint &key : Surface::keysForRect(QRect(pos, size)))
 	{
-		if (setImage(surface.tileForKey(key), key * Surface::TileSize + pos) == false)
+		if (pasteImage(surface.tileForKey(key), key * Surface::TileSize + pos) == false)
 			return false;
 	}
 	
 	return true;
+}
+
+bool ImageExporter::pasteImage(const Image &image, const QPoint &pos)
+{
+	if (!d->bitmap)
+		return false;
+	
+	return pasteImageToFIBITMAP(pos, d->bitmap, image);
 }
 
 

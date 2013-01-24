@@ -15,15 +15,22 @@ class MALACHITESHARED_EXPORT ImageImporter
 {
 public:
 	
-	ImageImporter() : _bitmap(0) {}
-	ImageImporter(const QString &filePath);
+	ImageImporter();
 	~ImageImporter();
 	
-	bool isValid() const { return _bitmap; }
+	/**
+	 * Loads from a QIODevice.
+	 * The device must be random-access.
+	 * @param device
+	 * @return 
+	 */
+	bool load(QIODevice *device);
 	
-	FIBITMAP *bitmap() { return _bitmap; }
+	bool load(const QString &filepath);
 	
-	QSize size() const { return _size; }
+	bool isValid() const;
+	
+	QSize size() const;
 	
 	Image toImage() const;
 	Surface toSurface(const QPoint &p = QPoint()) const;
@@ -32,30 +39,29 @@ public:
 	
 private:
 	
-	FIBITMAP *_bitmap;
-	QSize _size;
+	class Data;
+	Data *d;
 };
 
 class MALACHITESHARED_EXPORT ImageExporter
 {
 public:
 	
-	ImageExporter(const QSize &size, const QString &format);
-	ImageExporter(const Surface &surface, const QSize &size, const QString &format);
-	ImageExporter(const Image &image, const QString &format);
-	
+	ImageExporter(const QString &format);
 	~ImageExporter();
 	
-	bool setImage(const Image &image, const QPoint &pos);
-	bool setSurface(const Surface &surface, const QPoint &pos);
+	bool setImage(const Image &image);
+	bool setSurface(const Surface &surface, const QRect &rect);
+	bool setSurface(const Surface &surface, const QSize &size) { return setSurface(surface, QRect(QPoint(), size)); }
+	
+	bool pasteImage(const Image &image, const QPoint &pos);
 	
 	bool save(const QString &filePath, int quality = 80);
 	
 private:
 	
-	QSize _size;
-	FIBITMAP *_bitmap;
-	QString _format;
+	class Data;
+	Data *d;
 };
 
 }
