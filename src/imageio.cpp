@@ -271,10 +271,6 @@ QStringList ImageImporter::importableExtensions()
 
 struct ImageExporter::Data
 {
-	QSize size;
-	FIBITMAP *bitmap = 0;
-	FREE_IMAGE_FORMAT format;
-	
 	~Data()
 	{
 		deleteBitmap();
@@ -314,6 +310,11 @@ struct ImageExporter::Data
 				bitmap = FreeImage_Allocate(size.width(), size.height(), 24);
 		}
 	}
+	
+	QSize size;
+	FIBITMAP *bitmap = 0;
+	FREE_IMAGE_FORMAT format;
+	int quality = 80;
 };
 
 ImageExporter::ImageExporter(const QString &format) :
@@ -327,7 +328,12 @@ ImageExporter::~ImageExporter()
 	delete d;
 }
 
-bool ImageExporter::save(const QString &filePath, int quality)
+void ImageExporter::setQuality(int quality)
+{
+	d->quality = quality;
+}
+
+bool ImageExporter::save(QIODevice *device)
 {
 	if (!d->bitmap)
 		return false;
@@ -338,9 +344,24 @@ bool ImageExporter::save(const QString &filePath, int quality)
 	int flags = 0;
 	
 	if (d->format == FIF_JPEG)
-		flags = quality;
+		flags = d->quality;
 	
-	return FreeImage_Save(d->format, d->bitmap, filePath.toLocal8Bit(), flags);
+	FreeImageIO io;
+	io.read_proc = 0;
+	io.write_proc = writeToQIODevice;
+	io.seek_proc = seekQIODevice;
+	io.tell_proc = tellQIODevice;
+	
+	return FreeImage_SaveToHandle(d->format, d->bitmap, &io, device, flags);
+}
+
+bool ImageExporter::save(const QString &filePath)
+{
+	QFile file(filePath);
+	if (!file.open(QIODevice::WriteOnly))
+		return false;
+	
+	return save(&file);
 }
 
 bool ImageExporter::setImage(const Image &image)

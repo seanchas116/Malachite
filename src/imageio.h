@@ -50,13 +50,16 @@ public:
 	ImageExporter(const QString &format);
 	~ImageExporter();
 	
+	void setQuality(int quality);
+	
 	bool setImage(const Image &image);
 	bool setSurface(const Surface &surface, const QRect &rect);
 	bool setSurface(const Surface &surface, const QSize &size) { return setSurface(surface, QRect(QPoint(), size)); }
 	
 	bool pasteImage(const Image &image, const QPoint &pos);
 	
-	bool save(const QString &filePath, int quality = 80);
+	bool save(QIODevice *device);
+	bool save(const QString &filePath);
 	
 private:
 	
