@@ -49,7 +49,6 @@ HEADERS += bitmap.h \
            surface.h \
            surfacepainter.h \
            surfaceselection.h \
-           vector.h \
            private/agg_array.h \
            private/agg_basics.h \
            private/agg_clip_liang_barsky.h \
@@ -69,8 +68,11 @@ HEADERS += bitmap.h \
     private/surfacepaintengine.h \
     vector_generic.h \
     vector_sse.h \
-    argb.h \
-    interval.h
+    interval.h \
+    transform.h \
+    genericpixel.h \
+    pixel.h \
+    vec2d.h
 SOURCES += blendmode.cpp \
            blendop.cpp \
            brush.cpp \
@@ -91,5 +93,6 @@ SOURCES += blendmode.cpp \
            private/clipper.cpp \
     private/imagepaintengine.cpp \
     private/renderer.cpp \
-    private/surfacepaintengine.cpp
+    private/surfacepaintengine.cpp \
+    transform.cpp
 RESOURCES += resources.qrc

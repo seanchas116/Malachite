@@ -45,15 +45,12 @@ public:
 	
 	PaintEngine *createPaintEngine();
 	
-	bool save(QIODevice *device) const;
-	static Surface loaded(QIODevice *device);
-	
 	bool isNull() const;
 	
 	Image tileForKey(const QPoint &key) const;
 	Image tileForKey(int x, int y) const { return tileForKey(QPoint(x, y)); }
 	
-	Vec4F pixel(const QPoint &pos) const
+	Pixel pixel(const QPoint &pos) const
 	{
 		QPoint key, rem;
 		dividePoint(pos, TileSize, &key, &rem);
@@ -89,7 +86,7 @@ public:
 	
 	void squeeze(const QPointSet &keys);
 	
-	template <bool DstInverted = false, bool SrcInverted = false, typename Image>
+	template <ImagePasteInversionMode InversionMode = ImagePasteNotInverted, typename Image>
 	void paste(const Image &image, const QPoint &point = QPoint());
 	//template <typename Image> void paste(const Image &image, bool inverted = false, const QPoint &point = QPoint());
 	//template <typename Image> void paste(const Image &image) { fromImage(QPoint(), image); }
@@ -146,14 +143,14 @@ private:
 };
 
 
-template <bool DstInverted, bool SrcInverted, typename Image>
+template <ImagePasteInversionMode InversionMode, typename Image>
 void Surface::paste(const Image &image, const QPoint &point)
 {
 	SurfaceEditor editor(this);
 	QPointSet keys = keysForRect(QRect(point, image.size()));
 	
-	foreach (const QPoint &key, keys)
-		editor.tileRefForKey(key)->template paste<DstInverted, SrcInverted>(image, point - key * Surface::TileSize);
+	for (const QPoint &key : keys)
+		editor.tileRefForKey(key)->template paste<InversionMode>(image, point - key * Surface::TileSize);
 }
 
 }

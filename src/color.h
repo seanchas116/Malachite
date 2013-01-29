@@ -8,6 +8,7 @@
 #include <QColor>
 
 #include "misc.h"
+#include "pixel.h"
 #include "genericimage.h"
 
 namespace Malachite
@@ -122,47 +123,36 @@ public:
 		return color;
 	}
 	
-	Vec4F toArgb() const
+	Pixel toPixel() const
 	{
-		Vec4F argb;
-		argb.a = _a;
-		argb.r = _r * _a;
-		argb.g = _g * _a;
-		argb.b = _b * _a;
-		return argb;
-	}
-	
-	Vec4U8 toFastArgb8() const
-	{
-		Vec4U8 argb8;
-		convertPixel<Malachite::ImageFormatArgbFast, Vec4U8, Malachite::ImageFormatArgbFast, Vec4F>(argb8, toArgb());
-		return argb8;
-	}
-	
-	QRgb toQRgb() const
-	{
-		Vec4U8 argb8 = toFastArgb8();
-		QRgb rgb = *(reinterpret_cast<uint32_t *>(&argb8));
-		return rgb;
+		Pixel p;
+		p.setA(_a);
+		p.setR(_r * _a);
+		p.setG(_g * _a);
+		p.setB(_b * _a);
+		return p;
 	}
 	
 	QColor toQColor() const { return QColor::fromRgbF(_r, _g, _b, _a); }
 	QString toWebColor() const;
 	
+	QRgb toQRgb() const
+	{
+		return blindCast<QRgb>(BgraU8(toPixel()));
+	}
+	
+	QRgb toQRgbPremult() const
+	{
+		return blindCast<QRgb>(BgraPremultU8(toPixel()));
+	}
+	
 	static Color transparent() { return Color::fromRgbValue(0, 0, 0, 0); }
 	static Color white() { return Color::fromRgbValue(1, 1, 1, 1); }
 	static Color black() { return Color::fromRgbValue(0, 0, 0, 1); }
 	
-	static Color fromArgb(const Vec4F &argb)
+	static Color fromPixel(const Pixel &p)
 	{
-		return argb.a ? Color::fromRgbValue(argb.r / argb.a, argb.g / argb.a, argb.b / argb.a, argb.a) : Color();
-	}
-	
-	static Color fromFastArgb8(const Vec4U8 &argb)
-	{
-		Vec4F argbf;
-		convertPixel<Malachite::ImageFormatArgbFast, Vec4F, Malachite::ImageFormatArgbFast, Vec4U8>(argbf, argb);
-		return Color::fromArgb(argbf);
+		return p.a() ? Color::fromRgbValue(p.r() / p.a(), p.g() / p.a(), p.b() / p.a(), p.a()) : Color();
 	}
 	
 	static Color fromQColor(const QColor &qcolor)

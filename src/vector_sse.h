@@ -1,5 +1,6 @@
-#ifndef VECTOR_SSE_H
-#define VECTOR_SSE_H
+#pragma once
+
+//ExportName: Vector
 
 #include <stdint.h>
 #include <emmintrin.h>
@@ -8,6 +9,170 @@
 namespace Malachite
 {
 
+#define ML_INHERIT_OPERATORS \
+	
+
+template<>
+class Vector<double, 2>
+{
+public:
+	
+	typedef double value_type;
+	typedef size_t size_type;
+	typedef typename std::array<double, 2>::iterator iterator;
+	typedef typename std::array<double, 2>::const_iterator const_iterator;
+	
+	typedef value_type ValueType;
+	typedef size_type SizeType;
+	typedef iterator Iterator;
+	typedef const_iterator ConstIterator;
+	
+	Vector() {}
+	
+	Vector(double s)
+	{
+		_array[0] = s;
+		_data = _mm_unpacklo_pd(_data, _data);
+	}
+	
+	Vector(std::array<double, 2> &array)
+	{
+		_array = array;
+	}
+	
+	Vector(__m128d data) { _data = data; }
+	
+	Vector(const Vector<double, 2> &other) { _v = other._v; }
+	
+	// attributes
+	
+	static constexpr size_t size() { return 4; }
+	
+	// access
+	
+	Vector extract(size_t index) const
+	{
+		switch (index)
+		{
+			default:
+			case 0:
+				return _mm_unpacklo_pd(_data, _data);
+			case 1:
+				return _mm_unpackhi_pd(_data, _data);
+		}
+	}
+	
+	ValueType &operator[](size_t index) { return _array[index]; }
+	const ValueType &operator[](size_t index) const { return _array[index]; }
+	
+	ValueType &at(size_t index) { return _array[index]; }
+	const ValueType &at(size_t index) const { return _array[index]; }
+	
+	// arithmetic
+	
+	const Vector operator+(const Vector &other) const { Vector r; r._v = _v + other._v; return r; }
+	const Vector operator-(const Vector &other) const { Vector r; r._v = _v - other._v; return r; }
+	const Vector operator*(const Vector &other) const { Vector r; r._v = _v * other._v; return r; }
+	const Vector operator/(const Vector &other) const { Vector r; r._v = _v / other._v; return r; }
+	
+	Vector sqrt() const { return _mm_sqrt_pd(data()); }
+	
+	Vector bound(const Vector &lower, const Vector &upper) const
+	{
+		return minimum(maximum(*this, lower), upper);
+	}
+	
+	static Vector minimum(const Vector &v1, const Vector &v2)
+	{
+		return _mm_min_pd(v1.data(), v2.data());
+	}
+	
+	static Vector maximum(const Vector &v1, const Vector &v2)
+	{
+		return _mm_max_pd(v1.data(), v2.data());
+	}
+	
+	// comparison
+	
+	class ComparisonResult
+	{
+	public:
+		
+		ComparisonResult(__m128d data) { _data = data; }
+		
+		uint64_t &operator[](size_t index) { return _array[index]; }
+		const uint64_t &operator[](size_t index) const { return  _array[index]; }
+		
+		__m128d &data() { return _data; }
+		const __m128d &data() const { return _data; }
+		
+	private:
+		
+		union
+		{
+			__m128d _data;
+			std::array<uint64_t, 2> _array;
+		};
+	};
+	
+	static ComparisonResult lessThan(const Vector &v1, const Vector &v2)
+	{
+		return _mm_cmplt_pd(v1.data(), v2.data());
+	}
+	
+	static ComparisonResult lessThanEqual(const Vector &v1, const Vector &v2)
+	{
+		return _mm_cmple_pd(v1.data(), v2.data());
+	}
+	
+	static ComparisonResult greaterThan(const Vector &v1, const Vector &v2)
+	{
+		return _mm_cmpgt_pd(v1.data(), v2.data());
+	}
+	
+	static ComparisonResult greaterThanEqual(const Vector &v1, const Vector &v2)
+	{
+		return _mm_cmpge_pd(v1.data(), v2.data());
+	}
+	
+	static ComparisonResult equal(const Vector &v1, const Vector &v2)
+	{
+		return _mm_cmpeq_pd(v1.data(), v2.data());
+	}
+	
+	static ComparisonResult notEqual(const Vector &v1, const Vector &v2)
+	{
+		return _mm_cmpneq_pd(v1.data(), v2.data());
+	}
+	
+	static Vector choose(const ComparisonResult &selector, const Vector &vTrue, const Vector &vFalse)
+	{
+		return _mm_and_pd( _mm_and_pd(selector.data(), vTrue.data()), _mm_andnot_pd(selector.data(), vFalse.data()) );
+	}
+	
+	bool operator==(const Vector &other) const { return _array == other._array; }
+	
+	// original
+	
+	__m128d &data() { return _data; }
+	const __m128d &data() const { return _data; }
+	
+	ML_IMPL_VECTOR_OPERATORS(Vector, ValueType)
+	
+protected:
+	
+	union
+	{
+		__m128d _data;
+		__v2df _v;
+		std::array<double, 2> _array;
+	};
+};
+
+typedef Vector<double, 2> Vector_double_2;
+
+ML_IMPL_VECTOR_OPERATORS_GLOBAL(inline Vector_double_2, Vector_double_2, double)
+
 template<>
 class Vector<float, 4>
 {
@@ -15,35 +180,41 @@ public:
 	
 	typedef float value_type;
 	typedef size_t size_type;
-	constexpr static size_t size() { return 4; }
+	typedef typename std::array<float, 4>::iterator iterator;
+	typedef typename std::array<float, 4>::const_iterator const_iterator;
+	
+	typedef value_type ValueType;
+	typedef size_type SizeType;
+	typedef iterator Iterator;
+	typedef const_iterator ConstIterator;
 	
 	Vector() {}
+	
 	Vector(float s)
 	{
 		_array[0] = s;
 		_data = _mm_unpacklo_ps(_data, _data);
 		_data = _mm_unpacklo_ps(_data, _data);
 	}
-
-	Vector(std::initializer_list<float> list)
+	
+	Vector(std::array<float, 4> &array)
 	{
-		auto iter = list.begin();
-		_array[0] = *iter++;
-		_array[1] = *iter++;
-		_array[2] = *iter++;
-		_array[3] = *iter++;
+		_array = array;
 	}
 	
 	Vector(__m128 data) { _data = data; }
 	
+	Vector(const Vector<float, 4> &other) { _v = other._v; }
+	
+	// attributes
+	
+	constexpr static size_t size() { return 4; }
+	
 	// access
 	
-	template <size_t T_Index> float &e() { return _array[T_Index]; }
-	template <size_t T_Index> const float &e() const { return _array[T_Index]; }
-	
-	template <size_t T_Index> Vector extract() const
+	Vector extract(size_t index) const
 	{
-		switch (T_Index)
+		switch (index)
 		{
 			default:
 			case 0:
@@ -73,25 +244,33 @@ public:
 		}
 	}
 	
-	float &operator[](size_t index) { return _array[index]; }
-	const float &operator[](size_t index) const { return  _array[index]; }
+	ValueType &operator[](size_t index) { return _array[index]; }
+	const ValueType &operator[](size_t index) const { return _array[index]; }
+	
+	ValueType &at(size_t index) { return _array[index]; }
+	const ValueType &at(size_t index) const { return _array[index]; }
 	
 	// arithmetic
 	
-	Vector &operator+=(const Vector &other) { _v += other._v; return *this; }
-	Vector &operator-=(const Vector &other) { _v -= other._v; return *this; }
-	Vector &operator*=(const Vector &other) { _v *= other._v; return *this; }
-	Vector &operator/=(const Vector &other) { _v /= other._v; return *this; }
+	const Vector operator+(const Vector &other) const { Vector r; r._v = _v + other._v; return r; }
+	const Vector operator-(const Vector &other) const { Vector r; r._v = _v - other._v; return r; }
+	const Vector operator*(const Vector &other) const { Vector r; r._v = _v * other._v; return r; }
+	const Vector operator/(const Vector &other) const { Vector r; r._v = _v / other._v; return r; }
 	
-	Vector &operator+=(float value) { return operator+=(Vector(value)); }
-	Vector &operator-=(float value) { return operator-=(Vector(value)); }
-	Vector &operator*=(float value) { return operator*=(Vector(value)); }
-	Vector &operator/=(float value) { return operator/=(Vector(value)); }
+	Vector bound(const Vector &lower, const Vector &upper) const
+	{
+		return minimum(maximum(*this, lower), upper);
+	}
 	
-	const Vector operator+(const Vector &other) { Vector ret; ret += other; return ret; }
-	const Vector operator-(const Vector &other) { Vector ret; ret -= other; return ret; }
-	const Vector operator*(const Vector &other) { Vector ret; ret *= other; return ret; }
-	const Vector operator/(const Vector &other) { Vector ret; ret /= other; return ret; }
+	static Vector minimum(const Vector &v1, const Vector &v2)
+	{
+		return _mm_min_ps(v1.data(), v2.data());
+	}
+	
+	static Vector maximum(const Vector &v1, const Vector &v2)
+	{
+		return _mm_max_ps(v1.data(), v2.data());
+	}
 	
 	// comparison
 	
@@ -109,29 +288,59 @@ public:
 		
 		__m128 &data() { return _data; }
 		const __m128 &data() const { return _data; }
-		operator __m128() const { return _data; }
 		
 	private:
 		
 		union
 		{
 			__m128 _data;
-			uint32_t _array[4];
+			std::array<uint32_t, 4> _array;
 		};
 	};
 	
-	ComparisonResult operator<(const Vector &other) const { return _mm_cmplt_ps(_data, other._data); }
-	ComparisonResult operator<=(const Vector &other) const { return _mm_cmple_ps(_data, other._data); }
-	ComparisonResult operator>(const Vector &other) const { return _mm_cmpgt_ps(_data, other._data); }
-	ComparisonResult operator>=(const Vector &other) const { return _mm_cmpge_ps(_data, other._data); }
-	ComparisonResult operator==(const Vector &other) const { return _mm_cmpeq_ps(_data, other._data); }
-	ComparisonResult operator!=(const Vector &other) const { return _mm_cmpneq_ps(_data, other._data); }
+	static ComparisonResult lessThan(const Vector &v1, const Vector &v2)
+	{
+		return _mm_cmplt_ps(v1.data(), v2.data());
+	}
+	
+	static ComparisonResult lessThanEqual(const Vector &v1, const Vector &v2)
+	{
+		return _mm_cmple_ps(v1.data(), v2.data());
+	}
+	
+	static ComparisonResult greaterThan(const Vector &v1, const Vector &v2)
+	{
+		return _mm_cmpgt_ps(v1.data(), v2.data());
+	}
+	
+	static ComparisonResult greaterThanEqual(const Vector &v1, const Vector &v2)
+	{
+		return _mm_cmpge_ps(v1.data(), v2.data());
+	}
+	
+	static ComparisonResult equal(const Vector &v1, const Vector &v2)
+	{
+		return _mm_cmpeq_ps(v1.data(), v2.data());
+	}
+	
+	static ComparisonResult notEqual(const Vector &v1, const Vector &v2)
+	{
+		return _mm_cmpneq_ps(v1.data(), v2.data());
+	}
+	
+	static Vector choose(const ComparisonResult &selector, const Vector &vTrue, const Vector &vFalse)
+	{
+		return _mm_and_ps( _mm_and_ps(selector.data(), vTrue.data()), _mm_andnot_ps(selector.data(), vFalse.data()) );
+	}
+	
+	bool operator==(const Vector &other) const { return _array == other._array; }
 	
 	// original
 	
 	__m128 &data() { return _data; }
 	const __m128 &data() const { return _data; }
-	operator __m128() const { return _data; }
+	
+	ML_IMPL_VECTOR_OPERATORS(Vector, ValueType)
 	
 protected:
 	
@@ -139,10 +348,27 @@ protected:
 	{
 		__m128 _data;
 		__v4sf _v;
-		float _array[4];
+		std::array<float, 4> _array;
 	};
 };
 
+typedef Vector<float, 4> Vector_float_4;
+
+ML_IMPL_VECTOR_OPERATORS_GLOBAL(inline Vector_float_4, Vector_float_4, float)
+
+inline Vector<double, 2> sseSqrt(const Vector<double, 2> &v)
+{
+	return _mm_sqrt_pd(v.data());
 }
 
-#endif // VECTOR_SSE_H
+inline Vector<float, 4> sseSqrt(const Vector<float, 4> &v)
+{
+	return _mm_sqrt_ps(v.data());
+}
+
+inline Vector<float, 4> sseRsqrt(const Vector<float, 4> &v)
+{
+	return _mm_rsqrt_ps(v.data());
+}
+
+}

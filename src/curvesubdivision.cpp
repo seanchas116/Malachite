@@ -121,9 +121,9 @@ void curve4_div::recursive_bezier(const Vec2D &p1, const Vec2D &p2,
 	Vec2D d42 = p2 - p4;
 	Vec2D d43 = p3 - p4;
 	
-	Vec2D d2d3 = Vec2D(d42.x, d43.x) * d.y - Vec2D(d42.y, d43.y) * d.x;
-	double d2 = fabs(d2d3.x);
-	double d3 = fabs(d2d3.x);
+	Vec2D d2d3 = Vec2D(d42.x(), d43.x()) * d.y() - Vec2D(d42.y(), d43.y()) * d.x();
+	double d2 = fabs(d2d3.x());
+	double d3 = fabs(d2d3.x());
 	
 	Vec2D da;
     double k;
@@ -134,32 +134,32 @@ void curve4_div::recursive_bezier(const Vec2D &p1, const Vec2D &p2,
     case 0:
         // All collinear OR p1==p4
         //----------------------
-        k = vecSqLength(d);
+		k = d.lengthSquare();
         if(k == 0)
         {
-			d2 = vecSqLength(p2 - p1);
-			d3 = vecSqLength(p3 - p4);
+			d2 = (p2 - p1).lengthSquare();
+			d3 = (p3 - p4).lengthSquare();
         }
         else
         {
             k   = 1 / k;
 			da = p2 - p1;
-			d2 = k * vecDot(da, d);
+			d2 = k * Vec2D::dot(da, d);
 			da = p3 - p1;
-			d3 = k * vecDot(da, d);
+			d3 = k * Vec2D::dot(da, d);
             if(d2 > 0 && d2 < 1 && d3 > 0 && d3 < 1)
             {
                 // Simple collinear case, 1---2---3---4
                 // We can leave just two endpoints
                 return;
             }
-                 if(d2 <= 0) d2 = vecSqLength(p1 - p2);
-            else if(d2 >= 1) d2 = vecSqLength(p4 - p2);
-            else             d2 = vecSqLength(p1 + d2 * d - p2);
+                 if(d2 <= 0) d2 = (p1 - p2).lengthSquare();
+            else if(d2 >= 1) d2 = (p4 - p2).lengthSquare();
+            else             d2 = (p1 + d2 * d - p2).lengthSquare();
 
-                 if(d3 <= 0) d3 = vecSqLength(p1 - p3);
-            else if(d3 >= 1) d3 = vecSqLength(p4 - p3);
-            else             d3 = vecSqLength(p1 + d3 * d - p3);
+                 if(d3 <= 0) d3 = (p1 - p3).lengthSquare();
+            else if(d3 >= 1) d3 = (p4 - p3).lengthSquare();
+            else             d3 = (p1 + d3 * d - p3).lengthSquare();
         }
         if(d2 > d3)
         {
@@ -182,7 +182,7 @@ void curve4_div::recursive_bezier(const Vec2D &p1, const Vec2D &p2,
     case 1:
         // p1,p2,p4 are collinear, p3 is significant
         //----------------------
-        if(d3 * d3 <= m_distance_tolerance_square * vecSqLength(d))
+        if(d3 * d3 <= m_distance_tolerance_square * d.lengthSquare())
         {
             if(m_angle_tolerance < curve_angle_tolerance_epsilon)
             {
@@ -195,11 +195,11 @@ void curve4_div::recursive_bezier(const Vec2D &p1, const Vec2D &p2,
 			
 			Vec2D d34 = p4 - p3;
 			Vec2D d23 = p3 - p2;
-			da.x = fabs(atan2(d34.y, d34.x) - atan2(d23.y, d23.x));
+			da.rx() = fabs(atan2(d34.y(), d34.x()) - atan2(d23.y(), d23.x()));
 			
-            if(da.x >= pi) da.x = 2*pi - da.x;
+			if(da.x() >= pi) da.rx() = 2*pi - da.x();
 
-            if(da.x < m_angle_tolerance)
+			if(da.x() < m_angle_tolerance)
             {
                 m_points << p2;
                 m_points << p3;
@@ -208,7 +208,7 @@ void curve4_div::recursive_bezier(const Vec2D &p1, const Vec2D &p2,
 
             if(m_cusp_limit != 0.0)
             {
-                if(da.x > m_cusp_limit)
+				if(da.x() > m_cusp_limit)
                 {
                     m_points << p3;
                     return;
@@ -220,7 +220,7 @@ void curve4_div::recursive_bezier(const Vec2D &p1, const Vec2D &p2,
     case 2:
         // p1,p3,p4 are collinear, p2 is significant
         //----------------------
-        if(d2 * d2 <= m_distance_tolerance_square * vecSqLength(d))
+        if(d2 * d2 <= m_distance_tolerance_square * d.lengthSquare())
         {
             if(m_angle_tolerance < curve_angle_tolerance_epsilon)
             {
@@ -233,10 +233,10 @@ void curve4_div::recursive_bezier(const Vec2D &p1, const Vec2D &p2,
 			
 			Vec2D d23 = p3 - p2;
 			Vec2D d12 = p2 - p1;
-			da.x = fabs(atan2(d23.y, d23.x) - atan2(d12.y, d12.x));
-            if(da.x >= pi) da.x = 2*pi - da.x;
+			da.rx() = fabs(atan2(d23.y(), d23.x()) - atan2(d12.y(), d12.x()));
+			if(da.x() >= pi) da.rx() = 2*pi - da.x();
 
-            if(da.x < m_angle_tolerance)
+			if(da.x() < m_angle_tolerance)
             {
                 m_points << p2;
                 m_points << p3;
@@ -245,7 +245,7 @@ void curve4_div::recursive_bezier(const Vec2D &p1, const Vec2D &p2,
 
             if(m_cusp_limit != 0.0)
             {
-                if(da.x > m_cusp_limit)
+				if(da.x() > m_cusp_limit)
                 {
                     m_points << p2;
                     return;
@@ -257,7 +257,7 @@ void curve4_div::recursive_bezier(const Vec2D &p1, const Vec2D &p2,
     case 3: 
         // Regular case
         //-----------------
-        if((d2 + d3)*(d2 + d3) <= m_distance_tolerance_square * vecSqLength(d))
+        if((d2 + d3)*(d2 + d3) <= m_distance_tolerance_square * d.lengthSquare())
         {
             // If the curvature doesn't exceed the distance_tolerance value
             // we tend to finish subdivisions.
@@ -276,13 +276,13 @@ void curve4_div::recursive_bezier(const Vec2D &p1, const Vec2D &p2,
 			Vec2D d12 = p2 - p1;
 			
 			
-            k   = atan2(d23.y, d23.x);
-            da.x = fabs(k - atan2(d12.y, d12.x));
-            da.y = fabs(atan2(d34.y, d34.x) - k);
-            if(da.x >= pi) da.x = 2*pi - da.x;
-            if(da.y >= pi) da.y = 2*pi - da.y;
+			k   = atan2(d23.y(), d23.x());
+            da.rx() = fabs(k - atan2(d12.y(), d12.x()));
+            da.ry() = fabs(atan2(d34.y(), d34.x()) - k);
+            if(da.x() >= pi) da.rx() = 2*pi - da.x();
+            if(da.y() >= pi) da.ry() = 2*pi - da.y();
 
-            if(da.x + da.y < m_angle_tolerance)
+            if(da.x() + da.y() < m_angle_tolerance)
             {
                 // Finally we can stop the recursion
                 //----------------------
@@ -292,13 +292,13 @@ void curve4_div::recursive_bezier(const Vec2D &p1, const Vec2D &p2,
 
             if(m_cusp_limit != 0.0)
             {
-                if(da.x > m_cusp_limit)
+                if(da.x() > m_cusp_limit)
                 {
                     m_points << p2;
                     return;
                 }
 
-                if(da.y > m_cusp_limit)
+                if(da.y() > m_cusp_limit)
                 {
                     m_points << p3;
                     return;

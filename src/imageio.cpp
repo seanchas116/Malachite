@@ -65,19 +65,19 @@ static bool pasteFIBITMAPToImage(const QPoint &pos, T_Image *dst, FIBITMAP *src)
 			{
 				case 24:
 				{
-					auto wrapped = GenericImage<Malachite::ImageFormatRgb, Vec3U8>::wrap(srcBits, srcSize, srcPitch);
-					dst->template paste<false, true>(wrapped, pos);
+					auto wrapped = GenericImage<RgbU8>::wrap(srcBits, srcSize, srcPitch);
+					dst->template paste<ImagePasteSourceInverted>(wrapped, pos);
 					break;
 				}
 				case 32:
 				{
-					dst->template paste<false, true>(GenericImage<Malachite::ImageFormatArgb, Vec4U8>::wrap(srcBits, srcSize, srcPitch), pos);
+					dst->template paste<ImagePasteSourceInverted>(GenericImage<RgbaU8>::wrap(srcBits, srcSize, srcPitch), pos);
 					break;
 				}
 				default:
 				{
 					FIBITMAP *newBitmap = FreeImage_ConvertTo32Bits(src);	// converted to RGBA8
-					dst->template paste<false, true>(GenericImage<Malachite::ImageFormatArgb, Vec4U8>::wrap(FreeImage_GetBits(newBitmap), srcSize, FreeImage_GetPitch(newBitmap)), pos);
+					dst->template paste<ImagePasteSourceInverted>(GenericImage<RgbaU8>::wrap(FreeImage_GetBits(newBitmap), srcSize, FreeImage_GetPitch(newBitmap)), pos);
 					FreeImage_Unload(newBitmap);
 					break;
 				}
@@ -87,12 +87,12 @@ static bool pasteFIBITMAPToImage(const QPoint &pos, T_Image *dst, FIBITMAP *src)
 		}
 		case FIT_RGB16:
 		{
-			dst->template paste<false, true>(GenericImage<Malachite::ImageFormatRgb, Vec3U16>::wrap(srcBits, srcSize, srcPitch), pos);
+			dst->template paste<ImagePasteSourceInverted>(GenericImage<RgbaU16>::wrap(srcBits, srcSize, srcPitch), pos);
 			break;
 		}
 		case FIT_RGBA16:
 		{
-			dst->template paste<false, true>(GenericImage<Malachite::ImageFormatArgb, Vec4U16>::wrap(srcBits, srcSize, srcPitch), pos);
+			dst->template paste<ImagePasteSourceInverted>(GenericImage<RgbaU16>::wrap(srcBits, srcSize, srcPitch), pos);
 			break;
 		}
 		default:
@@ -121,14 +121,14 @@ static bool pasteImageToFIBITMAP(const QPoint &pos, FIBITMAP *dst, const T_Image
 			{
 				case 24:
 				{
-					auto wrapper = GenericImage<Malachite::ImageFormatRgb, Vec3U8>::wrap(dstBits, dstSize, dstPitch);
-					wrapper.paste<true, false>(src, pos);
+					auto wrapper = GenericImage<RgbU8>::wrap(dstBits, dstSize, dstPitch);
+					wrapper.paste<ImagePasteDestinationInverted>(src, pos);
 					break;
 				}
 				case 32:
 				{
-					auto wrapper = GenericImage<Malachite::ImageFormatArgb, Vec4U8>::wrap(dstBits, dstSize, dstPitch);
-					wrapper.paste<true, false>(src, pos);
+					auto wrapper = GenericImage<RgbaU8>::wrap(dstBits, dstSize, dstPitch);
+					wrapper.paste<ImagePasteDestinationInverted>(src, pos);
 					break;
 				}
 				default:
@@ -140,14 +140,14 @@ static bool pasteImageToFIBITMAP(const QPoint &pos, FIBITMAP *dst, const T_Image
 		}
 		case FIT_RGB16:
 		{
-			auto wrapper = GenericImage<Malachite::ImageFormatRgb, Vec3U16>::wrap(dstBits, dstSize, dstPitch);
-			wrapper.paste<true, false>(src, pos);
+			auto wrapper = GenericImage<RgbU16>::wrap(dstBits, dstSize, dstPitch);
+			wrapper.paste<ImagePasteDestinationInverted>(src, pos);
 			break;
 		}
 		case FIT_RGBA16:
 		{
-			auto wrapper = GenericImage<Malachite::ImageFormatBgra, Vec4U16>::wrap(dstBits, dstSize, dstPitch);
-			wrapper.paste<true, false>(src, pos);
+			auto wrapper = GenericImage<RgbaU16>::wrap(dstBits, dstSize, dstPitch);
+			wrapper.paste<ImagePasteDestinationInverted>(src, pos);
 			break;
 		}
 		default:

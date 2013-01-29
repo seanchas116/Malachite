@@ -65,6 +65,12 @@ inline TypeDst &blindCast(TypeSrc &src)
 	return *reinterpret_cast<TypeDst *>(&src);
 }
 
+template <class TypeDst, class TypeSrc>
+inline const TypeDst &blindCast(const TypeSrc &src)
+{
+	return *reinterpret_cast<const TypeDst *>(&src);
+}
+
 template <typename T>
 class QVectorCountableIterator
 {

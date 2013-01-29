@@ -75,7 +75,7 @@ void drawWithSpreadType(T_Rasterizer *ras, ArgbBitmap *bitmap, BlendOp *blendOp,
 	
 	if (brush.type() == Malachite::BrushTypeColor)
 	{
-		ColorFiller filler(brush.argb(), opacity);
+		ColorFiller filler(brush.pixel(), opacity);
 		fill(ras, bitmap, blendOp, &filler);
 		return;
 	}

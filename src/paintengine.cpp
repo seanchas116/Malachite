@@ -1,3 +1,4 @@
+#include <QDebug>
 
 #include "paintengine.h"
 
@@ -58,9 +59,9 @@ void PaintEngine::drawSurface(const Vec2D &point, const Surface &surface)
 	if (transform.type() <= QTransform::TxTranslate)
 	{
 		Vec2D offset = point + Vec2D(transform.dx(), transform.dy());
-		QPoint rounded(round(offset.x), round(offset.y));
+		QPoint rounded(std::round(offset.x()), std::round(offset.y()));
 		
-		if (offset.x == rounded.x() && offset.y == rounded.y())
+		if (offset.x() == rounded.x() && offset.y() == rounded.y())
 		{
 			drawTransformedSurface(rounded, surface);
 			return;
@@ -69,7 +70,7 @@ void PaintEngine::drawSurface(const Vec2D &point, const Surface &surface)
 	
 	pushState();
 	
-	_state.shapeTransform = QTransform::fromTranslate(point.x, point.y) * _state.shapeTransform;
+	_state.shapeTransform = QTransform::fromTranslate(point.x(), point.y()) * _state.shapeTransform;
 	_state.brush = Brush(surface);
 	
 	qDebug() << surface.keys();
@@ -77,7 +78,7 @@ void PaintEngine::drawSurface(const Vec2D &point, const Surface &surface)
 	foreach (const QPoint &key, surface.keys())
 	{
 		Vec2D relativePos = key * Surface::TileSize;
-		drawRect(relativePos.x, relativePos.y, Surface::TileSize, Surface::TileSize);
+		drawRect(relativePos.x(), relativePos.y(), Surface::TileSize, Surface::TileSize);
 	}
 	
 	popState();
@@ -89,9 +90,9 @@ void PaintEngine::drawImage(const Vec2D &point, const Image &image)
 	if (transform.type() <= QTransform::TxTranslate)
 	{
 		Vec2D offset = point + Vec2D(transform.dx(), transform.dy());
-		QPoint rounded(round(offset.x), round(offset.y));
+		QPoint rounded(std::round(offset.x()), std::round(offset.y()));
 		
-		if (offset.x == rounded.x() && offset.y == rounded.y())
+		if (offset.x() == rounded.x() && offset.y() == rounded.y())
 		{
 			drawTransformedImage(rounded, image);
 			return;
@@ -103,7 +104,7 @@ void PaintEngine::drawImage(const Vec2D &point, const Image &image)
 	_state.brush = Brush(image);
 	_state.brush.setSpreadType(Malachite::SpreadTypeReflective);
 	
-	_state.shapeTransform = QTransform::fromTranslate(point.x, point.y) * _state.shapeTransform;
+	_state.shapeTransform = QTransform::fromTranslate(point.x(), point.y()) * _state.shapeTransform;
 	
 	drawRect(0, 0, image.width(), image.height());
 	

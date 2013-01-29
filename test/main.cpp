@@ -1,5 +1,5 @@
 #include "../src/vector_sse.h"
-#include "../src/argb.h"
+#include "../src/pixel.h"
 #include <QtGui>
 
 using namespace Malachite;
@@ -15,6 +15,11 @@ void testVec()
 	
 	printVec(vec);
 	printVec(vec.extract<3>());
+}
+
+void testPixel()
+{
+	
 }
 
 int main(int argc, char **argv)

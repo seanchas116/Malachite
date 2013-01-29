@@ -51,7 +51,15 @@ public:
 	const bool ownsData;
 };
 
-template <Malachite::ImageFormat T_Format, class T_Color>
+enum ImagePasteInversionMode
+{
+	ImagePasteNotInverted = 0,
+	ImagePasteDestinationInverted = 1,
+	ImagePasteSourceInverted = 2,
+	ImagePasteBothInverted = ImagePasteDestinationInverted | ImagePasteSourceInverted
+};
+
+template <class T_Color>
 class MALACHITESHARED_EXPORT GenericImage
 {
 public:
@@ -153,14 +161,14 @@ public:
 		}
 	}
 	
-	template <Malachite::ImageFormat NewFormat, class NewColor>
-	GenericImage<NewFormat, NewColor> convert()
+	template <class NewColor>
+	GenericImage<NewColor> convert()
 	{
 		if (!p)
-			return GenericImage<NewFormat, NewColor>();
+			return GenericImage<NewColor>();
 		
 		QSize s = size();
-		GenericImage<NewFormat, NewColor> newImage(s);
+		GenericImage<NewColor> newImage(s);
 		
 		for (int y = 0; y < s.height(); ++y)
 		{
@@ -168,26 +176,41 @@ public:
 			T_Color *sp = constScanline(y);
 			
 			for (int x = 0; x < s.width(); ++x)
-				convertPixel<NewFormat, NewColor, T_Format, T_Color>(*dp++, *sp++);
+				*dp++ = *sp++;
 		}
 	}
 	
-	template <bool DstInverted = false, bool SrcInverted = false, Malachite::ImageFormat SrcFormat, class SrcColor>
-	void paste(const GenericImage<SrcFormat, SrcColor> &image, const QPoint &point = QPoint())
+	template <ImagePasteInversionMode InversionMode = ImagePasteNotInverted, class SrcColor>
+	void paste(const GenericImage<SrcColor> &image, const QPoint &point = QPoint())
 	{
 		QRect r = rect() & QRect(point, image.size());
 		
 		for (int y = r.top(); y <= r.bottom(); ++y)
 		{
-			ColorType *dp = (DstInverted ? invertedScanline(y) : scanline(y)) + r.left();
-			const SrcColor *sp = (SrcInverted ? image.invertedConstScanline(y - point.y()) : image.constScanline(y - point.y())) + r.left() - point.x();
+			ColorType *dp;
+			
+			if (InversionMode & ImagePasteDestinationInverted)
+				dp = invertedScanline(y);
+			else
+				dp = scanline(y);
+			
+			dp += r.left();
+			
+			const SrcColor *sp;
+			
+			if (InversionMode & ImagePasteSourceInverted)
+				sp = image.invertedConstScanline(y - point.y());
+			else
+				sp = image.constScanline(y - point.y());
+			
+			sp += (r.left() - point.x());
 			
 			for (int x = 0; x < r.width(); ++x)
-				convertPixel<T_Format, T_Color, SrcFormat, SrcColor>(*dp++, *sp++);
+				*dp++ = *sp++;
 		}
 	}
 	
-	bool operator==(const GenericImage<T_Format, T_Color> &other) const
+	bool operator==(const GenericImage &other) const
 	{
 		if (p == other.p)
 			return true;
@@ -211,12 +234,12 @@ public:
 		return true;
 	}
 	
-	bool operator!=(const GenericImage<T_Format, T_Color> &other) const
+	bool operator!=(const GenericImage &other) const
 	{
 		return !(*this == other);
 	}
 	
-	bool referenceIsEqualTo(const GenericImage<T_Format, T_Color> &other) const
+	bool referenceIsEqualTo(const GenericImage &other) const
 	{
 		return p == other.p;
 	}

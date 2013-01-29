@@ -4,7 +4,7 @@
 //ExportName: ColorGradient
 
 #include "color.h"
-#include "vector.h"
+#include "vec2d.h"
 #include <QMap>
 
 namespace Malachite
@@ -16,7 +16,7 @@ public:
 	ColorGradient() {}
 	virtual ~ColorGradient() {}
 	
-	virtual Vec4F at(float x) const = 0;
+	virtual Pixel at(float x) const = 0;
 	virtual ColorGradient *clone() const { return 0; }
 };
 
@@ -26,7 +26,7 @@ public:
 	
 	ColorGradientCache(ColorGradient *gradient, int sampleCount);
 	
-	Vec4F at(float x) const
+	Pixel at(float x) const
 	{
 		return _cache.at(roundf(x * _sampleCount));
 	}
@@ -36,7 +36,7 @@ public:
 private:
 	
 	int _sampleCount;
-	QVector<Vec4F> _cache;
+	QVector<Pixel> _cache;
 };
 
 class MALACHITESHARED_EXPORT ArgbGradient : public ColorGradient
@@ -45,17 +45,17 @@ public:
 	
 	ArgbGradient() : ColorGradient() {}
 	
-	void addStop(float x, const Vec4F &y) { _stops.insert(x, y); }
-	void addStop(float x, const Color &color) { addStop(x, color.toArgb()); }
+	void addStop(float x, const Pixel &y) { _stops.insert(x, y); }
+	void addStop(float x, const Color &color) { addStop(x, color.toPixel()); }
 	void clear() { _stops.clear(); }
 	
-	Vec4F at(float x) const;
+	Pixel at(float x) const;
 	
 	ColorGradient *clone() const { return new ArgbGradient(*this); }
 	
 private:
 	
-	QMap<float, Vec4F> _stops;
+	QMap<float, Pixel> _stops;
 };
 
 struct LinearGradientInfo

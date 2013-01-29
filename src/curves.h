@@ -5,7 +5,6 @@
 
 #include "polygon.h"
 #include "global.h"
-#include "vector.h"
 
 namespace Malachite
 {

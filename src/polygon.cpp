@@ -2,6 +2,7 @@
 
 #include "private/agg_basics.h"
 #include "curvesubdivision.h"
+#include "memory.h"
 
 #include "polygon.h"
 
@@ -52,7 +53,7 @@ inline void ellipse::approximation_scale(double scale)
 //------------------------------------------------------------------------
 inline void ellipse::calc_num_steps()
 {
-    double ra = (fabs(m_radius.x) + fabs(m_radius.y)) / 2;
+	double ra = (fabs(m_radius.x()) + fabs(m_radius.y())) / 2;
     double da = acos(ra / (ra + 0.125 / m_scale)) * 2;
     m_num = uround(2.0 * M_PI / da);
 	m_num_inv_2pi = 1.0 / double(m_num) * 2.0 * M_PI;
@@ -94,14 +95,8 @@ Polygon::Polygon(const QVector<QPointF> &points) :
 
 Polygon &Polygon::operator*=(const QTransform &transform)
 {
-	Pointer<Vec2D> p(data(), size() * sizeof(Vec2D));
-	
 	for (Polygon::iterator i = begin(); i != end(); ++i)
-	{
-		Vec2D result;
-		transform.map(i->x, i->y, &result.x, &result.y);
-		*i = result;
-	}
+		*i *= transform;
 	
 	return *this;
 }

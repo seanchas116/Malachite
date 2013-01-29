@@ -1,7 +1,8 @@
 #ifndef MLGRADIENTGENERATOR_H
 #define MLGRADIENTGENERATOR_H
 
-#include "../vector.h"
+#include "../vec2d.h"
+#include "../pixel.h"
 
 namespace Malachite
 {
@@ -15,7 +16,7 @@ public:
 		_method(method)
 	{}
 	
-	Vec4F at(const Vec2D &p)
+	Pixel at(const Vec2D &p)
 	{
 		return _gradient->at(actualPosition(_method->position(p)));
 	}
@@ -53,12 +54,12 @@ public:
 		ab(end - start)
 	{
 		Q_ASSERT(start != end);
-		ab2inv = 1.0 / vecSqLength(ab);
+		ab2inv = 1.0 / ab.lengthSquare();
 	}
 	
 	float position(const Vec2D &p) const
 	{
-		return vecDot(p - a, ab) * ab2inv;
+		return Vec2D::dot(p - 1, ab) * ab2inv;
 	}
 	
 private:
@@ -97,14 +98,14 @@ public:
 	RadialGradientMethod(const Vec2D &center, const Vec2D &radius) :
 		c(center)
 	{
-		Q_ASSERT(radius.x > 0 && radius.y > 0);
+		Q_ASSERT(radius.x() > 0 && radius.y() > 0);
 		rinv = 1.0 / radius;
 	}
 	
 	float position(const Vec2D &p) const
 	{
 		Vec2D d = p - c;
-		return vecLength(d * rinv);
+		return (d * rinv).length();
 	}
 	
 private:
@@ -147,11 +148,11 @@ public:
 	FocalGradientMethod(const Vec2D &center, const Vec2D &radius, const Vec2D &focal) :
 		o(center)
 	{
-		Q_ASSERT(radius.x > 0 && radius.y > 0);
+		Q_ASSERT(radius.x() > 0 && radius.y() > 0);
 		rinv = 1 / radius;
 		
 		of = (focal - center) * rinv;
-		c = vecSqLength(of) - 1;
+		c = of.lengthSquare() - 1;
 		Q_ASSERT(c < 0);
 	}
 	
@@ -159,8 +160,9 @@ public:
 	{
 		Vec2D op = (p - o) * rinv;
 		Vec2D fp = op - of;
-		double dot = vecDot(of, fp);
-		double fp2 = vecSqLength(fp);
+		
+		double dot = Vec2D::dot(of, fp);
+		double fp2 = fp.lengthSquare();
 		
 		return fp2 / (sqrt(dot * dot - fp2 * c) - dot); 
 	}

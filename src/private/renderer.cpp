@@ -16,8 +16,8 @@ unsigned QPainterPath_vs::vertex(double *x, double *y)
 			}
 			
 			const Vec2D p = _subdPolygon.at(_subdIndex);
-			*x = p.x;
-			*y = p.y;
+			*x = p.x();
+			*y = p.y();
 			_subdIndex++;
 			
 			_totalCount++;

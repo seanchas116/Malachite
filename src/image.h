@@ -6,15 +6,16 @@
 #include "paintable.h"
 #include "color.h"
 #include "genericimage.h"
+#include "pixel.h"
 
 namespace Malachite
 {
 
-typedef GenericImage<Malachite::ImageFormatArgbFast, Vec4U8> MLImage32;
-
-class MALACHITESHARED_EXPORT Image : public GenericImage<Malachite::ImageFormatArgbFast, Vec4F>, public Paintable
+class MALACHITESHARED_EXPORT Image : public GenericImage<Pixel>, public Paintable
 {
 public:
+	
+	typedef GenericImage<Pixel> super;
 	
 	enum
 	{
@@ -24,20 +25,20 @@ public:
 	/**
 	 * Constructs an empty image.
 	 */
-	Image() : GenericImage<Malachite::ImageFormatArgbFast, Vec4F>() {}
+	Image() : super() {}
 	
 	/**
 	 * Constructs a copy.
 	 * @param other The original image
 	 */
-	Image(const GenericImage<Malachite::ImageFormatArgbFast, Vec4F> &other) : GenericImage<Malachite::ImageFormatArgbFast, Vec4F>(other) {}
+	Image(const super &other) : super(other) {}
 	
 	/**
 	 * Constructs a image with a size.
 	 * The data will not be initialized.
 	 * @param size The size
 	 */
-	Image(const QSize &size) : GenericImage<Malachite::ImageFormatArgbFast, Vec4F>(size) {}
+	Image(const QSize &size) : super(size) {}
 	
 	/**
 	 * Constructs a image with a size.
@@ -45,28 +46,18 @@ public:
 	 * @param width The width
 	 * @param height The height
 	 */
-	Image(int width, int height) : GenericImage<Malachite::ImageFormatArgbFast, Vec4F>(width, height) {}
+	Image(int width, int height) : super(width, height) {}
 	
 	/**
 	 * Fills the data with 0 (transparent).
 	 */
-	void clear() { fill(Vec4F(0)); }
+	void clear() { fill(Pixel(0)); }
 	
 	/**
 	 *
 	 * @return Whether the image is blank (all pixels are transparent)
 	 */
 	bool isBlank() const;
-	
-	//MLArgb colorSummation() const;
-	
-	/**
-	 * Calculates the summation of each component of the masked pixels.
-	 * @param maskOffset "mask"'s offset
-	 * @param mask Mask image
-	 * @return The summation
-	 */
-	Vec4F colorSummation(const QPoint &maskOffset, const Image &mask) const;
 	
 	/**
 	 * Creates a PaintEngine. Used by Painter.

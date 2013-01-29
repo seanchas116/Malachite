@@ -11,7 +11,7 @@
 namespace Malachite
 {
 
-typedef Bitmap<Vec4F> ArgbBitmap;
+typedef Bitmap<Pixel> ArgbBitmap;
 
 class QPainterPath_vs
 {

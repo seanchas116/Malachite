@@ -30,95 +30,6 @@ PaintEngine *Surface::createPaintEngine()
 	return new SurfacePaintEngine();
 }
 
-bool Surface::save(QIODevice *device) const
-{
-	QDataStream outStream(device);
-	
-	outStream << (quint32)(TileSize);
-	
-	if (!d)
-		return true;
-	
-	SurfaceHash::const_iterator i;
-	for (i = d->tileHash.begin(); i != d->tileHash.end(); ++i)
-	{
-		const Image *tile = i.value();
-		
-		QByteArray tileArray;
-		QDataStream tileStream(&tileArray, QIODevice::WriteOnly);
-		
-		for (int y = 0; y < TileSize; ++y) {
-			const Vec4F *p = tile->constScanline(y);
-			for (int x = 0; x < TileSize; ++x)
-			{
-				tileStream << p->a;
-				tileStream << p->r;
-				tileStream << p->g;
-				tileStream << p->b;
-				++p;
-			}
-		}
-		
-		outStream << i.key();
-		outStream << tileArray;
-	}
-	return true;
-}
-
-Surface Surface::loaded(QIODevice *device)
-{
-	QDataStream inStream(device);
-	
-	quint32 tileSize;
-	inStream >> tileSize;
-	
-	Surface surface;
-	surface.setupData();
-	
-	while (!inStream.atEnd())
-	{
-		QPoint key;
-		QByteArray tileArray;
-		
-		inStream >> key;
-		inStream >> tileArray;
-		
-		Image *tile = new Image(TileSize, TileSize);
-		QDataStream tileStream(&tileArray, QIODevice::ReadOnly);
-		
-		for (int y = 0; y < TileSize; ++y)
-		{
-			Vec4F *p = tile->scanline(y);
-			for (int x = 0; x < TileSize; ++x) 
-			{
-				tileStream >> p->a;
-				tileStream >> p->r;
-				tileStream >> p->g;
-				tileStream >> p->b;
-				++p;
-			}
-		}
-		
-		if (tileSize == TileSize)
-		{
-			if (!surface.d->tileHash.contains(key))
-			{
-				surface.d->tileHash[key] = tile;
-				continue;
-			}
-		}
-		else
-		{
-			Painter painter(&surface);
-			painter.setBlendMode(BlendMode::Source);
-			painter.drawTransformedImage(key * (int)tileSize, *tile);
-		}
-		delete tile;
-	}
-	
-	return surface;
-}
-
 bool Surface::isNull() const
 {
 	if (!d || d->tileHash.isEmpty())
@@ -311,12 +222,12 @@ int Surface::commonLeftBound(const QPointSet &keys) const
 {
 	for (int x = 0; x < Surface::TileSize; ++x)
 	{
-		foreach (const QPoint &key, keys)
+		for (const QPoint &key : keys)
 		{
 			const Image image = tileForKey(key);
 			for (int y = 0; y < Surface::TileSize; ++y)
 			{
-				if (image.pixel(x, y).a)
+				if (image.pixel(x, y).a())
 					return x;
 			}
 		}
@@ -328,12 +239,12 @@ int Surface::commonRightBound(const QPointSet &keys) const
 {
 	for (int x = Surface::TileSize - 1; x >= 0; --x)
 	{
-		foreach (const QPoint &key, keys)
+		for (const QPoint &key : keys)
 		{
 			const Image image = tileForKey(key);
 			for (int y = 0; y < Surface::TileSize; ++y)
 			{
-				if (image.pixel(x, y).a)
+				if (image.pixel(x, y).a())
 					return x;
 			}
 		}
@@ -345,12 +256,12 @@ int Surface::commonTopBound(const QPointSet &keys) const
 {
 	for (int y = 0; y < Surface::TileSize; ++y)
 	{
-		foreach (const QPoint &key, keys)
+		for (const QPoint &key : keys)
 		{
-			const Vec4F *scanline = tileForKey(key).scanline(y);
+			const Pixel *scanline = tileForKey(key).scanline(y);
 			for (int x = 0; x < Surface::TileSize; ++x)
 			{
-				if (scanline->a)
+				if (scanline->a())
 					return y;
 				scanline++;
 			}
@@ -363,12 +274,12 @@ int Surface::commonBottomBound(const QPointSet &keys) const
 {
 	for (int y = Surface::TileSize - 1; y >= 0; --y)
 	{
-		foreach (const QPoint &key, keys)
+		for (const QPoint &key : keys)
 		{
-			const Vec4F *scanline = tileForKey(key).scanline(y);
+			const Pixel *scanline = tileForKey(key).scanline(y);
 			for (int x = 0; x < Surface::TileSize; ++x)
 			{
-				if (scanline->a)
+				if (scanline->a())
 					return y;
 				scanline++;
 			}
@@ -405,9 +316,9 @@ public:
 	MLSurfaceInitializer()
 	{
 		Surface::DefaultTile = Image(Surface::TileSize, Surface::TileSize);
-		Surface::DefaultTile.fill(Color::fromRgbValue(0, 0, 0, 0).toArgb());
+		Surface::DefaultTile.fill(Color::fromRgbValue(0, 0, 0, 0).toPixel());
 		Surface::WhiteTile = Image(Surface::TileSize, Surface::TileSize);
-		Surface::WhiteTile.fill(Color::fromRgbValue(1, 1, 1, 1).toArgb());
+		Surface::WhiteTile.fill(Color::fromRgbValue(1, 1, 1, 1).toPixel());
 	}
 };
 

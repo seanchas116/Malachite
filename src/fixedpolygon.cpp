@@ -79,7 +79,7 @@ QRectF FixedMultiPolygon::boundingRect() const
 	xy = min.toMLVec2D();
 	wh = max.toMLVec2D() - xy;
 	
-	return QRectF(xy.x, xy.y, wh.x, wh.y);
+	return QRectF(xy.x(), xy.y(), wh.x(), wh.y());
 }
 
 using namespace ClipperLib;

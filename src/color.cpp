@@ -139,17 +139,17 @@ QString Color::toWebColor() const
 {
 	Color color = *this;
 	color.setAlpha(1.0);
-	Vec4U8 argb = color.toFastArgb8();
+	BgraU8 pix8 = color.toPixel();
 	
-	QString rText = QString::number(argb.r, 16).toUpper();
+	QString rText = QString::number(pix8.r(), 16).toUpper();
 	if (rText.size() == 1)
 		rText = "0" + rText;
 	
-	QString gText = QString::number(argb.g, 16).toUpper();
+	QString gText = QString::number(pix8.g(), 16).toUpper();
 	if (gText.size() == 1)
 		gText = "0" + gText;
 	
-	QString bText = QString::number(argb.b, 16).toUpper();
+	QString bText = QString::number(pix8.b(), 16).toUpper();
 	if (bText.size() == 1)
 		bText = "0" + bText;
 	
@@ -165,12 +165,12 @@ Color Color::fromWebColor(const QString &webColor, bool *ok)
 		return Color();
 	}
 	
-	Vec4U8 argb;
+	BgraU8 pix8;
 	bool textOk;
 	
-	argb.a = 0xFF;
+	pix8.ra() = 0xFF;
 	
-	argb.r = webColor.mid(1, 2).toInt(&textOk, 16);
+	pix8.rr() = webColor.mid(1, 2).toInt(&textOk, 16);
 	if (!textOk)
 	{
 		if (ok)
@@ -178,7 +178,7 @@ Color Color::fromWebColor(const QString &webColor, bool *ok)
 		return Color();
 	}
 	
-	argb.g = webColor.mid(3, 2).toInt(&textOk, 16);
+	pix8.rg() = webColor.mid(3, 2).toInt(&textOk, 16);
 	if (!textOk)
 	{
 		if (ok)
@@ -186,7 +186,7 @@ Color Color::fromWebColor(const QString &webColor, bool *ok)
 		return Color();
 	}
 	
-	argb.b = webColor.mid(5, 2).toInt(&textOk, 16);
+	pix8.rb() = webColor.mid(5, 2).toInt(&textOk, 16);
 	if (!textOk)
 	{
 		if (ok)
@@ -197,7 +197,7 @@ Color Color::fromWebColor(const QString &webColor, bool *ok)
 	if (ok)
 		*ok = true;
 	
-	return Color::fromFastArgb8(argb);
+	return Color::fromPixel(pix8);
 }
 
 }

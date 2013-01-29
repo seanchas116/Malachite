@@ -6,13 +6,26 @@
 namespace Malachite
 {
 
+inline static Pixel compose(const Pixel &dst, const Pixel &src, const Pixel &f_sa_da, float x, float y, float z)
+{
+	Pixel fx = f_sa_da;
+	fx.ra() = x;
+	
+	float da = dst.a();
+	float sa = src.a();
+	
+	Pixel r;
+	r.rv() = fx.v() + PixelVec(y * (1.f - da)) * src.v() + PixelVec(z * (1.f - sa)) * dst.v();
+	return r;
+}
+
 class BlendFunctionsClear
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
 		Q_UNUSED(src);
-		dst = Vec4F(0);
+		dst = Pixel(0);
 	}
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
@@ -25,7 +38,7 @@ public:
 class BlendFunctionsSource
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
 		dst = src;
 	}
@@ -49,7 +62,7 @@ public:
 class BlendFunctionsDestination
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
 		Q_UNUSED(dst); Q_UNUSED(src);
 	}
@@ -73,9 +86,10 @@ public:
 class BlendFunctionsSourceOver
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst = src + (Vec4F(1.0f) - src.extract3()) * dst;
+		dst.rv() = src.v() + (PixelVec(1) - src.aV()) * dst.v();
+		//dst = src + (Pixel(1.0f) - src.extract3()) * dst;
 		//dst = src + (1.0f - src.a) * dst;
 	}
 	
@@ -88,9 +102,10 @@ public:
 class BlendFunctionsDestinationOver
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst = dst + (1.0f - dst.a) * src;
+		dst.rv() = dst.v() + (PixelVec(1) - dst.aV()) * src.v();
+		//dst = dst + (1.0f - dst.a) * src;
 	}
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
@@ -102,9 +117,10 @@ public:
 class BlendFunctionsSourceIn
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst = dst.a * src;
+		dst.rv() = dst.aV() * src.v();
+		//dst = dst.a * src;
 	}
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
@@ -126,9 +142,10 @@ public:
 class BlendFunctionsDestinationIn
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst = src.a * dst;
+		dst.rv() = src.aV() * dst.v();
+		//dst = src.a * dst;
 	}
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
@@ -150,9 +167,10 @@ public:
 class BlendFunctionsSourceOut
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst = (1.0f - dst.a) * src;
+		dst.rv() = (PixelVec(1) - dst.aV()) * src.v();
+		//dst = (1.0f - dst.a) * src;
 	}
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
@@ -174,9 +192,10 @@ public:
 class BlendFunctionsDestinationOut
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst = (1.0f - src.a) * dst;
+		dst.rv() = (PixelVec(1) - src.aV()) * dst.v();
+		//dst = (1.0f - src.a) * dst;
 	}
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
@@ -198,9 +217,10 @@ public:
 class BlendFunctionsSourceAtop
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst = dst.a * src + (1.0f - src.a) * dst;
+		dst.rv() = dst.aV() * src.v() + (PixelVec(1) - src.aV()) + dst.v();
+		//dst = dst.a * src + (1.0f - src.a) * dst;
 	}
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
@@ -222,9 +242,10 @@ public:
 class BlendFunctionsDestinationAtop
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst = src.a * dst + (1.0f - dst.a) * src;
+		dst.rv() = src.aV() * dst.v() + (PixelVec(1) - dst.v()) * src.v();
+		//dst = src.a * dst + (1.0f - dst.a) * src;
 	}
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
@@ -246,9 +267,10 @@ public:
 class BlendFunctionsXor
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst = (1.0f - dst.a) * src + (1.0f - src.a) * dst;
+		dst.rv() = (Pixel(1).v() - dst.aV()) * src.v() + (PixelVec(1) - src.aV()) * dst.v();
+		//dst = (1.0f - dst.a) * src + (1.0f - src.a) * dst;
 	}
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
@@ -270,23 +292,22 @@ public:
 class BlendFunctionsPlus
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst = vecBound(0, dst + src , 1);
+		dst.rv() = (dst.v() + src.v()).bound(PixelVec(0), PixelVec(1));
+		//dst = vecBound(0, dst + src , 1);
 	}
 	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
+	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
 class BlendFunctionsMultiply
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst = src * dst + src * (1.0f - dst.a) + dst * (1.0f - src.a);
+		dst.rv() = src.v() * dst.v() + src.v() * (PixelVec(1) - dst.aV()) + dst.v() * (PixelVec(1) - src.aV());
+		//dst = src * dst + src * (1.0f - dst.a) + dst * (1.0f - src.a);
 	}
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
@@ -308,337 +329,182 @@ public:
 class BlendFunctionsScreen
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst = src + dst - src * dst;
+		dst.rv() = src.v() * dst.v() - src.v() * dst.v();
+		//dst = src + dst - src * dst;
 	}
 	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
+	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
 class BlendFunctionsOverlay
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a == 0) return;
-		if (dst.a == 0) { dst = src; return; }
+		if (src.a() == 0) return;
+		if (dst.a() == 0) { dst = src; return; }
 		
-		Vec4F d, d1, d2;
+		Pixel f1, f2, f;
+		f1.rv() = PixelVec(2) * src.v() * dst.v();
+		f2.rv() = PixelVec(src.a() * dst.a()) - PixelVec(2) * (dst.aV() - dst.v()) * (src.aV() - src.v());
+		f.rv() == PixelVec::choose( PixelVec::lessThanEqual(dst.v(), PixelVec(dst.a() * 0.5f)), f1.v(), f2.v() );
 		
-		d = src * (1.0f - dst.a) + dst * (1.0f - src.a);
-		d1 = 2.0f * src * dst;
-		d2 = src.a * dst.a - 2.0f * (dst.a - dst) * (src.a - src);
-		
-		Vec4I32 comp = Vec4F::lessThanOrEqual(2.0f * dst, dst.a);
-		
-		d.r += comp.r ? d1.r : d2.r;
-		d.g += comp.g ? d1.g : d2.g;
-		d.b += comp.b ? d1.b : d2.b;
-		d.a += src.a * dst.a;
-		
-		dst = d;
+		dst = compose(dst, src, f, 1, 1, 1);
 	}
 	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
+	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
 class BlendFunctionsDarken
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a == 0) return;
-		if (dst.a == 0) { dst = src; return; }
+		if (src.a() == 0) return;
+		if (dst.a() == 0) { dst = src; return; }
 		
-		Vec4F d, ds;
-		ds = src + (1.0f - src.a) * dst;
-		d = dst + (1.0f - dst.a) * src;
-		
-		Vec4I32 comp = Vec4F::lessThan(src * dst.a, dst * src.a);
-		
-		if (comp.r) d.r = ds.r;
-		if (comp.g) d.g = ds.g;
-		if (comp.b) d.b = ds.b;
-		
-		dst = d;
+		Pixel f;
+		f.rv() = PixelVec::minimum(src.v() * dst.aV(), dst.v() * src.aV());
+		dst = compose(dst, src, f, 1, 1, 1);
 	}
 	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
+	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
 class BlendFunctionsLighten
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a == 0) return;
-		if (dst.a == 0) { dst = src; return; }
+		if (src.a() == 0) return;
+		if (dst.a() == 0) { dst = src; return; }
 		
-		Vec4F d, ds;
-		ds = src + (1.0f - src.a) * dst;
-		d = dst + (1.0f - dst.a) * src;
-		
-		Vec4I32 comp = Vec4F::greaterThan(src * dst.a, dst * src.a);
-		
-		if (comp.r) d.r = ds.r;
-		if (comp.g) d.g = ds.g;
-		if (comp.b) d.b = ds.b;
-		
-		dst = d;
+		Pixel f;
+		f.rv() = PixelVec::maximum(src.v() * dst.aV(), dst.v() * src.aV());
+		dst = compose(dst, src, f, 1, 1, 1);
 	}
 	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
+	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
 class BlendFunctionsColorDodge
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a == 0) return;
-		if (dst.a == 0) { dst = src; return; }
+		if (src.a() == 0) return;
+		if (dst.a() == 0) { dst = src; return; }
 		
-		Vec4F d, d1, d2;
-		d1 = src * (1.0f - dst.a);
-		d2 = d1 + (src.a * dst.a) + dst * (1.0f - src.a);
-		d = (src.a * dst.a) * vecMin(1.0f, dst * src.a / (dst.a * (src.a - src)));
+		Pixel f;
 		
-		Vec4I32 compS = Vec4F::equal(src, src.a);
-		Vec4I32 compD = Vec4F::equal(dst, 0.0f);
+		f.rv() = PixelVec::minimum( PixelVec(dst.a() * src.a()), dst.v() * (src.a() * src.a()) / (src.aV() - src.v()) );
+		f.rv() = PixelVec::choose(PixelVec::equal(src.v(), src.aV()), PixelVec(1), f.v());
 		
-		if (compS.r)
-			d.r = compD.r ? d1.r : d2.r;
-		if (compS.g)
-			d.g = compD.g ? d1.g : d2.g;
-		if (compS.b)
-			d.b = compD.b ? d1.b : d2.b;
-		
-		d.a = src.a + dst.a - src.a * dst.a;
-		
-		dst = d;
+		dst = compose(dst, src, f, 1, 1, 1);
 	}
 	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
+	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
 class BlendFunctionsColorBurn
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a == 0) return;
-		if (dst.a == 0) { dst = src; return; }
+		if (src.a() == 0) return;
+		if (dst.a() == 0) { dst = src; return; }
 		
-		Vec4F d, d1, d2;
+		Pixel f;
+		PixelVec sada(src.a() * dst.a());
+		f.rv() = sada - PixelVec::minimum( sada, (dst.aV() - dst.v()) * (src.a() * src.a()) / src.v() );
+		f.rv() = PixelVec::choose( PixelVec::equal(src.v(), PixelVec(0)), PixelVec(0), f.v());
 		
-		d2 = dst * (1.0f - src.a);
-		d1 = (src.a * dst.a) + d2;
-		d = d1 + (src.a * dst.a) * vecMin(1.0f, (dst.a * dst) * src.a / (dst.a * src)) + src * (1.0f - dst.a);
-		
-		Vec4I32 compS = Vec4F::equal(src, 0.0f);
-		Vec4I32 compD = Vec4F::equal(dst, dst.a);
-		
-		if (compS.r)
-			d.r = compD.r ? d1.r : d2.r;
-		if (compS.g)
-			d.g = compD.g ? d1.g : d2.g;
-		if (compS.b)
-			d.b = compD.b ? d1.b : d2.b;
-		
-		d.a = src.a + dst.a - src.a * dst.a;
-		
-		dst = d;
+		dst = compose(dst, src, f, 1, 1, 1);
 	}
 	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
+	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
 class BlendFunctionsHardLight
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a == 0) return;
-		if (dst.a == 0) { dst = src; return; }
+		if (src.a() == 0) return;
+		if (dst.a() == 0) { dst = src; return; }
 		
-		Vec4F d, d1, d2;
+		Pixel f1, f2, f;
+		f1.rv() = 2.f * src.v() * dst.v();
+		f2.rv() = PixelVec(src.a() * dst.a()) - 2.f * (dst.aV() - dst.v()) * (src.aV() - src.v());
+		f.rv() = PixelVec::choose( PixelVec::lessThan(src.v(), PixelVec(src.a() * 0.5)), f1.v(), f2.v() );
 		
-		d = src * (1.0f - dst.a) + dst * (1.0f - src.a);
-		d1 = 2.0f * src;
-		d2 = (src.a * dst.a) - 2.0f * (dst.a - dst) * (src.a - src);
-		
-		Vec4I32 comp = Vec4F::lessThanOrEqual(2.0f * src, src.a);
-		
-		d.r += comp.r ? d1.r : d2.r;
-		d.g += comp.g ? d1.g : d2.g;
-		d.b += comp.b ? d1.b : d2.b;
-		d.a += src.a * dst.a;
-		
-		dst = d;
+		dst = compose(dst, src, f, 1, 1, 1);
 	}
 	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
+	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
 class BlendFunctionsSoftLight
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a == 0) return;
-		if (dst.a == 0) { dst = src; return; }
+		if (src.a() == 0) return;
+		if (dst.a() == 0) { dst = src; return; }
 		
-		Vec4F m, f, d0, d1, d2, d3;
-		m = dst / dst.a;
-		f = 2.0f * src - src.a;
-		d0 = src * (1.0f - dst.a) + dst;
-		d1 = dst * f * (1 - m) + d0;
-		d2 = dst.a * f * (4.0f * m * (4.0f * m + 1.0f) * (m - 1.0f) + 7.0f * m) + d0;
-		d3 = dst.a * f * (vecSqrt(m) - m) + d0;
+		Pixel dc, f1, f2, f3, f;
 		
-		Vec4I32 compS = Vec4F::lessThanOrEqual(2.0f * src, src.a);
-		Vec4I32 compD = Vec4F::lessThanOrEqual(4.0f * dst, dst.a);
+		dc.rv() = dst.v() / dst.aV();
 		
-		dst.a = d0.a;
+		f1.rv() = dc.v() * ((dst.a() * src.a()) - (src.aV() - 2.f * src.v() * (dst.aV() - dst.v())));
+		f2.rv() = dst.v() * src.aV() + ( 2.f * src.v() - src.aV() );
+		f3.rv() = dst.v() * (2.f * src.v() - PixelVec(1)) * ( sseSqrt(dc.v()) - dc.v());
 		
-		if (compS.r)
-			dst.r = d1.r;
-		else
-			dst.r = compD.r ? d2.r : d3.r;
+		f.rv() = PixelVec::choose( PixelVec::lessThan(src.v(), PixelVec(0.5f * src.a())),
+		                           f1.v(),
+		                           PixelVec::choose ( PixelVec::lessThan(dst.v(), PixelVec(0.25f * dst.a())), f2.v(), f3.v() ));
 		
-		if (compS.g)
-			dst.g = d1.g;
-		else
-			dst.g = compD.g ? d2.g : d3.b;
-		
-		if (compS.b)
-			dst.b = d1.b;
-		else
-			dst.b = compD.b ? d2.b : d3.b;
+		dst = compose(dst, src, f, 1, 1, 1);
 	}
 	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
+	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
 class BlendFunctionsDifference
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a == 0) return;
-		if (dst.a == 0) { dst = src; return; }
+		if (src.a() == 0) return;
+		if (dst.a() == 0) { dst = src; return; }
 		
-		Vec4F d = src + dst - 2.0f * vecMin(src * dst.a, dst * src.a);
-		d.a += src.a * dst.a;
+		Pixel d;
+		d.rv() = src.v() + dst.v() - 2.f * PixelVec::minimum(src.v() * dst.aV(), dst.v() * src.aV());
+		d.ra() += src.a() * dst.a();
 		dst = d;
 	}
 	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
+	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
 class BlendFunctionsExclusion
 {
 public:
-	static void blend(Vec4F &dst, const Vec4F &src)
+	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a == 0) return;
-		if (dst.a == 0) { dst = src; return; }
+		if (src.a() == 0) return;
+		if (dst.a() == 0) { dst = src; return; }
 		
-		Vec4F d = (src * dst.a + dst * src.a - (2.0f * src.a * dst.a)) + src * (1.0f - dst.a) + dst * (1.0f - src.a);
-		d.a += src.a * dst.a;
-		dst = d;
+		Pixel f;
+		f.rv() = src.v() * dst.aV() + dst.v() * src.aV() - 2.f * src.v() * dst.v();
+		dst = compose(dst, src, f, 1, 1, 1);
 	}
 	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
+	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
-class BlendFunctionsDestinationPadding
-{
-public:
-	
-	static void blend(Vec4F &dst, const Vec4F &src)
-	{
-		if (dst.a == 1)
-			return;
-		
-		float margin = 1 - dst.a;
-		
-		if (margin >= src.a)
-		{
-			dst += src;
-			return;
-		}
-		
-		dst += (margin / src.a) * src;
-		dst.a = 1;
-	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
-};
-
-class BlendFunctionsSourcePadding
-{
-public:
-	
-	static void blend(Vec4F &dst, const Vec4F &src)
-	{
-		if (src.a == 1)
-		{
-			dst = src;
-			return;
-		}
-		
-		float margin = 1 - src.a;
-		
-		if (margin >= dst.a)
-		{
-			dst += src;
-			return;
-		}
-		
-		dst = (margin / dst.a) * dst + src;
-		dst.a = 1;
-	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
-	{
-		return states;
-	}
-};
 
 BlendOpDictionary::BlendOpDictionary()
 {

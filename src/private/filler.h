@@ -1,7 +1,7 @@
 #ifndef MLFILLER_H
 #define MLFILLER_H
 
-#include "../vector.h"
+#include "../vec2d.h"
 #include "../blendop.h"
 #include "../division.h"
 
@@ -11,24 +11,24 @@ namespace Malachite
 class ColorFiller
 {
 public:
-	ColorFiller(const Vec4F &argb, double opacity) :
+	ColorFiller(const Pixel &argb, double opacity) :
 		_argb(argb * opacity)
 	{}
 	
-	void fill(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		Q_UNUSED(pos);
 		blendOp->blend(count, dst, _argb, covers);
 	}
 	
-	void fill(const QPoint &pos, int count, Pointer<Vec4F> dst, float cover, BlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, float cover, BlendOp *blendOp)
 	{
 		Q_UNUSED(pos);
 		blendOp->blend(count, dst, _argb * cover);
 	}
 	
 private:
-	Vec4F _argb;
+	Pixel _argb;
 };
 
 template <Malachite::SpreadType T_SpreadType>
@@ -39,12 +39,12 @@ public:
 	ImageFiller(const ArgbBitmap &bitmap, const QPoint &offset) :
 		_srcBitmap(bitmap), _offset(offset) {}
 	
-	void fill(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		fillTemplate<false>(pos, count, dst, covers, blendOp);
 	}
 	
-	void fill(const QPoint &pos, int count, Pointer<Vec4F> dst, float cover, BlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, float cover, BlendOp *blendOp)
 	{
 		fillTemplate<true>(pos, count, dst, Pointer<float>(cover), blendOp);
 	}
@@ -52,7 +52,7 @@ public:
 private:
 	
 	template <bool CoverIsNotArray>
-	void fillTemplate(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
+	void fillTemplate(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		switch (T_SpreadType)
 		{
@@ -69,7 +69,7 @@ private:
 	}
 	
 	template <bool CoverIsNotArray>
-	void fillTemplatePad(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
+	void fillTemplatePad(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
 		int imageY = qBound(0, srcPos.y(), _srcBitmap.height() - 1);
@@ -112,7 +112,7 @@ private:
 	}
 	
 	template <bool CoverIsNotArray>
-	void fillTemplateRepeat(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
+	void fillTemplateRepeat(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
 		IntDivision divX(srcPos.x(), _srcBitmap.width());
@@ -155,7 +155,7 @@ private:
 	}
 	
 	template <bool CoverIsNotArray>
-	void fillTemplateReflective(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
+	void fillTemplateReflective(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
 		IntDivision divX(srcPos.x(),  _srcBitmap.width());
@@ -241,7 +241,7 @@ private:
 		}
 	}
 	
-	const Bitmap<Vec4F> _srcBitmap;
+	const Bitmap<Pixel> _srcBitmap;
 	QPoint _offset;
 };
 
@@ -255,7 +255,7 @@ public:
 		_transform(worldTransform)
 	{}
 	
-	void fill(const QPoint &pos, int count, Pointer<Vec4F> dst, Pointer<float> covers, BlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		if (_opacity != 1)
 		{
@@ -263,7 +263,7 @@ public:
 				covers[i] *= _opacity;
 		}
 		
-		Array<Vec4F> fill(count);
+		Array<Pixel> fill(count);
 		
 		Vec2D centerPos(pos.x(), pos.y());
 		centerPos += Vec2D(0.5, 0.5);
@@ -277,11 +277,11 @@ public:
 		blendOp->blend(count, dst, fill.data(), covers);
 	}
 	
-	void fill(const QPoint &pos, int count, Pointer<Vec4F> dst, float cover, BlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, float cover, BlendOp *blendOp)
 	{
 		cover *= _opacity;
 		
-		Array<Vec4F> fill(count);
+		Array<Pixel> fill(count);
 		
 		Vec2D centerPos(pos.x(), pos.y());
 		centerPos += Vec2D(0.5, 0.5);

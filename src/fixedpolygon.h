@@ -4,6 +4,7 @@
 //ExportName: FixedPolygon
 
 #include <QVector>
+#include "misc.h"
 #include "polygon.h"
 
 namespace Malachite
@@ -33,10 +34,9 @@ struct MALACHITESHARED_EXPORT FixedPoint
 	
 	FixedPoint(const Vec2D &p)
 	{
-		Vec2D v = p * Vec2D(SubpixelPrecision);
-		Vec4I32 iv = vecRound(v);
-		x = iv.x;
-		y = iv.y;
+		Vec2D v = p * double(SubpixelPrecision);
+		x = round(v.x());
+		y = round(v.y());
 	}
 	
 	static FixedPoint fromRawData(int64_t x, int64_t y)

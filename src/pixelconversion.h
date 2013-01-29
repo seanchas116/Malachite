@@ -3,6 +3,7 @@
 
 //ExportName: PixelConversion
 
+/*
 #include "global.h"
 #include "vector.h"
 #include <QDebug>
@@ -209,7 +210,7 @@ inline void convertPixel<ImageFormatArgbFast, Vec4U16, ImageFormatArgbFast, Vec4
 	dst.b = iv.b;
 }
 
-}
+}*/
 
 
 #endif // MLPIXELCONVERSION_H

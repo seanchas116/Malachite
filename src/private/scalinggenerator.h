@@ -1,7 +1,8 @@
 #ifndef MLSCALINGGENERATOR_H
 #define MLSCALINGGENERATOR_H
 
-#include "../vector.h"
+#include "../vec2d.h"
+#include "../pixel.h"
 #include "../division.h"
 
 namespace Malachite
@@ -49,7 +50,7 @@ public:
 		_source(source)
 	{}
 	
-	Vec4F at(const Vec2D &p)
+	Pixel at(const Vec2D &p)
 	{
 		if (T_SourceType == Malachite::PixelFieldImage)
 			return _source->pixel(actualImagePos<T_SpreadType>(p.toQPoint(), _source->size()));
@@ -69,15 +70,15 @@ public:
 		_source(source)
 	{}
 	
-	Vec4F at(const Vec2D &p)
+	Pixel at(const Vec2D &p)
 	{
-		Vec2D rp(round(p.x), round(p.y));
+		Vec2D rp(round(p.x()), round(p.y()));
 		Vec2D d = p - rp + Vec2D(0.5, 0.5);
-		float dx = d.x;
-		float dy = d.y;
+		float dx = d.x();
+		float dy = d.y();
 		QPoint irp = rp.toQPoint();
 		
-		Vec4F c11, c12, c21, c22;
+		Pixel c11, c12, c21, c22;
 		
 		if (T_SourceType == Malachite::PixelFieldImage)
 		{
@@ -92,8 +93,8 @@ public:
 			c21 = _source->pixel(irp + QPoint(0, -1));
 			c22 = _source->pixel(irp);
 		
-		Vec4F result;
-		result.v = (c11 * (1.f - dx) + c21 * dx) * (1.f - dy) + (c12 * (1.f - dx) + c22 * dx) * dy;
+		Pixel result;
+		result.rv() = (c11.v() * (1.f - dx) + c21.v() * dx) * (1.f - dy) + (c12.v() * (1.f - dx) + c22.v() * dx) * dy;
 		
 		return result;
 	}
@@ -110,11 +111,11 @@ public:
 		_source(source)
 	{}
 	
-	Vec4F at(const Vec2D &p)
+	Pixel at(const Vec2D &p)
 	{
 		reset(p);
 		
-		QPoint fp(round(p.x), round(p.y));
+		QPoint fp(round(p.x()), round(p.y()));
 		
 		if (T_SourceType != Malachite::PixelFieldImage ||  pointIsInSafeZone(fp))
 		{
@@ -162,16 +163,16 @@ public:
 			addPixel(fp + QPoint(0, 0));
 		}
 		
-		Vec4F result = _argb;
+		Pixel result = _argb;
 		
 		if (_divisor == 0)
 		{
-			result = Vec4F(0);
+			result = Pixel(0);
 		}
 		else
 		{
-			result /= _divisor;
-			result = vecBound(0, result, 1);
+			result.rv() /= _divisor;
+			result.rv() = result.v().bound(PixelVec(0), PixelVec(1));
 		}
 		
 		return result;
@@ -188,20 +189,20 @@ private:
 	{
 		float w = T_WeightMethod::weight(Vec2D(p) + Vec2D(0.5, 0.5) - _p);
 		_divisor += w;
-		_argb += _source->pixel(actualImagePos<T_SpreadType>(p, _source->size())) * w;
+		_argb.rv() += _source->pixel(actualImagePos<T_SpreadType>(p, _source->size())).v() * w;
 	}
 	
 	void addPixelEasy(const QPoint &p)
 	{
 		float w = T_WeightMethod::weight(Vec2D(p) + Vec2D(0.5, 0.5) - _p);
 		_divisor += w;
-		_argb += _source->pixel(p) * w;
+		_argb.rv() += _source->pixel(p).v() * w;
 	}
 	
 	void reset()
 	{
 		_divisor = 0;
-		_argb = Vec4F(0);
+		_argb = Pixel(0);
 	}
 	
 	void reset(const Vec2D &p)
@@ -212,7 +213,7 @@ private:
 
 	Vec2D _p;
 	float _divisor;
-	Vec4F _argb;
+	Pixel _argb;
 	const T_Source *_source;
 };
 
@@ -221,8 +222,8 @@ class ScalingWeightMethodBicubic
 public:
 	static double weight(const Vec2D &d)
 	{
-		double dx = fabs(d.x);
-		double dy = fabs(d.y);
+		double dx = fabs(d.x());
+		double dy = fabs(d.y());
 		
 		double wx = dx <= 1.0 ? f01(dx) : f12(dx);
 		double wy = dy <= 1.0 ? f01(dy) : f12(dy);
@@ -253,7 +254,7 @@ public:
 		Vec2D hpd = 0.5 * M_PI * d;
 		Vec2D dd = d * d;
 		
-		return sin(pd.x) * sin(hpd .x) * sin(pd.y) * sin(hpd.y) / (0.25 * M_PI * M_PI * M_PI * M_PI * dd.x * dd.y);
+		return sin(pd.x()) * sin(hpd .x()) * sin(pd.y()) * sin(hpd.y()) / (0.25 * M_PI * M_PI * M_PI * M_PI * dd.x() * dd.y());
 	}
 };
 
@@ -262,9 +263,8 @@ class ScalingWeightMethodLanczos2Hypot
 public:
 	static double weight(const Vec2D &d)
 	{
-		double dist = vecLength(d);
+		double dist = d.length();
 		return sin(M_PI * dist) * sin(0.5 * M_PI * dist) / (0.5 * M_PI * M_PI * dist * dist);
-		
 	}
 };
 

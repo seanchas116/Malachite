@@ -7,7 +7,6 @@
 #include "paintable.h"
 #include "surface.h"
 #include "brush.h"
-#include "vector.h"
 
 namespace Malachite
 {
@@ -44,7 +43,7 @@ public:
 	Brush brush() const { return state()->brush; }
 	
 	void setColor(const Color &color) { setBrush(Brush(color)); }
-	void setArgb(const Vec4F &argb) { setBrush(Brush(argb)); }
+	void setPixel(const Pixel &argb) { setBrush(Brush(argb)); }
 	
 	void setOpacity(double opacity) { state()->opacity = opacity; }
 	double opacity() const { return state()->opacity; }
@@ -143,7 +142,7 @@ public:
 		{ drawEllipse(center.x(), center.y(), rx, ry); }
 	
 	void drawEllipse(const Vec2D &center, double rx, double ry)
-		{ drawEllipse(center.x, center.y, rx, ry); }
+		{ drawEllipse(center.x(), center.y(), rx, ry); }
 	
 	void drawRect(const QRectF &rect)
 		{ drawRect(rect.x(), rect.y(), rect.width(), rect.height()); }
