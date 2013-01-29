@@ -17,7 +17,7 @@ public:
 	
 	typedef Vector<double, 2> super;
 	
-	Vec2D() : super() {}
+	Vec2D() : super(0) {}
 	Vec2D(const super &other) : super(other) {}
 	Vec2D(double s) : super(s) {}
 	Vec2D(double x, double y)

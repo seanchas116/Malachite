@@ -69,10 +69,11 @@ HEADERS += bitmap.h \
     vector_generic.h \
     vector_sse.h \
     interval.h \
-    transform.h \
     genericpixel.h \
     pixel.h \
-    vec2d.h
+    vec2d.h \
+    mat2d.h \
+    affine2d.h
 SOURCES += blendmode.cpp \
            blendop.cpp \
            brush.cpp \
@@ -93,6 +94,5 @@ SOURCES += blendmode.cpp \
            private/clipper.cpp \
     private/imagepaintengine.cpp \
     private/renderer.cpp \
-    private/surfacepaintengine.cpp \
-    transform.cpp
+    private/surfacepaintengine.cpp
 RESOURCES += resources.qrc
