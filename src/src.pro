@@ -5,6 +5,8 @@
 TEMPLATE = lib
 TARGET = malachite
 
+DEFINES += MALACHITE_LIBRARY
+
 CONFIG(debug, debug|release) {
   DEFINES += QT_DEBUG
 } else {
