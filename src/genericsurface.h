@@ -89,7 +89,7 @@ public:
 	template <ImagePasteInversionMode T_InversionMode = ImagePasteNotInverted, typename OtherImage>
 	void paste(const OtherImage &image, const QPoint &pos = QPoint())
 	{
-		for (const QPoint &key : keyList())
+		for (const QPoint &key : rectToKeys(QRect(pos, image.size())))
 			tileRef(key).template paste<T_InversionMode>(image, pos - key * tileWidth());
 	}
 	
