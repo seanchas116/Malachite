@@ -65,19 +65,19 @@ static bool pasteFIBITMAPToImage(const QPoint &pos, T_Image *dst, FIBITMAP *src)
 			{
 				case 24:
 				{
-					auto wrapped = GenericImage<RgbU8>::wrap(srcBits, srcSize, srcPitch);
+					auto wrapped = GenericImage<BgrU8>::wrap(srcBits, srcSize, srcPitch);
 					dst->template paste<ImagePasteSourceInverted>(wrapped, pos);
 					break;
 				}
 				case 32:
 				{
-					dst->template paste<ImagePasteSourceInverted>(GenericImage<RgbaU8>::wrap(srcBits, srcSize, srcPitch), pos);
+					dst->template paste<ImagePasteSourceInverted>(GenericImage<BgraU8>::wrap(srcBits, srcSize, srcPitch), pos);
 					break;
 				}
 				default:
 				{
 					FIBITMAP *newBitmap = FreeImage_ConvertTo32Bits(src);	// converted to RGBA8
-					dst->template paste<ImagePasteSourceInverted>(GenericImage<RgbaU8>::wrap(FreeImage_GetBits(newBitmap), srcSize, FreeImage_GetPitch(newBitmap)), pos);
+					dst->template paste<ImagePasteSourceInverted>(GenericImage<BgraU8>::wrap(FreeImage_GetBits(newBitmap), srcSize, FreeImage_GetPitch(newBitmap)), pos);
 					FreeImage_Unload(newBitmap);
 					break;
 				}
@@ -121,13 +121,13 @@ static bool pasteImageToFIBITMAP(const QPoint &pos, FIBITMAP *dst, const T_Image
 			{
 				case 24:
 				{
-					auto wrapper = GenericImage<RgbU8>::wrap(dstBits, dstSize, dstPitch);
+					auto wrapper = GenericImage<BgrU8>::wrap(dstBits, dstSize, dstPitch);
 					wrapper.paste<ImagePasteDestinationInverted>(src, pos);
 					break;
 				}
 				case 32:
 				{
-					auto wrapper = GenericImage<RgbaU8>::wrap(dstBits, dstSize, dstPitch);
+					auto wrapper = GenericImage<BgraU8>::wrap(dstBits, dstSize, dstPitch);
 					wrapper.paste<ImagePasteDestinationInverted>(src, pos);
 					break;
 				}
