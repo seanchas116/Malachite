@@ -50,7 +50,7 @@ void PaintEngine::drawRect(double x, double y, double width, double height)
 void PaintEngine::drawTransformedSurface(const QPoint &point, const Surface &surface)
 {
 	foreach (const QPoint &key, surface.keys())
-		drawTransformedImage(point + key * Surface::TileSize, surface.tileForKey(key));
+		drawTransformedImage(point + key * Surface::tileWidth(), surface.tile(key));
 }
 
 void PaintEngine::drawSurface(const Vec2D &point, const Surface &surface)
@@ -77,8 +77,8 @@ void PaintEngine::drawSurface(const Vec2D &point, const Surface &surface)
 	
 	foreach (const QPoint &key, surface.keys())
 	{
-		Vec2D relativePos = key * Surface::TileSize;
-		drawRect(relativePos.x(), relativePos.y(), Surface::TileSize, Surface::TileSize);
+		Vec2D relativePos = key * Surface::tileWidth();
+		drawRect(relativePos.x(), relativePos.y(), Surface::tileWidth(), Surface::tileWidth());
 	}
 	
 	popState();

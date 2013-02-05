@@ -20,10 +20,10 @@
 	RETURN_TYPE operator-(const SELF_TYPE &v, VALUE_TYPE s) { return v - SELF_TYPE(s); } \
 	RETURN_TYPE operator*(const SELF_TYPE &v, VALUE_TYPE s) { return v * SELF_TYPE(s); } \
 	RETURN_TYPE operator/(const SELF_TYPE &v, VALUE_TYPE s) { return v / SELF_TYPE(s); } \
-	RETURN_TYPE operator+(VALUE_TYPE s, const SELF_TYPE &v) { return v + SELF_TYPE(s); } \
-	RETURN_TYPE operator-(VALUE_TYPE s, const SELF_TYPE &v) { return v - SELF_TYPE(s); } \
-	RETURN_TYPE operator*(VALUE_TYPE s, const SELF_TYPE &v) { return v * SELF_TYPE(s); } \
-	RETURN_TYPE operator/(VALUE_TYPE s, const SELF_TYPE &v) { return v / SELF_TYPE(s); }
+	RETURN_TYPE operator+(VALUE_TYPE s, const SELF_TYPE &v) { return SELF_TYPE(s) + v; } \
+	RETURN_TYPE operator-(VALUE_TYPE s, const SELF_TYPE &v) { return SELF_TYPE(s) - v; } \
+	RETURN_TYPE operator*(VALUE_TYPE s, const SELF_TYPE &v) { return SELF_TYPE(s) * v; } \
+	RETURN_TYPE operator/(VALUE_TYPE s, const SELF_TYPE &v) { return SELF_TYPE(s) / v; }
 
 namespace Malachite
 {
@@ -206,10 +206,10 @@ template <typename T, size_t N> inline Vector<T, N> operator+(const Vector<T, N>
 template <typename T, size_t N> inline Vector<T, N> operator-(const Vector<T, N> &v, T s) { return v - SELF_TYPE(s); }
 template <typename T, size_t N> inline Vector<T, N> operator*(const Vector<T, N> &v, T s) { return v * SELF_TYPE(s); }
 template <typename T, size_t N> inline Vector<T, N> operator/(const Vector<T, N> &v, T s) { return v / SELF_TYPE(s); }
-template <typename T, size_t N> inline Vector<T, N> operator+(T s, const Vector<T, N> &v) { return v + SELF_TYPE(s); }
-template <typename T, size_t N> inline Vector<T, N> operator-(T s, const Vector<T, N> &v) { return v - SELF_TYPE(s); }
-template <typename T, size_t N> inline Vector<T, N> operator*(T s, const Vector<T, N> &v) { return v * SELF_TYPE(s); }
-template <typename T, size_t N> inline Vector<T, N> operator/(T s, const Vector<T, N> &v) { return v / SELF_TYPE(s); }
+template <typename T, size_t N> inline Vector<T, N> operator+(T s, const Vector<T, N> &v) { return SELF_TYPE(s) + v; }
+template <typename T, size_t N> inline Vector<T, N> operator-(T s, const Vector<T, N> &v) { return SELF_TYPE(s) - v; }
+template <typename T, size_t N> inline Vector<T, N> operator*(T s, const Vector<T, N> &v) { return SELF_TYPE(s) * v; }
+template <typename T, size_t N> inline Vector<T, N> operator/(T s, const Vector<T, N> &v) { return SELF_TYPE(s) / v; }
 
 }
 

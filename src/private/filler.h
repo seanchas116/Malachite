@@ -36,7 +36,7 @@ class ImageFiller
 {
 public:
 	
-	ImageFiller(const ArgbBitmap &bitmap, const QPoint &offset) :
+	ImageFiller(const Bitmap<Pixel> &bitmap, const QPoint &offset) :
 		_srcBitmap(bitmap), _offset(offset) {}
 	
 	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)

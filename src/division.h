@@ -25,6 +25,26 @@ public:
 	int quot() const { return result.quot; }
 	int rem() const { return result.rem; }
 	
+	static void dividePoint(const QPoint &point, int divisor, QPoint *quot, QPoint *rem)
+	{
+		IntDivision divisionX(point.x(), divisor);
+		IntDivision divisionY(point.y(), divisor);
+		
+		quot->rx() = divisionX.quot();
+		quot->ry() = divisionY.quot();
+		rem->rx() = divisionX.rem();
+		rem->ry() = divisionY.rem();
+	}
+	
+	static void dividePoint(const QPoint &point, int divisor, QPoint *quot)
+	{
+		IntDivision divisionX(point.x(), divisor);
+		IntDivision divisionY(point.y(), divisor);
+		
+		quot->rx() = divisionX.quot();
+		quot->ry() = divisionY.quot();
+	}
+	
 private:
 	div_t result;
 };
@@ -51,30 +71,6 @@ private:
 	double _quot, _rem;
 };
 
-inline void dividePoint(const QPoint &point, int divisor, QPoint *quot, QPoint *rem)
-{
-	IntDivision divisionX(point.x(), divisor);
-	IntDivision divisionY(point.y(), divisor);
-	
-	quot->rx() = divisionX.quot();
-	quot->ry() = divisionY.quot();
-	rem->rx() = divisionX.rem();
-	rem->ry() = divisionY.rem();
-}
-
-inline void dividePoint(const QPoint &point, int divisor, QPoint *quot)
-{
-	IntDivision divisionX(point.x(), divisor);
-	IntDivision divisionY(point.y(), divisor);
-	
-	quot->rx() = divisionX.quot();
-	quot->ry() = divisionY.quot();
-}
-
-inline double align(double value, double unit)
-{
-	return round(value / unit) * unit;
-}
 
 }
 

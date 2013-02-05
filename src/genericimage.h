@@ -11,22 +11,22 @@
 namespace Malachite
 {
 
-template <typename T_Color>
+template <typename T_Pixel>
 class GenericImageData : public QSharedData
 {
 public:
 	
-	typedef T_Color ColorType;
+	typedef T_Pixel PixelType;
 	
 	GenericImageData(const QSize &size, int bytesPerLine) :
-		bitmap(Pointer<T_Color>(), size, bytesPerLine),
+		bitmap(Pointer<PixelType>(), size, bytesPerLine),
 		ownsData(true)
 	{
 		bitmap.setBits(allocateAlignedMemory(bitmap.byteCount(), 16), bitmap.byteCount());
 	}
 	
 	GenericImageData(void *bits, const QSize &size, int bytesPerLine) :
-		bitmap(Pointer<T_Color>(), size, bytesPerLine),
+		bitmap(Pointer<PixelType>(), size, bytesPerLine),
 		ownsData(false)
 	{
 		bitmap.setBits(bits, bitmap.byteCount());
@@ -47,7 +47,7 @@ public:
 			freeAlignedMemory(bitmap.bits());
 	}
 	
-	Bitmap<T_Color> bitmap;
+	Bitmap<PixelType> bitmap;
 	const bool ownsData;
 };
 
@@ -59,40 +59,40 @@ enum ImagePasteInversionMode
 	ImagePasteBothInverted = ImagePasteDestinationInverted | ImagePasteSourceInverted
 };
 
-template <class T_Color>
+template <class T_Pixel>
 class MALACHITESHARED_EXPORT GenericImage
 {
 public:
 	
-	typedef T_Color ColorType;
+	typedef T_Pixel PixelType;
 	
 	GenericImage() {}
 	GenericImage(const QSize &size, int bytesPerLine)
 	{
 		if (!size.isEmpty())
-			p = new GenericImageData<T_Color>(size, bytesPerLine);
+			p = new GenericImageData<PixelType>(size, bytesPerLine);
 	}
 	
-	GenericImage(const QSize &size) : GenericImage(size, size.width() * sizeof(T_Color)) {}
+	GenericImage(const QSize &size) : GenericImage(size, size.width() * sizeof(PixelType)) {}
 	GenericImage(int width, int height, int bytesPerLine) : GenericImage(QSize(width, height), bytesPerLine) {}
-	GenericImage(int width, int height) : GenericImage(QSize(width, height), width * sizeof(T_Color)) {}
+	GenericImage(int width, int height) : GenericImage(QSize(width, height), width * sizeof(PixelType)) {}
 	
 	static GenericImage wrap(void *data, const QSize &size, int bytesPerLine)
 	{
 		GenericImage r;
 		if (!size.isEmpty())
-			r.p = new GenericImageData<T_Color>(data, size, bytesPerLine);
+			r.p = new GenericImageData<PixelType>(data, size, bytesPerLine);
 		return r;
 	}
 	
-	static GenericImage wrap(void *data, const QSize &size) { return wrap(data, size, size.width() * sizeof(T_Color)); }
+	static GenericImage wrap(void *data, const QSize &size) { return wrap(data, size, size.width() * sizeof(PixelType)); }
 	
 	static const GenericImage wrap(const void *data, const QSize &size, int bytesPerLine)
 	{
 		return wrap(const_cast<void *>(data), size, bytesPerLine);
 	}
 	
-	static const GenericImage wrap(const void *data, const QSize &size) { wrap(data, size, size.width() * sizeof(T_Color)); }
+	static const GenericImage wrap(const void *data, const QSize &size) { wrap(data, size, size.width() * sizeof(PixelType)); }
 	
 	void detach() { p.detach(); }
 	bool isValid() const { return p; }
@@ -110,47 +110,47 @@ public:
 	int area() const
 		{ return p ? p->bitmap.area() : 0; }
 	
-	Bitmap<T_Color> bitmap() { return p ? p->bitmap : Bitmap<T_Color>(); }
-	const Bitmap<T_Color> constBitmap() const { return p ? p->bitmap : Bitmap<T_Color>(); }
+	Bitmap<PixelType> bitmap() { return p ? p->bitmap : Bitmap<PixelType>(); }
+	const Bitmap<PixelType> constBitmap() const { return p ? p->bitmap : Bitmap<PixelType>(); }
 	
-	Pointer<T_Color> bits()
+	Pointer<PixelType> bits()
 		{ Q_ASSERT(p); return p->bitmap.bits(); }
-	Pointer<const T_Color> constBits() const
+	Pointer<const PixelType> constBits() const
 		{ Q_ASSERT(p); return p->bitmap.constBits(); }
 	
-	Pointer<T_Color> scanline(int y)
+	Pointer<PixelType> scanline(int y)
 		{ Q_ASSERT(p); return p->bitmap.scanline(y); }
-	Pointer<const T_Color> constScanline(int y) const
+	Pointer<const PixelType> constScanline(int y) const
 		{ Q_ASSERT(p); return p->bitmap.constScanline(y); }
 	
-	Pointer<T_Color> invertedScanline(int invertedY)
+	Pointer<PixelType> invertedScanline(int invertedY)
 		{ Q_ASSERT(p); return p->bitmap.invertedScanline(invertedY); }
-	Pointer<const T_Color> invertedConstScanline(int invertedY) const
+	Pointer<const PixelType> invertedConstScanline(int invertedY) const
 		{ Q_ASSERT(p); return p->bitmap.invertedConstScanline(invertedY); }
 	
-	Pointer<T_Color> pixelPointer(int x, int y)
+	Pointer<PixelType> pixelPointer(int x, int y)
 		{ Q_ASSERT(p); return p->bitmap.pixelPointer(x, y); }
-	Pointer<T_Color> pixelPointer(const QPoint &point)
+	Pointer<PixelType> pixelPointer(const QPoint &point)
 		{ return pixelPointer(point.x(), point.y()); }
 	
-	Pointer<const T_Color> constPixelPointer(int x, int y) const
+	Pointer<const PixelType> constPixelPointer(int x, int y) const
 		{ Q_ASSERT(p); return p->bitmap.constPixelPointer(x, y); }
-	Pointer<const T_Color> constPixelPointer(const QPoint &point) const
+	Pointer<const PixelType> constPixelPointer(const QPoint &point) const
 		{ return constPixelPointer(point.x(), point.y()); }
 	
-	ColorType pixel(int x, int y) const { return *constPixelPointer(x, y); }
-	ColorType pixel(const QPoint &point) const { return pixel(point.x(), point.y()); }
+	PixelType pixel(int x, int y) const { return *constPixelPointer(x, y); }
+	PixelType pixel(const QPoint &point) const { return pixel(point.x(), point.y()); }
 	
-	void setPixel(int x, int y, const ColorType &color)
+	void setPixel(int x, int y, const PixelType &color)
 	{
-		ColorType *p = pixelPointer(x, y);
+		auto p = pixelPointer(x, y);
 		Q_ASSERT(p);
 		*p = color;
 	}
 	
-	void setPixel(const QPoint &p, const ColorType &color) { setPixel(p.x(), p.y(), color); }
+	void setPixel(const QPoint &p, const PixelType &color) { setPixel(p.x(), p.y(), color); }
 	
-	void fill(const ColorType &c)
+	void fill(const PixelType &c)
 	{
 		Q_ASSERT(p);
 		
@@ -161,33 +161,33 @@ public:
 		}
 	}
 	
-	template <class NewColor>
-	GenericImage<NewColor> convert()
+	template <class NewPixel>
+	GenericImage<NewPixel> convert()
 	{
 		if (!p)
-			return GenericImage<NewColor>();
+			return GenericImage<NewPixel>();
 		
 		QSize s = size();
-		GenericImage<NewColor> newImage(s);
+		GenericImage<NewPixel> newImage(s);
 		
 		for (int y = 0; y < s.height(); ++y)
 		{
-			NewColor *dp = newImage.scanline(y);
-			T_Color *sp = constScanline(y);
+			NewPixel *dp = newImage.scanline(y);
+			PixelType *sp = constScanline(y);
 			
 			for (int x = 0; x < s.width(); ++x)
 				*dp++ = *sp++;
 		}
 	}
 	
-	template <ImagePasteInversionMode InversionMode = ImagePasteNotInverted, class SrcColor>
-	void paste(const GenericImage<SrcColor> &image, const QPoint &point = QPoint())
+	template <ImagePasteInversionMode InversionMode = ImagePasteNotInverted, class SrcImage>
+	void paste(const SrcImage &image, const QPoint &point = QPoint())
 	{
 		QRect r = rect() & QRect(point, image.size());
 		
 		for (int y = r.top(); y <= r.bottom(); ++y)
 		{
-			ColorType *dp;
+			PixelType *dp;
 			
 			if (InversionMode & ImagePasteDestinationInverted)
 				dp = invertedScanline(y);
@@ -196,7 +196,7 @@ public:
 			
 			dp += r.left();
 			
-			const SrcColor *sp;
+			const typename SrcImage::PixelType *sp;
 			
 			if (InversionMode & ImagePasteSourceInverted)
 				sp = image.invertedConstScanline(y - point.y());
@@ -227,7 +227,7 @@ public:
 		
 		for (int y = 0; y < size.height(); ++y)
 		{
-			if (memcmp(p->bitmap.constScanline(y), other.p->bitmap.constScanline(y), size.width() * sizeof(T_Color)))
+			if (memcmp(p->bitmap.constScanline(y), other.p->bitmap.constScanline(y), size.width() * sizeof(PixelType)))
 				return false;
 		}
 		
@@ -245,7 +245,7 @@ public:
 	}
 	
 private:
-	QSharedDataPointer<GenericImageData<T_Color> > p;
+	QSharedDataPointer<GenericImageData<PixelType> > p;
 };
 
 }

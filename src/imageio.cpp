@@ -383,9 +383,9 @@ bool ImageExporter::setSurface(const Surface &surface, const QRect &rect)
 	
 	auto pos = rect.topLeft();
 	
-	for (const QPoint &key : Surface::keysForRect(QRect(pos, size)))
+	for (const QPoint &key : Surface::rectToKeys(QRect(pos, size)))
 	{
-		if (pasteImage(surface.tileForKey(key), key * Surface::TileSize + pos) == false)
+		if (pasteImage(surface.tile(key), key * Surface::tileWidth() + pos) == false)
 			return false;
 	}
 	

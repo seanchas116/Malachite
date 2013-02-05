@@ -9,6 +9,7 @@
 namespace Malachite
 {
 
+/*
 SurfaceData::SurfaceData()
 {}
 
@@ -306,110 +307,29 @@ bool Surface::operator==(const Surface &other) const
 	
 	return true;
 }
+*/
 
-Image Surface::DefaultTile;
-Image Surface::WhiteTile;
+PaintEngine *Surface::createPaintEngine()
+{
+	return new SurfacePaintEngine();
+}
 
-class MLSurfaceInitializer
+Image SurfaceDefaultTileProvider::DefaultTile;
+Image SurfaceDefaultTileProvider::WhiteTile;
+
+class SurfaceDefaultTileInitializer
 {
 public:
-	MLSurfaceInitializer()
+	SurfaceDefaultTileInitializer()
 	{
-		Surface::DefaultTile = Image(Surface::TileSize, Surface::TileSize);
-		Surface::DefaultTile.fill(Color::fromRgbValue(0, 0, 0, 0).toPixel());
-		Surface::WhiteTile = Image(Surface::TileSize, Surface::TileSize);
-		Surface::WhiteTile.fill(Color::fromRgbValue(1, 1, 1, 1).toPixel());
+		SurfaceDefaultTileProvider::DefaultTile = Image(Surface::tileSize());
+		SurfaceDefaultTileProvider::DefaultTile.fill(Color::fromRgbValue(0, 0, 0, 0).toPixel());
+		SurfaceDefaultTileProvider::WhiteTile = Image(Surface::tileSize());
+		SurfaceDefaultTileProvider::WhiteTile.fill(Color::fromRgbValue(1, 1, 1, 1).toPixel());
 	}
 };
 
-MLSurfaceInitializer fsSurfaceInitializer;
-
-
-
-
-SurfaceEditor::~SurfaceEditor()
-{
-}
-
-void SurfaceEditor::deleteTile(const QPoint &key)
-{
-	if (_surface->isNull()) return;
-	
-	Image *tile = takeTile(key);
-	if (tile) delete tile;
-}
-
-void SurfaceEditor::clear()
-{
-	if (_surface->isNull()) return;
-	
-	_editedKeys += _surface->keys();
-	qDeleteAll(_surface->d->tileHash);
-	_surface->d->tileHash.clear();
-}
-
-Image *SurfaceEditor::takeTile(const QPoint &key)
-{
-	if (_surface->isNull()) return 0;
-	if (!_surface->d->tileHash.contains(key)) return 0;
-	
-	_editedKeys << key;
-	return _surface->d->tileHash.take(key);
-}
-
-Image *SurfaceEditor::replaceTile(const QPoint &key, Image *image)
-{
-	_editedKeys << key;
-	Image *tile = takeTile(key);
-	
-	_surface->setupData();
-	_surface->d->tileHash.insert(key, image);
-	
-	return tile;
-}
-
-void SurfaceEditor::replace(const Surface &surface, const QPointSet &keys)
-{
-	if (surface.isNull()) return;
-	
-	_surface->setupData();
-	
-	foreach (const QPoint &key, keys)
-	{
-		Image *oldTile = replaceTile(key, new Image(surface.tileForKey(key)));
-		if (oldTile)
-			delete oldTile;
-	}
-}
-
-// Returns tile item with "key"
-// If the tile hash no tile with "key", inserts a new tile and returns it
-Image *SurfaceEditor::tileRefForKey(const QPoint &key)
-{
-	_surface->setupData();
-	
-	Image *tile;
-	
-	if (!_surface->d->tileHash.contains(key))
-	{
-		tile = new Image(Surface::DefaultTile);
-		_surface->d->tileHash.insert(key, tile);
-	}
-	else
-	{
-		tile = _surface->d->tileHash[key];
-	}
-	_editedKeys << key;
-	return tile;
-}
-
-const Image *SurfaceEditor::constTileRefForKey(const QPoint &key) const
-{
-	if (_surface->isNull() || _surface->d->tileHash.contains(key))
-		return _surface->d->tileHash[key];
-	else
-		return &Surface::DefaultTile;
-}
+static SurfaceDefaultTileInitializer defaultTileInitializer;
 
 }
 

@@ -8,7 +8,7 @@ namespace Malachite
 {
 
 template <class Rasterizer, class Filler>
-void fill(Rasterizer *ras, ArgbBitmap *bitmap, BlendOp *blendOp, Filler *filler)
+void fill(Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *blendOp, Filler *filler)
 {
 	agg::scanline_pf sl;
 	ImageBaseRenderer<Filler> baseRen(*bitmap, blendOp, filler);
@@ -17,14 +17,14 @@ void fill(Rasterizer *ras, ArgbBitmap *bitmap, BlendOp *blendOp, Filler *filler)
 	renderScanlines(*ras, sl, ren);
 }
 
-template <class Rasterizer, Malachite::SpreadType SpreadType, class Source, Malachite::PixelFieldType SourceType>
-void drawTransformedImageBrush(Rasterizer *ras, ArgbBitmap *bitmap, BlendOp *blendOp, const Source &source, float opacity, const QTransform &worldTransform, Malachite::ImageTransformType transformType)
+template <class Rasterizer, Malachite::SpreadType SpreadType, class Source>
+void drawTransformedImageBrush(Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *blendOp, const Source &source, float opacity, const QTransform &worldTransform, Malachite::ImageTransformType transformType)
 {
 	switch (transformType)
 	{
 	case Malachite::ImageTransformTypeNearestNeighbor:
 	{
-		typedef ScalingGeneratorNearestNeighbor<Source, SourceType, SpreadType> Generator;
+		typedef ScalingGeneratorNearestNeighbor<Source, SpreadType> Generator;
 		Generator gen(&source);
 		Filler<Generator, true> filler(&gen, opacity, worldTransform);
 		fill(ras, bitmap, blendOp, &filler);
@@ -32,7 +32,7 @@ void drawTransformedImageBrush(Rasterizer *ras, ArgbBitmap *bitmap, BlendOp *ble
 	}
 	case Malachite::ImageTransformTypeBilinear:
 	{
-		typedef ScalingGeneratorBilinear<Source, SourceType, SpreadType> Generator;
+		typedef ScalingGeneratorBilinear<Source, SpreadType> Generator;
 		Generator gen(&source);
 		Filler<Generator, true> filler(&gen, opacity, worldTransform);
 		fill(ras, bitmap, blendOp, &filler);
@@ -40,7 +40,7 @@ void drawTransformedImageBrush(Rasterizer *ras, ArgbBitmap *bitmap, BlendOp *ble
 	}
 	case Malachite::ImageTransformTypeBicubic:
 	{
-		typedef ScalingGenerator2<Source, SourceType, SpreadType, ScalingWeightMethodBicubic> Generator;
+		typedef ScalingGenerator2<Source, SpreadType, ScalingWeightMethodBicubic> Generator;
 		Generator gen(&source);
 		Filler<Generator, true> filler(&gen, opacity, worldTransform);
 		fill(ras, bitmap, blendOp, &filler);
@@ -48,7 +48,7 @@ void drawTransformedImageBrush(Rasterizer *ras, ArgbBitmap *bitmap, BlendOp *ble
 	}
 	case Malachite::ImageTransformTypeLanczos2:
 	{
-		typedef ScalingGenerator2<Source, SourceType, SpreadType, ScalingWeightMethodLanczos2> Generator;
+		typedef ScalingGenerator2<Source, SpreadType, ScalingWeightMethodLanczos2> Generator;
 		Generator gen(&source);
 		Filler<Generator, true> filler(&gen, opacity, worldTransform);
 		fill(ras, bitmap, blendOp, &filler);
@@ -56,7 +56,7 @@ void drawTransformedImageBrush(Rasterizer *ras, ArgbBitmap *bitmap, BlendOp *ble
 	}
 	case Malachite::ImageTransformTypeLanczos2Hypot:
 	{
-		typedef ScalingGenerator2<Source, SourceType, SpreadType, ScalingWeightMethodLanczos2Hypot> Generator;
+		typedef ScalingGenerator2<Source, SpreadType, ScalingWeightMethodLanczos2Hypot> Generator;
 		Generator gen(&source);
 		Filler<Generator, true> filler(&gen, opacity, worldTransform);
 		fill(ras, bitmap, blendOp, &filler);
@@ -68,7 +68,7 @@ void drawTransformedImageBrush(Rasterizer *ras, ArgbBitmap *bitmap, BlendOp *ble
 }
 
 template <class T_Rasterizer, Malachite::SpreadType T_SpreadType>
-void drawWithSpreadType(T_Rasterizer *ras, ArgbBitmap *bitmap, BlendOp *blendOp, const PaintEngineState &state)
+void drawWithSpreadType(T_Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *blendOp, const PaintEngineState &state)
 {
 	const Brush brush = state.brush;
 	const float opacity = state.opacity;
@@ -94,13 +94,13 @@ void drawWithSpreadType(T_Rasterizer *ras, ArgbBitmap *bitmap, BlendOp *blendOp,
 		}
 		else
 		{
-			drawTransformedImageBrush<T_Rasterizer, T_SpreadType, ArgbBitmap, Malachite::PixelFieldImage>(ras, bitmap, blendOp, brush.image().constBitmap(), opacity, fillShapeTransform.inverted(), state.imageTransformType);
+			drawTransformedImageBrush<T_Rasterizer, T_SpreadType, Bitmap<Pixel> >(ras, bitmap, blendOp, brush.image().constBitmap(), opacity, fillShapeTransform.inverted(), state.imageTransformType);
 			return;
 		}
 	}
 	if (brush.type() == Malachite::BrushTypeSurface)
 	{
-		drawTransformedImageBrush<T_Rasterizer, T_SpreadType, Surface, Malachite::PixelFieldSurface>(ras, bitmap, blendOp, brush.surface(), opacity, fillShapeTransform.inverted(), state.imageTransformType);
+		drawTransformedImageBrush<T_Rasterizer, T_SpreadType, Surface>(ras, bitmap, blendOp, brush.surface(), opacity, fillShapeTransform.inverted(), state.imageTransformType);
 		return;
 	}
 	if (brush.type() == Malachite::BrushTypeLinearGradient)

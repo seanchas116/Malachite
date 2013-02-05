@@ -30,11 +30,9 @@ public:
 	void setKeyRectClip(const QHash<QPoint, QRect> &keyRectClip) { _keyRectClip = keyRectClip; }
 	QHash<QPoint, QRect> keyRectClip() const { return _keyRectClip; }
 	
-	QPointSet editedKeys() const { return _editor->editedKeys(); }
-	
 private:
 	
-	SurfaceEditor *_editor;
+	Surface *_surface = 0;
 	QPointSet _keyClip;
 	QHash<QPoint, QRect> _keyRectClip;
 };

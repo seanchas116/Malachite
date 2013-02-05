@@ -11,8 +11,6 @@
 namespace Malachite
 {
 
-typedef Bitmap<Pixel> ArgbBitmap;
-
 class QPainterPath_vs
 {
 public:
@@ -91,7 +89,7 @@ template <class T_Filler>
 class ImageBaseRenderer8
 {
 public:
-	ImageBaseRenderer8(const ArgbBitmap &bitmap, BlendOp *blendOp, T_Filler *filler) :
+	ImageBaseRenderer8(const Bitmap<Pixel> &bitmap, BlendOp *blendOp, T_Filler *filler) :
 		_bitmap(bitmap),
 		_blendOp(blendOp),
 		_filler(filler)
@@ -137,7 +135,7 @@ public:
 	}
 	
 private:
-	ArgbBitmap _bitmap;
+	Bitmap<Pixel> _bitmap;
 	BlendOp *_blendOp;
 	T_Filler *_filler;
 };
@@ -146,7 +144,7 @@ template <class T_Filler>
 class ImageBaseRenderer
 {
 public:
-	ImageBaseRenderer(const ArgbBitmap &bitmap, BlendOp *blendOp, T_Filler *filler) :
+	ImageBaseRenderer(const Bitmap<Pixel> &bitmap, BlendOp *blendOp, T_Filler *filler) :
 		_bitmap(bitmap),
 		_blendOp(blendOp),
 		_filler(filler)
@@ -185,7 +183,7 @@ public:
 	}
 	
 private:
-	ArgbBitmap _bitmap;
+	Bitmap<Pixel> _bitmap;
 	BlendOp *_blendOp;
 	T_Filler *_filler;
 };

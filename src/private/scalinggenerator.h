@@ -4,70 +4,124 @@
 #include "../vec2d.h"
 #include "../pixel.h"
 #include "../division.h"
+#include "../surface.h"
+#include "../image.h"
 
 namespace Malachite
 {
 
-template <Malachite::SpreadType T_SpreadType>
-QPoint actualImagePos(const QPoint &p, const QSize &size)
+template <class T_Image, Malachite::SpreadType T_SpreadType>
+struct PosWrapperMethod;
+
+template <class T_Image>
+struct PosWrapperMethod<T_Image, Malachite::SpreadTypePad>
 {
-	QPoint r;
-	
-	switch (T_SpreadType)
+	static QPoint wrap(const QPoint &p, const QSize &size)
 	{
-	case Malachite::SpreadTypePad:
-	{
+		QPoint r;
 		r.rx() = qBound(0, p.x(), size.width() - 1);
 		r.ry() = qBound(0, p.y(), size.height() - 1);
-		break;
+		return r;
 	}
-	case Malachite::SpreadTypeRepeat:
+};
+
+template <class T_Image>
+struct PosWrapperMethod<T_Image, Malachite::SpreadTypeRepeat>
+{
+	static QPoint wrap(const QPoint &p, const QSize &size)
 	{
+		QPoint r;
 		r.rx() = IntDivision(p.x(), size.width()).rem();
 		r.ry() = IntDivision(p.y(), size.height()).rem();
-		break;
+		return r;
 	}
-	case Malachite::SpreadTypeReflective:
+};
+
+template <class T_Image>
+struct PosWrapperMethod<T_Image, Malachite::SpreadTypeReflective>
+{
+	static QPoint wrap(const QPoint &p, const QSize &size)
 	{
+		QPoint r;
 		IntDivision divX(p.x(), size.width());
 		IntDivision divY(p.y(), size.height());
 		r.rx() = (divX.quot() % 2) ? (size.width() - divX.rem() - 1) : divX.rem();
 		r.ry() = (divY.quot() % 2) ? (size.height() - divY.rem() - 1) : divY.rem();
-		break;
+		return r;
 	}
-	default:
-		break;
+};
+
+template <class T_SourceType, Malachite::SpreadType T_SpreadType>
+class SourceWrapper;
+
+template <Malachite::SpreadType T_SpreadType>
+class SourceWrapper<Surface, T_SpreadType>
+{
+public:
+	
+	SourceWrapper(const Surface *src) : _src(src) {}
+	
+	Pixel pixel(const QPoint &p) const
+	{
+		return _src->pixel(p);
 	}
 	
-	return r;
-}
+	Pixel pixelDirect(const QPoint &p) const
+	{
+		return _src->pixel(p);
+	}
+	
+private:
+	
+	const Surface *_src;
+};
 
-template <class Source, Malachite::PixelFieldType T_SourceType, Malachite::SpreadType T_SpreadType>
+template <Malachite::SpreadType T_SpreadType>
+class SourceWrapper<Bitmap<Pixel>, T_SpreadType>
+{
+public:
+	
+	SourceWrapper(const Bitmap<Pixel> *src) : _src(src) {}
+	
+	Pixel pixel(const QPoint &p) const
+	{
+		return _src->pixel(PosWrapperMethod<Image, T_SpreadType>::wrap(p, _src->size()));
+	}
+	
+	Pixel pixelDirect(const QPoint &p) const
+	{
+		return _src->pixel(p);
+	}
+	
+private:
+	
+	const Bitmap<Pixel> *_src;
+};
+
+template <class T_Source, Malachite::SpreadType T_SpreadType>
 class ScalingGeneratorNearestNeighbor
 {
 public:
-	ScalingGeneratorNearestNeighbor(const Source *source) :
-		_source(source)
+	ScalingGeneratorNearestNeighbor(const T_Source *source) :
+		_srcWrapper(source)
 	{}
 	
 	Pixel at(const Vec2D &p)
 	{
-		if (T_SourceType == Malachite::PixelFieldImage)
-			return _source->pixel(actualImagePos<T_SpreadType>(p.toQPoint(), _source->size()));
-		else
-			return _source->pixel(p.toQPoint());
+		return _srcWrapper.pixel(p.toQPoint());
 	}
 	
 private:
-	const Source *_source;
+	
+	SourceWrapper<T_Source, T_SpreadType> _srcWrapper;
 };
 
-template <class Source, Malachite::PixelFieldType T_SourceType, Malachite::SpreadType T_SpreadType>
+template <class T_Source, Malachite::SpreadType T_SpreadType>
 class ScalingGeneratorBilinear
 {
 public:
-	ScalingGeneratorBilinear(const Source *source) :
-		_source(source)
+	ScalingGeneratorBilinear(const T_Source *source) :
+		_srcWrapper(source)
 	{}
 	
 	Pixel at(const Vec2D &p)
@@ -80,18 +134,10 @@ public:
 		
 		Pixel c11, c12, c21, c22;
 		
-		if (T_SourceType == Malachite::PixelFieldImage)
-		{
-			c11 = _source->pixel(actualImagePos<T_SpreadType>(irp + QPoint(-1, -1), _source->size()));
-			c12 = _source->pixel(actualImagePos<T_SpreadType>(irp + QPoint(-1, 0), _source->size()));
-			c21 = _source->pixel(actualImagePos<T_SpreadType>(irp + QPoint(0, -1), _source->size()));
-			c22 = _source->pixel(actualImagePos<T_SpreadType>(irp, _source->size()));
-		}
-		else
-			c11 = _source->pixel(irp + QPoint(-1, -1));
-			c12 = _source->pixel(irp + QPoint(-1, 0));
-			c21 = _source->pixel(irp + QPoint(0, -1));
-			c22 = _source->pixel(irp);
+		c11 = _srcWrapper.pixel(irp + QPoint(-1, -1));
+		c12 = _srcWrapper.pixel(irp + QPoint(-1, 0));
+		c21 = _srcWrapper.pixel(irp + QPoint(0, -1));
+		c22 = _srcWrapper.pixel(irp);
 		
 		Pixel result;
 		result.rv() = (c11.v() * (1.f - dx) + c21.v() * dx) * (1.f - dy) + (c12.v() * (1.f - dx) + c22.v() * dx) * dy;
@@ -100,15 +146,16 @@ public:
 	}
 	
 private:
-	const Source *_source;
+	
+	SourceWrapper<T_Source, T_SpreadType> _srcWrapper;
 };
 
-template <class T_Source, Malachite::PixelFieldType T_SourceType, Malachite::SpreadType T_SpreadType, class T_WeightMethod>
+template <class T_Source, Malachite::SpreadType T_SpreadType, class T_WeightMethod>
 class ScalingGenerator2
 {
 public:
 	ScalingGenerator2(const T_Source *source) :
-		_source(source)
+		_srcWrapper(source)
 	{}
 	
 	Pixel at(const Vec2D &p)
@@ -117,51 +164,7 @@ public:
 		
 		QPoint fp(round(p.x()), round(p.y()));
 		
-		if (T_SourceType != Malachite::PixelFieldImage ||  pointIsInSafeZone(fp))
-		{
-			if (T_SourceType == Malachite::PixelFieldImage)
-				fp = actualImagePos<T_SpreadType>(fp, _source->size());
-			
-			addPixelEasy(fp + QPoint(-2, -2));
-			addPixelEasy(fp + QPoint(1, -2));
-			addPixelEasy(fp + QPoint(-2, 1));
-			addPixelEasy(fp + QPoint(1, 1));
-			
-			addPixelEasy(fp + QPoint(-1, -2));
-			addPixelEasy(fp + QPoint(0, -2));
-			addPixelEasy(fp + QPoint(-2, -1));
-			addPixelEasy(fp + QPoint(1, -1));
-			addPixelEasy(fp + QPoint(-2, 0));
-			addPixelEasy(fp + QPoint(1, 0));
-			addPixelEasy(fp + QPoint(-1, 1));
-			addPixelEasy(fp + QPoint(0, 1));
-			
-			addPixelEasy(fp + QPoint(-1, -1));
-			addPixelEasy(fp + QPoint(0, -1));
-			addPixelEasy(fp + QPoint(-1, 0));
-			addPixelEasy(fp + QPoint(0, 0));
-		}
-		else
-		{
-			addPixel(fp + QPoint(-2, -2));
-			addPixel(fp + QPoint(1, -2));
-			addPixel(fp + QPoint(-2, 1));
-			addPixel(fp + QPoint(1, 1));
-			
-			addPixel(fp + QPoint(-1, -2));
-			addPixel(fp + QPoint(0, -2));
-			addPixel(fp + QPoint(-2, -1));
-			addPixel(fp + QPoint(1, -1));
-			addPixel(fp + QPoint(-2, 0));
-			addPixel(fp + QPoint(1, 0));
-			addPixel(fp + QPoint(-1, 1));
-			addPixel(fp + QPoint(0, 1));
-			
-			addPixel(fp + QPoint(-1, -1));
-			addPixel(fp + QPoint(0, -1));
-			addPixel(fp + QPoint(-1, 0));
-			addPixel(fp + QPoint(0, 0));
-		}
+		addPixels(fp);
 		
 		Pixel result = _argb;
 		
@@ -180,23 +183,33 @@ public:
 	
 private:
 	
-	bool pointIsInSafeZone(const QPoint &p)
+	void addPixels(const QPoint &p)
 	{
-		return 2 <= p.x() && p.x() < _source->width() - 2 && 2 <= p.y() && p.y() < _source->height() - 2;
+		addPixel(p + QPoint(-2, -2));
+		addPixel(p + QPoint(1, -2));
+		addPixel(p + QPoint(-2, 1));
+		addPixel(p + QPoint(1, 1));
+		
+		addPixel(p + QPoint(-1, -2));
+		addPixel(p + QPoint(0, -2));
+		addPixel(p + QPoint(-2, -1));
+		addPixel(p + QPoint(1, -1));
+		addPixel(p + QPoint(-2, 0));
+		addPixel(p + QPoint(1, 0));
+		addPixel(p + QPoint(-1, 1));
+		addPixel(p + QPoint(0, 1));
+		
+		addPixel(p + QPoint(-1, -1));
+		addPixel(p + QPoint(0, -1));
+		addPixel(p + QPoint(-1, 0));
+		addPixel(p + QPoint(0, 0));
 	}
 	
 	void addPixel(const QPoint &p)
 	{
 		float w = T_WeightMethod::weight(Vec2D(p) + Vec2D(0.5, 0.5) - _p);
 		_divisor += w;
-		_argb.rv() += _source->pixel(actualImagePos<T_SpreadType>(p, _source->size())).v() * w;
-	}
-	
-	void addPixelEasy(const QPoint &p)
-	{
-		float w = T_WeightMethod::weight(Vec2D(p) + Vec2D(0.5, 0.5) - _p);
-		_divisor += w;
-		_argb.rv() += _source->pixel(p).v() * w;
+		_argb.rv() += _srcWrapper.pixel(p).v() * w;
 	}
 	
 	void reset()
@@ -214,7 +227,7 @@ private:
 	Vec2D _p;
 	float _divisor;
 	Pixel _argb;
-	const T_Source *_source;
+	SourceWrapper<T_Source, T_SpreadType> _srcWrapper;
 };
 
 class ScalingWeightMethodBicubic

@@ -13,10 +13,12 @@
 #include "misc.h"
 #include "image.h"
 #include "division.h"
+#include "genericsurface.h"
 
 namespace Malachite
 {
 
+/*
 typedef QHash<QPoint, Image *>	SurfaceHash;
 
 class SurfaceData : public QSharedData
@@ -105,53 +107,58 @@ private:
 	void setupData() { if (!d) d = new SurfaceData; }
 	
 	QSharedDataPointer<SurfaceData> d;
+};*/
+
+struct SurfaceDefaultTileProvider
+{
+	static Image DefaultTile;
+	static Image WhiteTile;
 };
 
+template <>
+inline Image surfaceDefaultTile<Image, 64>()
+{
+	return SurfaceDefaultTileProvider::DefaultTile;
+}
 
-
-class MALACHITESHARED_EXPORT SurfaceEditor
+class Surface : public GenericSurface<Image, 64>, public Paintable
 {
 public:
 	
-	SurfaceEditor(Surface *surface) : _surface(surface) {}
-	~SurfaceEditor();
+	typedef GenericSurface<Image, 64> super;
 	
-	void deleteTile(const QPoint &key);
-	void clear();
-	Image *replaceTile(const QPoint &key, Image *image);
-	Image *takeTile(const QPoint &key);
+	Surface() : super() {}
+	Surface(const Surface &other) : super(other) {}
 	
-	void replace(const Surface &surface, const QPointSet &keys);
+	PaintEngine *createPaintEngine() override;
+};
+
+class SurfaceEditTracker
+{
+public:
 	
-	QPointSet editedKeys() const { return _editedKeys; }
+	SurfaceEditTracker(Surface *surface) : _surface(surface) {}
 	
-	Image *tileRefForKey(const QPoint &key);
-	Image *tileRefForKey(int x, int y) { return tileRefForKey(QPoint(x, y)); }
-	const Image *constTileRefForKey(const QPoint &key) const;
-	const Image *constTileRefForKey(int x, int y) const { return constTileRefForKey(QPoint(x, y)); }
-	const Image *tileRefForKey(const QPoint &key) const { return constTileRefForKey(key); }
-	const Image *tileRefForKey(int x, int y) const { return constTileRefForKey(QPoint(x, y)); }
+	Image &tileRef(const QPoint &key)
+	{
+		_editedKeys << key;
+		return _surface->tileRef(key);
+	}
 	
-	const Surface *surface() { return _surface; }
+	QSet<QPoint> editedKeys() const
+	{
+		return _editedKeys;
+	}
+	
+	Surface *surface() { return _surface; }
+	const Surface *surface() const { return _surface; }
 	
 private:
 	
-	void squeeze(const QPointSet &keys);
-	
 	Surface *_surface;
-	QPointSet _editedKeys;
+	QSet<QPoint> _editedKeys;
 };
 
-
-template <ImagePasteInversionMode InversionMode, typename Image>
-void Surface::paste(const Image &image, const QPoint &point)
-{
-	SurfaceEditor editor(this);
-	QPointSet keys = keysForRect(QRect(point, image.size()));
-	
-	for (const QPoint &key : keys)
-		editor.tileRefForKey(key)->template paste<InversionMode>(image, point - key * Surface::TileSize);
-}
 
 }
 

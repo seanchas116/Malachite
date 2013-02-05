@@ -21,7 +21,7 @@ public:
 	
 private:
 	
-	ArgbBitmap _bitmap;
+	Bitmap<Pixel> _bitmap;
 	Image *_image;
 };
 

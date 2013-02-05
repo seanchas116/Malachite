@@ -75,7 +75,9 @@ HEADERS += bitmap.h \
     pixel.h \
     vec2d.h \
     mat2d.h \
-    affine2d.h
+    affine2d.h \
+    genericsurface.h \
+    list.h
 SOURCES += blendmode.cpp \
            blendop.cpp \
            brush.cpp \

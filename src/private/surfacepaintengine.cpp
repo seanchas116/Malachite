@@ -10,15 +10,11 @@ namespace Malachite
 {
 
 SurfacePaintEngine::SurfacePaintEngine() :
-	PaintEngine(),
-	_editor(0)
-{
-}
+	PaintEngine()
+{}
 
 SurfacePaintEngine::~SurfacePaintEngine()
-{
-	delete _editor;
-}
+{}
 
 bool SurfacePaintEngine::begin(Paintable *paintable)
 {
@@ -26,7 +22,7 @@ bool SurfacePaintEngine::begin(Paintable *paintable)
 	if (!surface)
 		return false;
 	
-	_editor = new SurfaceEditor(surface);
+	_surface = surface;
 	return true;
 }
 
@@ -39,7 +35,7 @@ void SurfacePaintEngine::drawTransformedPolygons(const FixedMultiPolygon &polygo
 {
 	QRect boundingRect = polygons.boundingRect().toAlignedRect();
 	
-	QPointSet keys = Surface::keysForRect(boundingRect);
+	QPointSet keys = Surface::rectToKeys(boundingRect);
 	if (!_keyClip.isEmpty())
 		keys &= _keyClip;
 	
@@ -48,11 +44,11 @@ void SurfacePaintEngine::drawTransformedPolygons(const FixedMultiPolygon &polygo
 		FixedMultiPolygon rectShape = FixedPolygon::fromRect(Surface::keyToRect(key));
 		FixedMultiPolygon clippedShape = rectShape & polygons;
 		
-		QPoint delta = -key * Surface::TileSize;
+		QPoint delta = -key * Surface::tileWidth();
 		
 		clippedShape.translate(delta);
 		
-		Painter painter(_editor->tileRefForKey(key));
+		Painter painter(&_surface->tileRef(key));
 		*painter.state() = *state();
 		painter.setShapeTransform(state()->shapeTransform * QTransform::fromTranslate(delta.x(), delta.y()));
 		
@@ -62,30 +58,30 @@ void SurfacePaintEngine::drawTransformedPolygons(const FixedMultiPolygon &polygo
 
 void SurfacePaintEngine::drawTransformedImage(const QPoint &point, const Image &image)
 {
-	QPointSet keys = Surface::keysForRect(QRect(point, image.size()));
+	QPointSet keys = Surface::rectToKeys(QRect(point, image.size()));
 	if (!_keyClip.isEmpty())
 		keys &= _keyClip;
 	
 	for (const QPoint &key : keys)
 	{
-		Painter painter(_editor->tileRefForKey(key));
+		Painter painter(&_surface->tileRef(key));
 		*painter.state() = *state();
-		painter.drawTransformedImage(point - key * Surface::TileSize, image);
+		painter.drawTransformedImage(point - key * Surface::tileWidth(), image);
 	}
 }
 
 void SurfacePaintEngine::drawTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect)
 {
-	QPointSet keys = Surface::keysForRect((imageMaskRect & image.rect()).translated(point));
+	QPointSet keys = Surface::rectToKeys((imageMaskRect & image.rect()).translated(point));
 	if (!_keyClip.isEmpty())
 		keys &= _keyClip;
 	
 	for (const QPoint &key : keys)
 	{
-		Painter painter(_editor->tileRefForKey(key));
+		Painter painter(&_surface->tileRef(key));
 		*painter.state() = *state();
 		
-		QPoint delta = key * Surface::TileSize;
+		QPoint delta = key * Surface::tileWidth();
 		
 		painter.drawTransformedImage(point - delta, image, imageMaskRect.translated(-delta));
 	}
@@ -95,7 +91,7 @@ void SurfacePaintEngine::drawTransformedSurface(const QPoint &point, const Surfa
 {
 	if (point == QPoint())
 	{
-		QPointSet keys = surface.keys() | _editor->surface()->keys();
+		QPointSet keys = surface.keys() | _surface->keys();
 		
 		if (!_keyRectClip.isEmpty())
 			keys &= _keyRectClip.keys().toSet();
@@ -109,7 +105,7 @@ void SurfacePaintEngine::drawTransformedSurface(const QPoint &point, const Surfa
 		{
 			BlendOp::TileCombination combination = BlendOp::NoTile;
 			
-			if (_editor->surface()->contains(key))
+			if (_surface->contains(key))
 				combination |= BlendOp::TileDestination;
 			if (surface.contains(key))
 				combination |= BlendOp::TileSource;
@@ -117,11 +113,11 @@ void SurfacePaintEngine::drawTransformedSurface(const QPoint &point, const Surfa
 			switch (BlendMode(state()->blendMode).op()->tileRequirement(combination))
 			{
 				case BlendOp::TileSource:
-					*_editor->tileRefForKey(key) = surface.tileForKey(key) * state()->opacity;
+					_surface->tileRef(key) = surface.tile(key) * state()->opacity;
 					break;
 					
 				case BlendOp::NoTile:
-					_editor->deleteTile(key);
+					_surface->remove(key);
 					break;
 					
 				default:
@@ -130,14 +126,14 @@ void SurfacePaintEngine::drawTransformedSurface(const QPoint &point, const Surfa
 					
 				case BlendOp::TileBoth:
 					
-					Painter painter(_editor->tileRefForKey(key));
+					Painter painter(&_surface->tileRef(key));
 					painter.setBlendMode(state()->blendMode);
 					painter.setOpacity(state()->opacity);
 					
 					if (!_keyRectClip.isEmpty())
-						painter.drawTransformedImage(QPoint(), surface.tileForKey(key), _keyRectClip[key]);
+						painter.drawTransformedImage(QPoint(), surface.tile(key), _keyRectClip[key]);
 					else
-						painter.drawTransformedImage(QPoint(), surface.tileForKey(key));
+						painter.drawTransformedImage(QPoint(), surface.tile(key));
 					break;
 			}
 		}
@@ -145,7 +141,7 @@ void SurfacePaintEngine::drawTransformedSurface(const QPoint &point, const Surfa
 	else
 	{
 		for (const QPoint &key : surface.keys())
-			drawTransformedImage(point + key * Surface::TileSize, surface.tileForKey(key));
+			drawTransformedImage(point + key * Surface::tileWidth(), surface.tile(key));
 	}
 }
 
