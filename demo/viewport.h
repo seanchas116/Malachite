@@ -18,6 +18,8 @@ public:
 	
 	explicit Viewport(QWidget *parent = 0);
 	
+	void clearPaintable();
+	
 	void setMode(Mode mode) { _mode = mode; update(); }
 	Malachite::Image *image() { return &_image; }
 	Malachite::Surface *surface() { return &_surface; }

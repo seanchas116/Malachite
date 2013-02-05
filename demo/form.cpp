@@ -77,6 +77,8 @@ QString Form::currentSource()
 
 void Form::updateDest()
 {
+	ui->viewport->clearPaintable();
+	
 	if (currentDestination() == "Image")
 		ui->viewport->setMode(Viewport::ModeImage);
 	else

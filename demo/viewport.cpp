@@ -10,6 +10,14 @@ Viewport::Viewport(QWidget *parent) :
 {
 }
 
+void Viewport::clearPaintable()
+{
+	if (_mode == ModeImage)
+		_image.clear();
+	else
+		_surface.clear();
+}
+
 void Viewport::paintEvent(QPaintEvent *)
 {
 	QPainter painter(this);
