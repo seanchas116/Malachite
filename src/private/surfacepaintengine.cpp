@@ -31,7 +31,7 @@ bool SurfacePaintEngine::flush()
 	return true;
 }
 
-void SurfacePaintEngine::drawTransformedPolygons(const FixedMultiPolygon &polygons)
+void SurfacePaintEngine::drawPreTransformedPolygons(const FixedMultiPolygon &polygons)
 {
 	QRect boundingRect = polygons.boundingRect().toAlignedRect();
 	
@@ -52,11 +52,11 @@ void SurfacePaintEngine::drawTransformedPolygons(const FixedMultiPolygon &polygo
 		*painter.state() = *state();
 		painter.setShapeTransform(state()->shapeTransform * QTransform::fromTranslate(delta.x(), delta.y()));
 		
-		painter.drawTransformedPolygons(clippedShape);
+		painter.drawPreTransformedPolygons(clippedShape);
 	}
 }
 
-void SurfacePaintEngine::drawTransformedImage(const QPoint &point, const Image &image)
+void SurfacePaintEngine::drawPreTransformedImage(const QPoint &point, const Image &image)
 {
 	QPointSet keys = Surface::rectToKeys(QRect(point, image.size()));
 	if (!_keyClip.isEmpty())
@@ -66,11 +66,11 @@ void SurfacePaintEngine::drawTransformedImage(const QPoint &point, const Image &
 	{
 		Painter painter(&_surface->tileRef(key));
 		*painter.state() = *state();
-		painter.drawTransformedImage(point - key * Surface::tileWidth(), image);
+		painter.drawPreTransformedImage(point - key * Surface::tileWidth(), image);
 	}
 }
 
-void SurfacePaintEngine::drawTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect)
+void SurfacePaintEngine::drawPreTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect)
 {
 	QPointSet keys = Surface::rectToKeys((imageMaskRect & image.rect()).translated(point));
 	if (!_keyClip.isEmpty())
@@ -83,11 +83,11 @@ void SurfacePaintEngine::drawTransformedImage(const QPoint &point, const Image &
 		
 		QPoint delta = key * Surface::tileWidth();
 		
-		painter.drawTransformedImage(point - delta, image, imageMaskRect.translated(-delta));
+		painter.drawPreTransformedImage(point - delta, image, imageMaskRect.translated(-delta));
 	}
 }
 
-void SurfacePaintEngine::drawTransformedSurface(const QPoint &point, const Surface &surface)
+void SurfacePaintEngine::drawPreTransformedSurface(const QPoint &point, const Surface &surface)
 {
 	if (point == QPoint())
 	{
@@ -131,9 +131,9 @@ void SurfacePaintEngine::drawTransformedSurface(const QPoint &point, const Surfa
 					painter.setOpacity(state()->opacity);
 					
 					if (!_keyRectClip.isEmpty())
-						painter.drawTransformedImage(QPoint(), surface.tile(key), _keyRectClip[key]);
+						painter.drawPreTransformedImage(QPoint(), surface.tile(key), _keyRectClip[key]);
 					else
-						painter.drawTransformedImage(QPoint(), surface.tile(key));
+						painter.drawPreTransformedImage(QPoint(), surface.tile(key));
 					break;
 			}
 		}
@@ -141,7 +141,7 @@ void SurfacePaintEngine::drawTransformedSurface(const QPoint &point, const Surfa
 	else
 	{
 		for (const QPoint &key : surface.keys())
-			drawTransformedImage(point + key * Surface::tileWidth(), surface.tile(key));
+			drawPreTransformedImage(point + key * Surface::tileWidth(), surface.tile(key));
 	}
 }
 

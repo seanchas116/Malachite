@@ -205,7 +205,7 @@ bool ImagePaintEngine::flush()
 	return true;
 }
 
-void ImagePaintEngine::drawTransformedPolygons(const FixedMultiPolygon &polygons)
+void ImagePaintEngine::drawPreTransformedPolygons(const FixedMultiPolygon &polygons)
 {
 	agg::rasterizer_scanline_aa<> ras;
 	
@@ -241,7 +241,7 @@ void ImagePaintEngine::drawTransformedPolygons(const FixedMultiPolygon &polygons
 	}
 }
 
-void ImagePaintEngine::drawTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect)
+void ImagePaintEngine::drawPreTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect)
 {
 	QRect dstRect = _image->rect();
 	QRect srcRect = (image.rect() & imageMaskRect).translated(point);

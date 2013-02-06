@@ -13,19 +13,19 @@ PaintEngine::PaintEngine()
 	_state.imageTransformType = Malachite::ImageTransformTypeBicubic;
 }
 
-void PaintEngine::drawTransformedPolygons(const MultiPolygon &polygons)
+void PaintEngine::drawPreTransformedPolygons(const MultiPolygon &polygons)
 {
-	drawTransformedPolygons(FixedMultiPolygon::fromPolygons(polygons));
+	drawPreTransformedPolygons(FixedMultiPolygon::fromPolygons(polygons));
 }
 
 void PaintEngine::drawPolygons(const MultiPolygon &polygons)
 {
-	drawTransformedPolygons(polygons * state()->shapeTransform);
+	drawPreTransformedPolygons(polygons * state()->shapeTransform);
 }
 
 void PaintEngine::drawPath(const QPainterPath &path)
 {
-	drawTransformedPolygons(FixedMultiPolygon::fromQPainterPath(path * state()->shapeTransform));
+	drawPreTransformedPolygons(FixedMultiPolygon::fromQPainterPath(path * state()->shapeTransform));
 }
 
 void PaintEngine::drawEllipse(double x, double y, double rx, double ry)
@@ -47,10 +47,10 @@ void PaintEngine::drawRect(double x, double y, double width, double height)
 	drawPolygons(polygon);
 }
 
-void PaintEngine::drawTransformedSurface(const QPoint &point, const Surface &surface)
+void PaintEngine::drawPreTransformedSurface(const QPoint &point, const Surface &surface)
 {
 	foreach (const QPoint &key, surface.keys())
-		drawTransformedImage(point + key * Surface::tileWidth(), surface.tile(key));
+		drawPreTransformedImage(point + key * Surface::tileWidth(), surface.tile(key));
 }
 
 void PaintEngine::drawSurface(const Vec2D &point, const Surface &surface)
@@ -63,7 +63,7 @@ void PaintEngine::drawSurface(const Vec2D &point, const Surface &surface)
 		
 		if (offset.x() == rounded.x() && offset.y() == rounded.y())
 		{
-			drawTransformedSurface(rounded, surface);
+			drawPreTransformedSurface(rounded, surface);
 			return;
 		}
 	}
@@ -94,7 +94,7 @@ void PaintEngine::drawImage(const Vec2D &point, const Image &image)
 		
 		if (offset.x() == rounded.x() && offset.y() == rounded.y())
 		{
-			drawTransformedImage(rounded, image);
+			drawPreTransformedImage(rounded, image);
 			return;
 		}
 	}

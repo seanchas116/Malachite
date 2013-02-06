@@ -74,23 +74,23 @@ public:
 	 * Draws polygons without applying transform.
 	 * @param polygons
 	 */
-	void drawTransformedPolygons(const FixedMultiPolygon &polygons)
-		{ Q_ASSERT(_paintEngine); _paintEngine->drawTransformedPolygons(polygons); }
+	void drawPreTransformedPolygons(const FixedMultiPolygon &polygons)
+		{ Q_ASSERT(_paintEngine); _paintEngine->drawPreTransformedPolygons(polygons); }
 	
 	/**
 	 * Draws polygons without applying transform.
 	 * @param polygons
 	 */
-	void drawTransformedPolygons(const MultiPolygon &polygons)
-		{ Q_ASSERT(_paintEngine); _paintEngine->drawTransformedPolygons(polygons); }
+	void drawPreTransformedPolygons(const MultiPolygon &polygons)
+		{ Q_ASSERT(_paintEngine); _paintEngine->drawPreTransformedPolygons(polygons); }
 	
 	/**
 	 * Draws an image without applying transform.
 	 * @param pos
 	 * @param image
 	 */
-	void drawTransformedImage(const QPoint &pos, const Image &image)
-		{ Q_ASSERT(_paintEngine); _paintEngine->drawTransformedImage(pos, image); }
+	void drawPreTransformedImage(const QPoint &pos, const Image &image)
+		{ Q_ASSERT(_paintEngine); _paintEngine->drawPreTransformedImage(pos, image); }
 	
 	/**
 	 * Draws an image without applying transform.
@@ -98,16 +98,16 @@ public:
 	 * @param image
 	 * @param imageMaskRect	The rectangle region in "image", which will be painted.
 	 */
-	void drawTransformedImage(const QPoint &pos, const Image &image, const QRect &imageMaskRect)
-		{ Q_ASSERT(_paintEngine); _paintEngine->drawTransformedImage(pos, image, imageMaskRect); }
+	void drawPreTransformedImage(const QPoint &pos, const Image &image, const QRect &imageMaskRect)
+		{ Q_ASSERT(_paintEngine); _paintEngine->drawPreTransformedImage(pos, image, imageMaskRect); }
 	
 	/**
 	 * Draws a surface without applying transform.
 	 * @param pos
 	 * @param surface
 	 */
-	void drawTransformedSurface(const QPoint &pos, const Surface &surface)
-		{ Q_ASSERT(_paintEngine); _paintEngine->drawTransformedSurface(pos, surface); }
+	void drawPreTransformedSurface(const QPoint &pos, const Surface &surface)
+		{ Q_ASSERT(_paintEngine); _paintEngine->drawPreTransformedSurface(pos, surface); }
 	
 	void drawPolygons(const MultiPolygon &polygons)
 		{ Q_ASSERT(_paintEngine); _paintEngine->drawPolygons(polygons); }

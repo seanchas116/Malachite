@@ -16,8 +16,8 @@ public:
 	bool begin(Paintable *paintable);
 	bool flush();
 	
-	void drawTransformedPolygons(const FixedMultiPolygon &polygons);
-	void drawTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect);
+	void drawPreTransformedPolygons(const FixedMultiPolygon &polygons);
+	void drawPreTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect);
 	
 private:
 	

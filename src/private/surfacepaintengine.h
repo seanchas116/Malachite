@@ -18,11 +18,11 @@ public:
 	bool begin(Paintable *paintable);
 	bool flush();
 	
-	void drawTransformedPolygons(const FixedMultiPolygon &polygons);
-	void drawTransformedImage(const QPoint &point, const Image &image);
-	void drawTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect);
+	void drawPreTransformedPolygons(const FixedMultiPolygon &polygons);
+	void drawPreTransformedImage(const QPoint &point, const Image &image);
+	void drawPreTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect);
 	
-	void drawTransformedSurface(const QPoint &point, const Surface &surface);
+	void drawPreTransformedSurface(const QPoint &point, const Surface &surface);
 	
 	void setKeyClip(const QPointSet &keys) { _keyClip = keys; }
 	QPointSet keyClip() const { return _keyClip; }

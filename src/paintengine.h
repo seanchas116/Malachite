@@ -33,12 +33,12 @@ public:
 	virtual bool begin(Paintable *paintable) = 0;
 	virtual bool flush() = 0;
 	
-	virtual void drawTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect) = 0;
-	virtual void drawTransformedSurface(const QPoint &point, const Surface &surface);
-	virtual void drawTransformedPolygons(const FixedMultiPolygon &polygons) = 0;
+	virtual void drawPreTransformedImage(const QPoint &point, const Image &image, const QRect &imageMaskRect) = 0;
+	virtual void drawPreTransformedSurface(const QPoint &point, const Surface &surface);
+	virtual void drawPreTransformedPolygons(const FixedMultiPolygon &polygons) = 0;
 	
-	virtual void drawTransformedImage(const QPoint &point, const Image &image) { drawTransformedImage(point, image, image.rect()); }
-	virtual void drawTransformedPolygons(const MultiPolygon &polygons);
+	virtual void drawPreTransformedImage(const QPoint &point, const Image &image) { drawPreTransformedImage(point, image, image.rect()); }
+	virtual void drawPreTransformedPolygons(const MultiPolygon &polygons);
 	virtual void drawPolygons(const MultiPolygon &polygons);
 	virtual void drawPath(const QPainterPath &path);
 	virtual void drawEllipse(double x, double y, double rx, double ry);
