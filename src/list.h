@@ -1,5 +1,7 @@
 #pragma once
 
+//ExportName: List
+
 #include <QList>
 #include <type_traits>
 
