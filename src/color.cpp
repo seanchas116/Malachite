@@ -26,12 +26,6 @@ double Color::component(Component component) const
 	}
 }
 
-double Color::intervaledComponent(Component component) const
-{
-	double result = this->component(component);
-	return component == Hue ? result / 360.0 : result;
-}
-
 void Color::setComponent(Component component, double x)
 {
 	switch (component)
@@ -59,11 +53,6 @@ void Color::setComponent(Component component, double x)
 	}
 }
 
-void Color::setNormalizedComponent(Component component, double x)
-{
-	setComponent(component, component == Hue ? x * 360.0 : x);
-}
-
 void Color::rgbChanged()
 {
 	double max = max3(_r, _g, _b);
@@ -80,22 +69,23 @@ void Color::rgbChanged()
 		return;
 	}
 	
+	double hDegrees;
+	
 	if (max == _r) {
-		_h = 60.0 * (_g - _b) / d;
+		hDegrees = 60.0 * (_g - _b) / d;
 	} else if (max == _g) {
-		_h = 60.0 * (_b - _r) / d + 120.0;
+		hDegrees = 60.0 * (_b - _r) / d + 120.0;
 	} else {
-		_h = 60.0 * (_r - _g) / d + 240.0;
+		hDegrees = 60.0 * (_r - _g) / d + 240.0;
 	}
 	
-	_h = fmod(_h, 360.0);
-	if (_h < 0)
-		_h += 360.0;
+	_h = hDegrees / 360.0;
+	_h = _h - floor(_h);
 }
 
 void Color::hsvChanged()
 {
-	double d = _h / 60.0;
+	double d = _h * 6.0;
 	int i = floor(d);
 	double f = d - i;
 	

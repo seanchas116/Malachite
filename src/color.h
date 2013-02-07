@@ -14,6 +14,10 @@
 namespace Malachite
 {
 
+/**
+ * The Color represents a color with RGB and HSV values.
+ * All components are equal or greater than 0.0 and equal or less than 1.0
+ */
 class MALACHITESHARED_EXPORT Color
 {
 public:
@@ -35,11 +39,12 @@ public:
 	double red() const { return _r; }
 	double green() const { return _g; }
 	double blue() const { return _b; }
+	
 	double hue() const { return _h; }
 	double saturation() const { return _s; }
 	double value() const { return _v; }
+	
 	double component(Component component) const;
-	double intervaledComponent(Component component) const;	// return value is in [0, 1]
 	
 	void setAlpha(double a)
 	{
@@ -66,9 +71,7 @@ public:
 	
 	void setHue(double h)
 	{
-		_h = fmod(h, 360.0);
-		if (_h < 0)
-			_h += 360.0;
+		_h = h - floor(h);
 		hsvChanged();
 	}
 	
@@ -94,16 +97,13 @@ public:
 	
 	void setHsv(double h, double s, double v)
 	{
-		_h = fmod(h, 360.0);
-		if (_h < 0)
-			_h += 360.0;
+		_h = h - floor(h);
 		_s = qBound(0.0, s, 1.0);
 		_v = qBound(0.0, v, 1.0);
 		hsvChanged();
 	}
 	
 	void setComponent(Component component, double x);
-	void setNormalizedComponent(Component component, double x);
 	
 	static Color fromRgbValue(double r, double g, double b, double a = 1.0)
 	{
