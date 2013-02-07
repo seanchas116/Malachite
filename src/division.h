@@ -71,6 +71,11 @@ private:
 	double _quot, _rem;
 };
 
+inline double align(double x, double unit)
+{
+	return std::round(x / unit) * unit;
+}
+
 
 }
 
