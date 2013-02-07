@@ -75,6 +75,11 @@ QString Form::currentSource()
 	return ui->comboBoxSource->currentText();
 }
 
+QString Form::currentSpreadType()
+{
+	return ui->comboBoxSpreadType->currentText();
+}
+
 void Form::updateDest()
 {
 	ui->viewport->clearPaintable();
@@ -85,20 +90,31 @@ void Form::updateDest()
 		ui->viewport->setMode(Viewport::ModeSurface);
 	
 	{
-		Painter painter(ui->viewport->paintable());
+		Brush brush;
 		
 		if (currentSource() == "Color")
-			painter.setBrush(d->color);
+			brush = Brush(d->color);
 		else if (currentSource() == "Linear Gradient")
-			painter.setBrush(Brush(*d->gradient.data(), d->linearGradientInfo));
+			brush = Brush(Brush(*d->gradient.data(), d->linearGradientInfo));
 		else if (currentSource() == "Radial Gradient")
-			painter.setBrush(Brush(*d->gradient.data(), d->radialGradientInfo));
+			brush = Brush(Brush(*d->gradient.data(), d->radialGradientInfo));
 		else if (currentSource() == "Image")
-			painter.setBrush(d->image);
+			brush = Brush(d->image);
 		else
-			painter.setBrush(d->surface);
+			brush = Brush(d->surface);
 		
-		painter.drawPath(d->path);
+		if (currentSpreadType() == "Pad")
+			brush.setSpreadType(SpreadTypePad);
+		else if (currentSpreadType() == "Repeat")
+			brush.setSpreadType(SpreadTypeRepeat);
+		else
+			brush.setSpreadType(SpreadTypeReflective);
+		
+		{
+			Painter painter(ui->viewport->paintable());
+			painter.setBrush(brush);
+			painter.drawPath(d->path);
+		}
 	}
 	
 	ui->viewport->update();

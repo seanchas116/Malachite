@@ -17,6 +17,7 @@ public:
 	
 	QString currentDestination();
 	QString currentSource();
+	QString currentSpreadType();
 	
 public slots:
 	
