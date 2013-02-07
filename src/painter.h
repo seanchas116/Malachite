@@ -11,12 +11,24 @@
 namespace Malachite
 {
 
+/**
+ * Painter is the painting context on Paintable objects.
+ */
 class MALACHITESHARED_EXPORT Painter
 {
 public:
 	
+	/**
+	 * Constructs one with a paintable.
+	 * @param paintable
+	 */
 	Painter(Paintable *paintable);
+	
+	/**
+	 * Constructs an empty one
+	 */
 	Painter() {}
+	
 	virtual ~Painter();
 	
 	/**

@@ -9,13 +9,41 @@
 namespace Malachite
 {
 
+/**
+ * The Affine2D represents affine transformation matrix.
+ * 
+ * | a11 | a12 |  dx |
+ * | a21 | a22 |  dy |
+ * |  0  |  0  |  1  |
+ */
 class Affine2D
 {
 public:
 	
 	Affine2D() {}
+	
+	/**
+	 * Constructs one with a 2x2 linear transformation matrix and a translation vector.
+	 * @param mat2
+	 * @param delta
+	 */
 	Affine2D(const Mat2D &mat2, const Vec2D &delta) : _m(mat2), _v(delta) {}
+	
+	/**
+	 * Copy constructor.
+	 * @param other
+	 */
 	Affine2D(const Affine2D &other) : _m(other._m), _v(other._v) {}
+	
+	/**
+	 * Constructs one with component values.
+	 * @param a11
+	 * @param a12
+	 * @param a21
+	 * @param a22
+	 * @param dx
+	 * @param dy
+	 */
 	Affine2D(double a11, double a12, double a21, double a22, double dx, double dy) :
 	    _m(a11, a12, a21, a22), _v(dx, dy) {}
 	
@@ -39,11 +67,16 @@ public:
 		return fromScale(v.x(), v.y());
 	}
 	
-	static Affine2D fromRotation(double rotation)
+	static Affine2D fromRotationRadians(double radians)
 	{
-		double c = std::cos(rotation);
-		double s = std::sin(rotation);
+		double c = std::cos(radians);
+		double s = std::sin(radians);
 		return Affine2D(Mat2D(c, -s, s, c), Vec2D());
+	}
+	
+	static Affine2D fromRotationDegrees(double degrees)
+	{
+		return fromRotationRadians(degrees * 180.0 / M_PI);
 	}
 	
 	double a11() const { return _m.a11(); }
@@ -53,11 +86,34 @@ public:
 	double dx() const { return _v.x(); }
 	double dy() const { return _v.y(); }
 	
+	/**
+	 * @return The reference to a11
+	 */
 	double &ra11() { return _m.ra11(); }
+	
+	/**
+	 * @return The reference to a12
+	 */
 	double &ra12() { return _m.ra12(); }
+	
+	/**
+	 * @return The reference to a21
+	 */
 	double &ra21() { return _m.ra21(); }
+	
+	/**
+	 * @return The reference to a22
+	 */
 	double &ra22() { return _m.ra22(); }
+	
+	/**
+	 * @return The reference to dx (a13)
+	 */
 	double &rdx() { return _v.rx(); }
+	
+	/**
+	 * @return The reference to dy (a23)
+	 */
 	double &rdy() { return _v.ry(); }
 	
 	Mat2D mat() const { return _m; }
@@ -87,6 +143,11 @@ public:
 		return Affine2D(m, v);
 	}
 	
+	/**
+	 * Returns the QTransform version of this.
+	 * Note that the QTransform is "transposed" affine matrix.
+	 * @return 
+	 */
 	QTransform toQTransform() const
 	{
 		return QTransform(a11(), a21(), a12(), a22(), dx(), dy());

@@ -66,6 +66,11 @@ public:
 		return dot(*this, *this);
 	}
 	
+	double arg() const
+	{
+		return std::atan2(y(), x());
+	}
+	
 	Vec2D &operator*=(const QTransform &transform);
 	
 	const Vec2D operator+(const Vec2D &v) const { return super::operator+(v); }

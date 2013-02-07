@@ -72,6 +72,9 @@ public:
 };
 
 
+/**
+ * The Brush specifies how shapes are "filled".
+ */
 class MALACHITESHARED_EXPORT Brush
 {
 public:
