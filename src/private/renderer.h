@@ -144,9 +144,10 @@ template <class T_Filler>
 class ImageBaseRenderer
 {
 public:
-	ImageBaseRenderer(const Bitmap<Pixel> &bitmap, BlendOp *blendOp, T_Filler *filler) :
+	ImageBaseRenderer(const Bitmap<Pixel> &bitmap, BlendOp *blendOp, float opacity, T_Filler *filler) :
 		_bitmap(bitmap),
 		_blendOp(blendOp),
+		_opacity(opacity),
 		_filler(filler)
 	{}
 	
@@ -161,6 +162,12 @@ public:
 		
 		if (newCount <= 0)
 			return;
+		
+		if (_opacity != 1)
+		{
+			for (int i = 0; i < count; ++i)
+				covers[i] *= _opacity;
+		}
 		
 		QPoint pos(start, y);
 		_filler->fill(pos, newCount, _bitmap.pixelPointer(pos), covers + (start - x), _blendOp);
@@ -178,13 +185,20 @@ public:
 		if (newCount <= 0)
 			return;
 		
+		cover *= _opacity;
+		
 		QPoint pos(start, y);
-		_filler->fill(pos, newCount, _bitmap.pixelPointer(pos), cover, _blendOp);
+		
+		if (cover == 1.f)
+			_filler->fill(pos, newCount, _bitmap.pixelPointer(pos), _blendOp);
+		else
+			_filler->fill(pos, newCount, _bitmap.pixelPointer(pos), cover, _blendOp);
 	}
 	
 private:
 	Bitmap<Pixel> _bitmap;
 	BlendOp *_blendOp;
+	float _opacity;
 	T_Filler *_filler;
 };
 

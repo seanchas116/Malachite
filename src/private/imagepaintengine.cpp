@@ -8,10 +8,10 @@ namespace Malachite
 {
 
 template <class Rasterizer, class Filler>
-void fill(Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *blendOp, Filler *filler)
+void fill(Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *blendOp, Filler *filler, float opacity)
 {
 	agg::scanline_pf sl;
-	ImageBaseRenderer<Filler> baseRen(*bitmap, blendOp, filler);
+	ImageBaseRenderer<Filler> baseRen(*bitmap, blendOp, opacity, filler);
 	Renderer<ImageBaseRenderer<Filler> > ren(baseRen);
 	
 	renderScanlines(*ras, sl, ren);
@@ -26,40 +26,40 @@ void drawTransformedImageBrush(Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *
 	{
 		typedef ScalingGeneratorNearestNeighbor<Source, SpreadType> Generator;
 		Generator gen(&source);
-		Filler<Generator, true> filler(&gen, opacity, worldTransform);
-		fill(ras, bitmap, blendOp, &filler);
+		Filler<Generator, true> filler(&gen, worldTransform);
+		fill(ras, bitmap, blendOp, &filler, opacity);
 		return;
 	}
 	case Malachite::ImageTransformTypeBilinear:
 	{
 		typedef ScalingGeneratorBilinear<Source, SpreadType> Generator;
 		Generator gen(&source);
-		Filler<Generator, true> filler(&gen, opacity, worldTransform);
-		fill(ras, bitmap, blendOp, &filler);
+		Filler<Generator, true> filler(&gen, worldTransform);
+		fill(ras, bitmap, blendOp, &filler, opacity);
 		return;
 	}
 	case Malachite::ImageTransformTypeBicubic:
 	{
 		typedef ScalingGenerator2<Source, SpreadType, ScalingWeightMethodBicubic> Generator;
 		Generator gen(&source);
-		Filler<Generator, true> filler(&gen, opacity, worldTransform);
-		fill(ras, bitmap, blendOp, &filler);
+		Filler<Generator, true> filler(&gen, worldTransform);
+		fill(ras, bitmap, blendOp, &filler, opacity);
 		return;
 	}
 	case Malachite::ImageTransformTypeLanczos2:
 	{
 		typedef ScalingGenerator2<Source, SpreadType, ScalingWeightMethodLanczos2> Generator;
 		Generator gen(&source);
-		Filler<Generator, true> filler(&gen, opacity, worldTransform);
-		fill(ras, bitmap, blendOp, &filler);
+		Filler<Generator, true> filler(&gen, worldTransform);
+		fill(ras, bitmap, blendOp, &filler, opacity);
 		return;
 	}
 	case Malachite::ImageTransformTypeLanczos2Hypot:
 	{
 		typedef ScalingGenerator2<Source, SpreadType, ScalingWeightMethodLanczos2Hypot> Generator;
 		Generator gen(&source);
-		Filler<Generator, true> filler(&gen, opacity, worldTransform);
-		fill(ras, bitmap, blendOp, &filler);
+		Filler<Generator, true> filler(&gen, worldTransform);
+		fill(ras, bitmap, blendOp, &filler, opacity);
 		return;
 	}
 	default:
@@ -75,8 +75,8 @@ void drawWithSpreadType(T_Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *blend
 	
 	if (brush.type() == Malachite::BrushTypeColor)
 	{
-		ColorFiller filler(brush.pixel(), opacity);
-		fill(ras, bitmap, blendOp, &filler);
+		ColorFiller filler(brush.pixel());
+		fill(ras, bitmap, blendOp, &filler, opacity);
 		return;
 	}
 	
@@ -89,7 +89,7 @@ void drawWithSpreadType(T_Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *blend
 			QPoint offset(fillShapeTransform.dx(), fillShapeTransform.dy());
 			
 			ImageFiller<T_SpreadType> filler(brush.image().constBitmap(), offset);
-			fill(ras, bitmap, blendOp, &filler);
+			fill(ras, bitmap, blendOp, &filler, opacity);
 			return;
 		}
 		else
@@ -117,16 +117,16 @@ void drawWithSpreadType(T_Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *blend
 		{
 			LinearGradientMethod method(info.start, info.end);
 			GradientGenerator<ColorGradient, LinearGradientMethod, T_SpreadType> gen(brush.gradient(), &method);
-			Filler<GradientGenerator<ColorGradient, LinearGradientMethod, T_SpreadType>, false> filler(&gen, opacity);
-			fill(ras, bitmap, blendOp, &filler);
+			Filler<GradientGenerator<ColorGradient, LinearGradientMethod, T_SpreadType>, false> filler(&gen);
+			fill(ras, bitmap, blendOp, &filler, opacity);
 			return;
 		}
 		else
 		{
 			LinearGradientMethod method(info.start, info.end);
 			GradientGenerator<ColorGradient, LinearGradientMethod, T_SpreadType> gen(brush.gradient(), &method);
-			Filler<GradientGenerator<ColorGradient, LinearGradientMethod, T_SpreadType>, true> filler(&gen, opacity, fillShapeTransform.inverted());
-			fill(ras, bitmap, blendOp, &filler);
+			Filler<GradientGenerator<ColorGradient, LinearGradientMethod, T_SpreadType>, true> filler(&gen, fillShapeTransform.inverted());
+			fill(ras, bitmap, blendOp, &filler, opacity);
 			return;
 		}
 	}
@@ -146,16 +146,16 @@ void drawWithSpreadType(T_Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *blend
 			{
 				RadialGradientMethod method(info.center, info.radius);
 				GradientGenerator<ColorGradient, RadialGradientMethod, T_SpreadType> gen(brush.gradient(), &method);
-				Filler<GradientGenerator<ColorGradient, RadialGradientMethod, T_SpreadType>, false> filler(&gen, opacity);
-				fill(ras, bitmap, blendOp, &filler);
+				Filler<GradientGenerator<ColorGradient, RadialGradientMethod, T_SpreadType>, false> filler(&gen);
+				fill(ras, bitmap, blendOp, &filler, opacity);
 				return;
 			}
 			else
 			{
 				RadialGradientMethod method(info.center, info.radius);
 				GradientGenerator<ColorGradient, RadialGradientMethod, T_SpreadType> gen(brush.gradient(), &method);
-				Filler<GradientGenerator<ColorGradient, RadialGradientMethod, T_SpreadType>, true> filler(&gen, opacity, fillShapeTransform.inverted());
-				fill(ras, bitmap, blendOp, &filler);
+				Filler<GradientGenerator<ColorGradient, RadialGradientMethod, T_SpreadType>, true> filler(&gen, fillShapeTransform.inverted());
+				fill(ras, bitmap, blendOp, &filler, opacity);
 				return;
 			}
 		}
@@ -165,16 +165,16 @@ void drawWithSpreadType(T_Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *blend
 			{
 				FocalGradientMethod method(info.center, info.radius, info.focal);
 				GradientGenerator<ColorGradient, FocalGradientMethod, T_SpreadType> gen(brush.gradient(), &method);
-				Filler<GradientGenerator<ColorGradient, FocalGradientMethod, T_SpreadType>, false> filler(&gen, opacity);
-				fill(ras, bitmap, blendOp, &filler);
+				Filler<GradientGenerator<ColorGradient, FocalGradientMethod, T_SpreadType>, false> filler(&gen);
+				fill(ras, bitmap, blendOp, &filler, opacity);
 				return;
 			}
 			else
 			{
 				FocalGradientMethod method(info.center, info.radius, info.focal);
 				GradientGenerator<ColorGradient, FocalGradientMethod, T_SpreadType> gen(brush.gradient(), &method);
-				Filler<GradientGenerator<ColorGradient, FocalGradientMethod, T_SpreadType>, true> filler(&gen, opacity, fillShapeTransform.inverted());
-				fill(ras, bitmap, blendOp, &filler);
+				Filler<GradientGenerator<ColorGradient, FocalGradientMethod, T_SpreadType>, true> filler(&gen, fillShapeTransform.inverted());
+				fill(ras, bitmap, blendOp, &filler, opacity);
 				return;
 			}
 		}

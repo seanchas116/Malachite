@@ -4,6 +4,7 @@
 #include "../vec2d.h"
 #include "../blendop.h"
 #include "../division.h"
+#include "../interval.h"
 
 namespace Malachite
 {
@@ -11,8 +12,8 @@ namespace Malachite
 class ColorFiller
 {
 public:
-	ColorFiller(const Pixel &argb, double opacity) :
-		_argb(argb * opacity)
+	ColorFiller(const Pixel &argb) :
+		_argb(argb)
 	{}
 	
 	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
@@ -27,12 +28,21 @@ public:
 		blendOp->blend(count, dst, _argb * cover);
 	}
 	
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, BlendOp *blendOp)
+	{
+		Q_UNUSED(pos);
+		blendOp->blend(count, dst, _argb);
+	}
+	
 private:
 	Pixel _argb;
 };
 
 template <Malachite::SpreadType T_SpreadType>
-class ImageFiller
+class ImageFiller;
+
+template <>
+class ImageFiller<Malachite::SpreadTypePad>
 {
 public:
 	
@@ -41,78 +51,185 @@ public:
 	
 	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
-		fillTemplate<false>(pos, count, dst, covers, blendOp);
+		QPoint srcPos = pos - _offset;
+		srcPos.ry() = qBound(0, srcPos.y(), _srcBitmap.height() - 1);
+		
+		int srcX = srcPos.x();
+		int srcY = srcPos.y();
+		
+		Interval dstInterval(pos.x(), count);
+		Interval srcInterval(_offset.x(), _srcBitmap.width());
+		
+		auto interval = srcInterval & dstInterval;
+		auto intervalLeftRight = dstInterval.subtracted(srcInterval);
+		auto intervalLeft = intervalLeftRight[0];
+		auto intervalRight = intervalLeftRight[1];
+		
+		int i = 0;
+		
+		if (intervalLeft.isValid())
+		{
+			blendOp->blend
+			(
+				intervalLeft.length(),
+				dst,
+				_srcBitmap.pixel(0, srcY),
+				covers
+			);
+			
+			i += intervalLeft.length();
+		}
+		
+		if (interval.isValid())
+		{
+			blendOp->blend
+			(
+				interval.length(),
+				dst + i,
+				_srcBitmap.constPixelPointer(srcX + i, srcY),
+				covers + i
+			);
+			
+			i += interval.length();
+		}
+		
+		if (intervalRight.isValid())
+		{
+			blendOp->blend
+			(
+				intervalRight.length(),
+				dst + i,
+				_srcBitmap.pixel(_srcBitmap.width() - 1, srcY),
+				covers + i
+			);
+		}
 	}
 	
 	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, float cover, BlendOp *blendOp)
 	{
-		fillTemplate<true>(pos, count, dst, Pointer<float>(cover), blendOp);
-	}
-	
-private:
-	
-	template <bool CoverIsNotArray>
-	void fillTemplate(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
-	{
-		switch (T_SpreadType)
-		{
-		case Malachite::SpreadTypePad:
-			fillTemplatePad<CoverIsNotArray>(pos, count, dst, covers, blendOp);
-			return;
-		case Malachite::SpreadTypeRepeat:
-			fillTemplateRepeat<CoverIsNotArray>(pos, count, dst, covers, blendOp);
-			return;
-		case Malachite::SpreadTypeReflective:
-			fillTemplateReflective<CoverIsNotArray>(pos, count, dst, covers, blendOp);
-			return;
-		}
-	}
-	
-	template <bool CoverIsNotArray>
-	void fillTemplatePad(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
-	{
 		QPoint srcPos = pos - _offset;
-		int imageY = qBound(0, srcPos.y(), _srcBitmap.height() - 1);
+		srcPos.ry() = qBound(0, srcPos.y(), _srcBitmap.height() - 1);
+		
+		int srcX = srcPos.x();
+		int srcY = srcPos.y();
+		
+		Interval dstInterval(pos.x(), count);
+		Interval srcInterval(_offset.x(), _srcBitmap.width());
+		
+		auto interval = srcInterval & dstInterval;
+		auto intervalLeftRight = dstInterval.subtracted(srcInterval);
+		auto intervalLeft = intervalLeftRight[0];
+		auto intervalRight = intervalLeftRight[1];
 		
 		int i = 0;
 		
-		int left = -srcPos.x();
-		
-		if (left > 0)
+		if (intervalLeft.isValid())
 		{
-			if (CoverIsNotArray)
-				blendOp->blend(left, dst, _srcBitmap.pixel(0, imageY), *covers);
-			else
-				blendOp->blend(left, dst, _srcBitmap.pixel(0, imageY), covers);
-			i += left;
+			blendOp->blend
+			(
+				intervalLeft.length(),
+				dst,
+				_srcBitmap.pixel(0, srcY),
+				cover
+			);
+			
+			i += intervalLeft.length();
 		}
 		
-		int midStart = qMax(0, srcPos.x());
-		int midEnd = qMin(_srcBitmap.width(), srcPos.x() + count);
-		int mid = midEnd - midStart;
-		
-		if (mid > 0)
+		if (interval.isValid())
 		{
-			if (CoverIsNotArray)
-				blendOp->blend(mid, dst + i, _srcBitmap.constPixelPointer(midStart, imageY), *covers);
-			else
-				blendOp->blend(mid, dst + i, _srcBitmap.constPixelPointer(midStart, imageY), covers + i);
-			i += mid;
+			blendOp->blend
+			(
+				interval.length(),
+				dst + i,
+				_srcBitmap.constPixelPointer(srcX + i, srcY),
+				cover
+			);
+			
+			i += interval.length();
 		}
 		
-		int right = srcPos.x() + count - _srcBitmap.width();
-		
-		if (right > 0)
+		if (intervalRight.isValid())
 		{
-			if (CoverIsNotArray)
-				blendOp->blend(right, dst + i, _srcBitmap.pixel(_srcBitmap.width() - 1, imageY), *covers);
-			else
-				blendOp->blend(right, dst + i, _srcBitmap.pixel(_srcBitmap.width() - 1, imageY), covers + i);
+			blendOp->blend
+			(
+				intervalRight.length(),
+				dst + i,
+				_srcBitmap.pixel(_srcBitmap.width() - 1, srcY),
+				cover
+			);
 		}
 	}
 	
-	template <bool CoverIsNotArray>
-	void fillTemplateRepeat(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, BlendOp *blendOp)
+	{
+		QPoint srcPos = pos - _offset;
+		srcPos.ry() = qBound(0, srcPos.y(), _srcBitmap.height() - 1);
+		
+		int srcX = srcPos.x();
+		int srcY = srcPos.y();
+		
+		Interval dstInterval(pos.x(), count);
+		Interval srcInterval(_offset.x(), _srcBitmap.width());
+		
+		auto interval = srcInterval & dstInterval;
+		auto intervalLeftRight = dstInterval.subtracted(srcInterval);
+		auto intervalLeft = intervalLeftRight[0];
+		auto intervalRight = intervalLeftRight[1];
+		
+		int i = 0;
+		
+		if (intervalLeft.isValid())
+		{
+			blendOp->blend
+			(
+				intervalLeft.length(),
+				dst,
+				_srcBitmap.pixel(0, srcY)
+			);
+			
+			i += intervalLeft.length();
+		}
+		
+		if (interval.isValid())
+		{
+			blendOp->blend
+			(
+				interval.length(),
+				dst + i,
+				_srcBitmap.constPixelPointer(srcX + i, srcY)
+			);
+			
+			i += interval.length();
+		}
+		
+		if (intervalRight.isValid())
+		{
+			blendOp->blend
+			(
+				intervalRight.length(),
+				dst + i,
+				_srcBitmap.pixel(_srcBitmap.width() - 1, srcY)
+			);
+		}
+	}
+	
+	
+private:
+	
+	const Bitmap<Pixel> _srcBitmap;
+	QPoint _offset;
+};
+
+template <>
+class ImageFiller<Malachite::SpreadTypeRepeat>
+{
+public:
+	
+	ImageFiller(const Bitmap<Pixel> &bitmap, const QPoint &offset) :
+		_srcBitmap(bitmap), _offset(offset) {}
+	
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
 		IntDivision divX(srcPos.x(), _srcBitmap.width());
@@ -124,38 +241,99 @@ private:
 		
 		if (i >= count)
 		{
-			if (CoverIsNotArray)
-				blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), *covers);
-			else
-				blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
+			blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
 			return;
 		}
 		
-		if (CoverIsNotArray)
-			blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), *covers);
-		else
-			blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
+		blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
 		
 		forever
 		{
 			if (count - i < _srcBitmap.width()) break;
 			
-			if (CoverIsNotArray)
-				blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), *covers);
-			else
-				blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
+			blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
 			
 			i += _srcBitmap.width();
 		}
 		
-		if (CoverIsNotArray)
-			blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), *covers);
-		else
-			blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
+		blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
 	}
 	
-	template <bool CoverIsNotArray>
-	void fillTemplateReflective(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, float cover, BlendOp *blendOp)
+	{
+		QPoint srcPos = pos - _offset;
+		IntDivision divX(srcPos.x(), _srcBitmap.width());
+		IntDivision divY(srcPos.y(), _srcBitmap.height());
+		
+		int imageY = divY.rem();
+		
+		int i = _srcBitmap.width() - divX.rem();
+		
+		if (i >= count)
+		{
+			blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), cover);
+			return;
+		}
+		
+		blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), cover);
+		
+		forever
+		{
+			if (count - i < _srcBitmap.width()) break;
+			
+			blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), cover);
+			
+			i += _srcBitmap.width();
+		}
+		
+		blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), cover);
+	}
+	
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, BlendOp *blendOp)
+	{
+		QPoint srcPos = pos - _offset;
+		IntDivision divX(srcPos.x(), _srcBitmap.width());
+		IntDivision divY(srcPos.y(), _srcBitmap.height());
+		
+		int imageY = divY.rem();
+		
+		int i = _srcBitmap.width() - divX.rem();
+		
+		if (i >= count)
+		{
+			blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY));
+			return;
+		}
+		
+		blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY));
+		
+		forever
+		{
+			if (count - i < _srcBitmap.width()) break;
+			
+			blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY));
+			
+			i += _srcBitmap.width();
+		}
+		
+		blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY));
+	}
+	
+private:
+	
+	const Bitmap<Pixel> _srcBitmap;
+	QPoint _offset;
+};
+
+template <>
+class ImageFiller<Malachite::SpreadTypeReflective>
+{
+public:
+	
+	ImageFiller(const Bitmap<Pixel> &bitmap, const QPoint &offset) :
+		_srcBitmap(bitmap), _offset(offset) {}
+	
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
 		QPoint srcPos = pos - _offset;
 		IntDivision divX(srcPos.x(),  _srcBitmap.width());
@@ -170,36 +348,17 @@ private:
 		if (i >= count)
 		{
 			if (q % 2)
-			{
-				if (CoverIsNotArray)
-					blendOp->blendReversed(count, dst, _srcBitmap.constPixelPointer( _srcBitmap.width() - divX.rem() - count, imageY), *covers);
-				else
-					blendOp->blendReversed(count, dst, _srcBitmap.constPixelPointer( _srcBitmap.width() - divX.rem() - count, imageY), covers);
-			}
+				blendOp->blendReversed(count, dst, _srcBitmap.constPixelPointer( _srcBitmap.width() - divX.rem() - count, imageY), covers);
 			else
-			{
-				if (CoverIsNotArray)
-					blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), *covers);
-				else
-					blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
-			}
+				blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
+			
 			return;
 		}
 		
 		if (q % 2)
-		{
-			if (CoverIsNotArray)
-				blendOp->blendReversed(i, dst, _srcBitmap.constPixelPointer(0, imageY), *covers);
-			else
-				blendOp->blendReversed(i, dst, _srcBitmap.constPixelPointer(0, imageY), covers);
-		}
+			blendOp->blendReversed(i, dst, _srcBitmap.constPixelPointer(0, imageY), covers);
 		else
-		{
-			if (CoverIsNotArray)
-				blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), *covers);
-			else
-				blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
-		}
+			blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), covers);
 		
 		q++;
 		
@@ -208,38 +367,117 @@ private:
 			if (count - i < _srcBitmap.width()) break;
 			
 			if (q % 2)
-			{
-				if (CoverIsNotArray)
-					blendOp->blendReversed(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), *covers);
-				else
-					blendOp->blendReversed(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
-			}
+				blendOp->blendReversed(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
 			else
-			{
-				if (CoverIsNotArray)
-					blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), *covers);
-				else
-					blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
-			}
+				blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
+			
 			i += _srcBitmap.width();
 			q++;
 		}
 		
 		if (q % 2)
-		{
-			if (CoverIsNotArray)
-				blendOp->blendReversed(count - i, dst + i, _srcBitmap.constPixelPointer(_srcBitmap.width() - count + i, imageY), *covers);
-			else
-				blendOp->blendReversed(count - i, dst + i, _srcBitmap.constPixelPointer(_srcBitmap.width() - count + i, imageY), covers + i);
-		}
+			blendOp->blendReversed(count - i, dst + i, _srcBitmap.constPixelPointer(_srcBitmap.width() - count + i, imageY), covers + i);
 		else
-		{
-			if (CoverIsNotArray)
-				blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), *covers);
-			else
-				blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
-		}
+			blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), covers + i);
 	}
+	
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, float cover, BlendOp *blendOp)
+	{
+		QPoint srcPos = pos - _offset;
+		IntDivision divX(srcPos.x(),  _srcBitmap.width());
+		IntDivision divY(srcPos.y(),  _srcBitmap.height());
+		
+		int imageY = divY.quot() % 2 ?  _srcBitmap.height() - divY.rem() - 1 : divY.rem();
+		
+		int i = _srcBitmap.width() - divX.rem();
+		
+		int q = divX.quot();
+		
+		if (i >= count)
+		{
+			if (q % 2)
+				blendOp->blendReversed(count, dst, _srcBitmap.constPixelPointer( _srcBitmap.width() - divX.rem() - count, imageY), cover);
+			else
+				blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), cover);
+			
+			return;
+		}
+		
+		if (q % 2)
+			blendOp->blendReversed(i, dst, _srcBitmap.constPixelPointer(0, imageY), cover);
+		else
+			blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY), cover);
+		
+		q++;
+		
+		forever
+		{
+			if (count - i < _srcBitmap.width()) break;
+			
+			if (q % 2)
+				blendOp->blendReversed(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), cover);
+			else
+				blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY), cover);
+			
+			i += _srcBitmap.width();
+			q++;
+		}
+		
+		if (q % 2)
+			blendOp->blendReversed(count - i, dst + i, _srcBitmap.constPixelPointer(_srcBitmap.width() - count + i, imageY), cover);
+		else
+			blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY), cover);
+	}
+	
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, BlendOp *blendOp)
+	{
+		QPoint srcPos = pos - _offset;
+		IntDivision divX(srcPos.x(),  _srcBitmap.width());
+		IntDivision divY(srcPos.y(),  _srcBitmap.height());
+		
+		int imageY = divY.quot() % 2 ?  _srcBitmap.height() - divY.rem() - 1 : divY.rem();
+		
+		int i = _srcBitmap.width() - divX.rem();
+		
+		int q = divX.quot();
+		
+		if (i >= count)
+		{
+			if (q % 2)
+				blendOp->blendReversed(count, dst, _srcBitmap.constPixelPointer( _srcBitmap.width() - divX.rem() - count, imageY));
+			else
+				blendOp->blend(count, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY));
+			
+			return;
+		}
+		
+		if (q % 2)
+			blendOp->blendReversed(i, dst, _srcBitmap.constPixelPointer(0, imageY));
+		else
+			blendOp->blend(i, dst, _srcBitmap.constPixelPointer(divX.rem(), imageY));
+		
+		q++;
+		
+		forever
+		{
+			if (count - i < _srcBitmap.width()) break;
+			
+			if (q % 2)
+				blendOp->blendReversed(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY));
+			else
+				blendOp->blend(_srcBitmap.width(), dst + i, _srcBitmap.constPixelPointer(0, imageY));
+			
+			i += _srcBitmap.width();
+			q++;
+		}
+		
+		if (q % 2)
+			blendOp->blendReversed(count - i, dst + i, _srcBitmap.constPixelPointer(_srcBitmap.width() - count + i, imageY));
+		else
+			blendOp->blend(count - i, dst + i, _srcBitmap.constPixelPointer(0, imageY));
+	}
+	
+private:
 	
 	const Bitmap<Pixel> _srcBitmap;
 	QPoint _offset;
@@ -249,20 +487,13 @@ template <class T_Generator, bool TransformEnabled>
 class Filler
 {
 public:
-	Filler(T_Generator *generator, float opacity, const QTransform &worldTransform = QTransform()) :
+	Filler(T_Generator *generator, const QTransform &worldTransform = QTransform()) :
 		_generator(generator),
-		_opacity(opacity),
 		_transform(worldTransform)
 	{}
 	
 	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, Pointer<float> covers, BlendOp *blendOp)
 	{
-		if (_opacity != 1)
-		{
-			for (int i = 0; i < count; ++i)
-				covers[i] *= _opacity;
-		}
-		
 		Array<Pixel> fill(count);
 		
 		Vec2D centerPos(pos.x(), pos.y());
@@ -279,8 +510,6 @@ public:
 	
 	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, float cover, BlendOp *blendOp)
 	{
-		cover *= _opacity;
-		
 		Array<Pixel> fill(count);
 		
 		Vec2D centerPos(pos.x(), pos.y());
@@ -295,9 +524,24 @@ public:
 		blendOp->blend(count, dst, fill.data(), cover);
 	}
 	
+	void fill(const QPoint &pos, int count, Pointer<Pixel> dst, BlendOp *blendOp)
+	{
+		Array<Pixel> fill(count);
+		
+		Vec2D centerPos(pos.x(), pos.y());
+		centerPos += Vec2D(0.5, 0.5);
+		
+		for (int i = 0; i < count; ++i)
+		{
+			fill[i] = _generator->at(TransformEnabled ? centerPos * _transform : centerPos);
+			centerPos += Vec2D(1, 0);
+		}
+		
+		blendOp->blend(count, dst, fill.data());
+	}
+	
 private:
 	T_Generator *_generator;
-	float _opacity;
 	QTransform _transform;
 };
 
