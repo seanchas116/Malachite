@@ -19,7 +19,7 @@ inline T_Image surfaceDefaultTile()
 	return result;
 }
 
-template <typename T_Image, int T_TileWidth>
+template <typename T_Image, int T_TileWidth = 64>
 class GenericSurface
 {
 public:
@@ -91,6 +91,22 @@ public:
 	{
 		for (const QPoint &key : rectToKeys(QRect(pos, image.size())))
 			tileRef(key).template paste<T_InversionMode>(image, pos - key * tileWidth());
+	}
+	
+	template <typename OtherImage>
+	OtherImage crop(const QRect &rect)
+	{
+		OtherImage image(rect.size());
+		image.clear();
+		auto keys = rectToKeys(rect);
+		
+		for (auto key : keys)
+		{
+			if (contains(key))
+				image.paste(tile(key), -rect.topLeft() + key * tileWidth());
+		}
+		
+		return image;
 	}
 	
 	QRect boudingRect() const

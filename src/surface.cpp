@@ -314,6 +314,7 @@ PaintEngine *Surface::createPaintEngine()
 	return new SurfacePaintEngine();
 }
 
+ImageU8 SurfaceDefaultTileProvider::DefaultTileU8;
 Image SurfaceDefaultTileProvider::DefaultTile;
 Image SurfaceDefaultTileProvider::WhiteTile;
 
@@ -322,8 +323,10 @@ class SurfaceDefaultTileInitializer
 public:
 	SurfaceDefaultTileInitializer()
 	{
+		SurfaceDefaultTileProvider::DefaultTileU8 = ImageU8(Surface::tileSize());
+		SurfaceDefaultTileProvider::DefaultTileU8.fill(0);
 		SurfaceDefaultTileProvider::DefaultTile = Image(Surface::tileSize());
-		SurfaceDefaultTileProvider::DefaultTile.fill(Color::fromRgbValue(0, 0, 0, 0).toPixel());
+		SurfaceDefaultTileProvider::DefaultTile.fill(0);
 		SurfaceDefaultTileProvider::WhiteTile = Image(Surface::tileSize());
 		SurfaceDefaultTileProvider::WhiteTile.fill(Color::fromRgbValue(1, 1, 1, 1).toPixel());
 	}

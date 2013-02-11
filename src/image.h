@@ -11,16 +11,51 @@
 namespace Malachite
 {
 
+class Image;
+
+/**
+ * Bgra 8bit-per-channel unsigned int Image
+ * Compatible with QImage
+ */
+class MALACHITESHARED_EXPORT ImageU8 : public GenericImage<BgraPremultU8>
+{
+public:
+	
+	typedef GenericImage<BgraPremultU8> super;
+	
+	ImageU8() : super() {}
+	
+	ImageU8(const super &other) : super(other) {}
+	
+	ImageU8(const QSize &size) : super(size) {}
+	
+	ImageU8(int w, int h) : super(w, h) {}
+	
+	/**
+	 * Wraps this into a 32bit premultiplied QImage.
+	 * Do not delete the original image until the returned image is detached.
+	 * @return 
+	 */
+	QImage wrapInQImage() const;
+	
+	/**
+	 * Wraps a QImage.
+	 * The QImage must be 32bit premultiplied.
+	 * Do not delete the original image until the returned image is detached.
+	 * @param image
+	 * @return 
+	 */
+	static ImageU8 wrapQImage(const QImage &image);
+};
+
+/**
+ * Bgra 32bit-per-channel float Image
+ */
 class MALACHITESHARED_EXPORT Image : public GenericImage<Pixel>, public Paintable
 {
 public:
 	
 	typedef GenericImage<Pixel> super;
-	
-	enum
-	{
-		BytesPerPixel = 16
-	};
 	
 	/**
 	 * Constructs an empty image.
@@ -49,11 +84,6 @@ public:
 	Image(int width, int height) : super(width, height) {}
 	
 	/**
-	 * Fills the data with 0 (transparent).
-	 */
-	void clear() { fill(Pixel(0)); }
-	
-	/**
 	 *
 	 * @return Whether the image is blank (all pixels are transparent)
 	 */
@@ -72,18 +102,7 @@ public:
 	 */
 	Image toOpaqueImage() const;
 	
-	/**
-	 * Converts the image into a QImage.
-	 * @return The result
-	 */
-	QImage toQImage() const;
-	
-	/**
-	 * Creates an image from a QImage.
-	 * @param qimage The original QImage
-	 * @return The result
-	 */
-	static Image fromQImage(const QImage &qimage);
+	ImageU8 toImageU8() const;
 	
 	/**
 	 * Converts the image into a QByteArray.

@@ -8,19 +8,18 @@
 namespace Malachite
 {
 
+QImage ImageU8::wrapInQImage() const
+{
+	return QImage(reinterpret_cast<const uint8_t *>((const PixelType *)this->constBits()), this->width(), this->height(), QImage::Format_ARGB32_Premultiplied);
+}
+
+ImageU8 ImageU8::wrapQImage(const QImage &image)
+{
+	return ImageU8::wrap(image.constBits(), image.size());
+}
+
 bool Image::isBlank() const
 {
-	/*
-	for (int y = 0; y < height(); ++y) {
-		const MLArgb *p = constScanline(y);
-		for (int x = 0; x < width(); ++x) {
-			if (p->a())
-				return false;
-			p++;
-		}
-	}
-	return true;*/
-	
 	int count = area();
 	const Pixel *p = constBits();
 	
@@ -52,22 +51,64 @@ PaintEngine *Image::createPaintEngine()
 	return new ImagePaintEngine;
 }
 
-QImage Image::toQImage() const
+// assumes both dst and src are 16bit aligned
+static void copyColorFast(int count, BgraPremultU8 *dst, const Pixel *src)
 {
-	QImage qimage(size(), QImage::Format_ARGB32_Premultiplied);
+	int countPer4 = count / 4;
+	int rem = count % 4;
 	
-	auto wrapper = GenericImage<BgraPremultU8>::wrap(qimage.bits(), qimage.size(), qimage.bytesPerLine());
-	wrapper.paste(*this);
-	return qimage;
+	while (countPer4--)
+	{
+		__m128i d0 = _mm_cvtps_epi32((src->v() * 0xFF).data());
+		src++;
+		__m128i d1 = _mm_cvtps_epi32((src->v() * 0xFF).data());
+		src++;
+		
+		__m128i w0 = _mm_packs_epi32(d0, d1);
+		
+		__m128i d2 = _mm_cvtps_epi32((src->v() * 0xFF).data());
+		src++;
+		__m128i d3 = _mm_cvtps_epi32((src->v() * 0xFF).data());
+		src++;
+		
+		__m128i w1 = _mm_packs_epi32(d2, d3);
+		
+		__m128i b = _mm_packus_epi16(w0, w1);
+		
+		*(reinterpret_cast<__m128i *>(dst)) = b;
+		
+		dst += 4;
+	}
+	
+	if (rem)
+	{
+		auto dstDwords = reinterpret_cast<uint32_t *>(dst);
+		
+		auto convert1 = [](const Pixel &p) -> uint32_t
+		{
+			union
+			{
+				uint32_t dwords[4];
+				__m128i d;
+			} u;
+			
+			u.d = _mm_cvtps_epi32((p.v() * 0xFF).data());
+			u.d = _mm_packs_epi32(u.d, u.d);
+			u.d = _mm_packus_epi16(u.d, u.d);
+			
+			return u.dwords[0];
+		};
+		
+		while (rem--)
+			*dstDwords++ = convert1(*src++);
+	}
 }
 
-Image Image::fromQImage(const QImage &qimage)
+ImageU8 Image::toImageU8() const
 {
-	Image image(qimage.size());
-	
-	auto wrapper = GenericImage<BgraPremultU8>::wrap(qimage.bits(), qimage.size(), qimage.bytesPerLine());
-	image.paste(wrapper);
-	return image;
+	ImageU8 result(this->size());
+	copyColorFast(this->area(), result.bits(), this->constBits());
+	return result;
 }
 
 QByteArray Image::toByteArray() const
@@ -76,7 +117,7 @@ QByteArray Image::toByteArray() const
 	QDataStream stream(&data, QIODevice::WriteOnly);
 	
 	int count = width() * height();
-	data.reserve(count * BytesPerPixel);
+	data.reserve(count * sizeof(PixelType));
 	
 	Pointer<const Pixel> p = constBits();
 	
@@ -95,7 +136,7 @@ QByteArray Image::toByteArray() const
 Image Image::fromByteArray(const QByteArray &data, const QSize &size)
 {
 	int count = size.width() * size.height();
-	if (data.size() < count * BytesPerPixel)
+	if (data.size() < count * sizeof(PixelType))
 		return Image();
 	
 	Image image(size);

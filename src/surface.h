@@ -20,9 +20,18 @@ namespace Malachite
 
 struct SurfaceDefaultTileProvider
 {
+	static ImageU8 DefaultTileU8;
 	static Image DefaultTile;
 	static Image WhiteTile;
 };
+
+template <>
+inline ImageU8 surfaceDefaultTile<ImageU8, 64>()
+{
+	return SurfaceDefaultTileProvider::DefaultTileU8;
+}
+
+typedef GenericSurface<ImageU8, 64> SurfaceU8;
 
 template <>
 inline Image surfaceDefaultTile<Image, 64>()

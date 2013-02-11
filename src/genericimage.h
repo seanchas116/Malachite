@@ -64,19 +64,58 @@ class MALACHITESHARED_EXPORT GenericImage
 {
 public:
 	
+	/**
+	 * Pixel type
+	 */
 	typedef T_Pixel PixelType;
 	
+	/**
+	 * Constructs an empty image.
+	 */
 	GenericImage() {}
+	
+	/**
+	 * Constructs an image with a size and byte count per line.
+	 * @param size
+	 * @param bytesPerLine
+	 */
 	GenericImage(const QSize &size, int bytesPerLine)
 	{
 		if (!size.isEmpty())
 			p = new GenericImageData<PixelType>(size, bytesPerLine);
 	}
 	
+	/**
+	 * Constructs an image with a size.
+	 * bytePerLine will be size.width() * sizeof(PixelType).
+	 * @param size
+	 */
 	GenericImage(const QSize &size) : GenericImage(size, size.width() * sizeof(PixelType)) {}
+	
+	/**
+	 * Constructs an image with a size and byte count per line.
+	 * @param width
+	 * @param height
+	 * @param bytesPerLine
+	 */
 	GenericImage(int width, int height, int bytesPerLine) : GenericImage(QSize(width, height), bytesPerLine) {}
+	
+	/**
+	 * Constructs an image with a size.
+	 * bytePerLine will be width * sizeof(PixelType).
+	 * @param width
+	 * @param height
+	 */
 	GenericImage(int width, int height) : GenericImage(QSize(width, height), width * sizeof(PixelType)) {}
 	
+	/**
+	 * Wraps existing data.
+	 * The GenericImage will not take ownership of data.
+	 * @param data
+	 * @param size
+	 * @param bytesPerLine
+	 * @return 
+	 */
 	static GenericImage wrap(void *data, const QSize &size, int bytesPerLine)
 	{
 		GenericImage r;
@@ -159,6 +198,11 @@ public:
 		{
 			scanline(y).fill(c, s.width());
 		}
+	}
+	
+	void clear()
+	{
+		fill(0);
 	}
 	
 	template <class NewPixel>

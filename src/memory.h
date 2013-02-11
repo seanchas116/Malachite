@@ -269,20 +269,21 @@ public:
 		Q_ASSERT(isValid());
 		Q_ASSERT(otherPointer.isValid());
 		
-		Q_ASSERT(remainingByteCount() <= byteCount);
-		Q_ASSERT(otherPointer.remainingByteCount() <= byteCount);
+		Q_ASSERT(remainingByteCount() >= byteCount);
+		Q_ASSERT(otherPointer.remainingByteCount() >= byteCount);
 #endif
 		memcpy(_p, otherPointer, byteCount);
 	}
 	
 	void fill(const T &value, int count)
 	{
-		Pointer<T> p = *this;
+#ifdef ML_DEBUG_MEMORY
+		Q_ASSERT(remainingByteCount() >= count * sizeof(T));
+#endif
 		
+		Pointer<T> p = *this;
 		for (int i = 0; i < count; ++i)
-		{
 			*p++ = value;
-		}
 	}
 	
 	template <class S>
