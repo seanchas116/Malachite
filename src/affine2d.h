@@ -76,7 +76,7 @@ public:
 	
 	static Affine2D fromRotationDegrees(double degrees)
 	{
-		return fromRotationRadians(degrees * 180.0 / M_PI);
+		return fromRotationRadians(degrees * M_PI / 180.0);
 	}
 	
 	double a11() const { return _m.a11(); }
