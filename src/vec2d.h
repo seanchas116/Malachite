@@ -50,6 +50,9 @@ public:
 	Vec2D extractX() const { return extract(0); }
 	Vec2D extractY() const { return extract(1); }
 	
+	Vec2D floor() const { return Vec2D(std::floor(x()), std::floor(y())); }
+	Vec2D ceil() const { return Vec2D(std::ceil(x()), std::ceil(y())); }
+	
 	static double dot(const Vec2D &v1, const Vec2D &v2)
 	{
 		Vec2D v = v1 * v2;

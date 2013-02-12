@@ -278,7 +278,7 @@ public:
 	void fill(const T &value, int count)
 	{
 #ifdef ML_DEBUG_MEMORY
-		Q_ASSERT(remainingByteCount() >= count * sizeof(T));
+		Q_ASSERT(size_t(remainingByteCount()) >= size_t(count) * sizeof(T));
 #endif
 		
 		Pointer<T> p = *this;

@@ -29,24 +29,31 @@ public:
 	
 	Vector() {}
 	
-	Vector(double s)
+	Vector(ValueType s)
 	{
 		_array[0] = s;
 		_data = _mm_unpacklo_pd(_data, _data);
 	}
 	
-	Vector(std::array<double, 2> &array)
+	Vector(std::array<ValueType, 2> &array)
 	{
 		_array = array;
 	}
 	
+	Vector(std::initializer_list<ValueType> list)
+	{
+		if (list.size() != size())
+			return;
+		std::copy(list.begin(), list.end(), _array.begin());
+	}
+	
 	Vector(__m128d data) { _data = data; }
 	
-	Vector(const Vector<double, 2> &other) { _v = other._v; }
+	Vector(const Vector<ValueType, 2> &other) { _v = other._v; }
 	
 	// attributes
 	
-	static constexpr size_t size() { return 4; }
+	static constexpr size_t size() { return 2; }
 	
 	// access
 	
@@ -190,21 +197,28 @@ public:
 	
 	Vector() {}
 	
-	Vector(float s)
+	Vector(ValueType s)
 	{
 		_array[0] = s;
 		_data = _mm_unpacklo_ps(_data, _data);
 		_data = _mm_unpacklo_ps(_data, _data);
 	}
 	
-	Vector(std::array<float, 4> &array)
+	Vector(std::array<ValueType, 4> &array)
 	{
 		_array = array;
 	}
 	
+	Vector(std::initializer_list<ValueType> list)
+	{
+		if (list.size() != size())
+			return;
+		std::copy(list.begin(), list.end(), _array.begin());
+	}
+	
 	Vector(__m128 data) { _data = data; }
 	
-	Vector(const Vector<float, 4> &other) { _v = other._v; }
+	Vector(const Vector<ValueType, 4> &other) { _v = other._v; }
 	
 	// attributes
 	

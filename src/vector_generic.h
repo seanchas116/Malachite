@@ -3,6 +3,7 @@
 #include <initializer_list>
 #include <array>
 #include <cstddef>
+#include <algorithm>
 
 #define ML_IMPL_VECTOR_OPERATORS(SELF_TYPE, VALUE_TYPE) \
 	SELF_TYPE &operator+=( const SELF_TYPE &other ) { return *this = *this + other; } \
@@ -52,6 +53,13 @@ public:
 	}
 	
 	Vector(std::array<T, N> &array) { _array = array; }
+	
+	Vector(std::initializer_list<T> list)
+	{
+		if (list.size() != size())
+			return;
+		std::copy(list.begin(), list.end(), _array.begin());
+	}
 	
 	Vector(const Vector &other) { _array = other._array; }
 	

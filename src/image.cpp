@@ -136,7 +136,7 @@ QByteArray Image::toByteArray() const
 Image Image::fromByteArray(const QByteArray &data, const QSize &size)
 {
 	int count = size.width() * size.height();
-	if (data.size() < count * sizeof(PixelType))
+	if (size_t(data.size()) < size_t(count) * sizeof(PixelType))
 		return Image();
 	
 	Image image(size);

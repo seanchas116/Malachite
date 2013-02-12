@@ -131,7 +131,7 @@ public:
 		return wrap(const_cast<void *>(data), size, bytesPerLine);
 	}
 	
-	static const GenericImage wrap(const void *data, const QSize &size) { wrap(data, size, size.width() * sizeof(PixelType)); }
+	static const GenericImage wrap(const void *data, const QSize &size) { return wrap(data, size, size.width() * sizeof(PixelType)); }
 	
 	void detach() { p.detach(); }
 	bool isValid() const { return p; }
