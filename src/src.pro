@@ -25,6 +25,12 @@ LIBS += -lfreeimage
 QMAKE_CXXFLAGS += -std=c++11
 CONFIG += sse2
 
+# optimisation
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE += -O3
+QMAKE_LFLAGS_RELEASE -= -O1
+QMAKE_LFLAGS_RELEASE += -O3
+
 # Input
 HEADERS += bitmap.h \
            blendmode.h \

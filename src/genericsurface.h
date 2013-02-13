@@ -52,7 +52,7 @@ public:
 		
 		return _hash[key];
 	}
-
+	
 	ImageType &tileRef(int x, int y) { return tileRef(QPoint(x, y)); }
 	
 	PixelType pixel(const QPoint &pos) const
