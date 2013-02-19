@@ -6,6 +6,9 @@
 namespace Malachite
 {
 
+static const PixelVec pixelVecZero(0.f);
+static const PixelVec pixelVecOne(1.f);
+
 inline static Pixel compose(const Pixel &dst, const Pixel &src, const Pixel &f_sa_da, float x, float y, float z)
 {
 	Pixel fx = f_sa_da;
@@ -88,8 +91,7 @@ class BlendFunctionsSourceOver
 public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst.rv() = src.v() + (PixelVec(1) - src.aV()) * dst.v();
-		//dst = src + (Pixel(1.0f) - src.extract3()) * dst;
+		dst.rv() = src.v() + (pixelVecOne - src.aV()) * dst.v();
 		//dst = src + (1.0f - src.a) * dst;
 	}
 	
@@ -104,7 +106,7 @@ class BlendFunctionsDestinationOver
 public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst.rv() = dst.v() + (PixelVec(1) - dst.aV()) * src.v();
+		dst.rv() = dst.v() + (pixelVecOne - dst.aV()) * src.v();
 		//dst = dst + (1.0f - dst.a) * src;
 	}
 	
@@ -169,7 +171,7 @@ class BlendFunctionsSourceOut
 public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst.rv() = (PixelVec(1) - dst.aV()) * src.v();
+		dst.rv() = (pixelVecOne - dst.aV()) * src.v();
 		//dst = (1.0f - dst.a) * src;
 	}
 	
@@ -194,7 +196,7 @@ class BlendFunctionsDestinationOut
 public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst.rv() = (PixelVec(1) - src.aV()) * dst.v();
+		dst.rv() = (pixelVecOne - src.aV()) * dst.v();
 		//dst = (1.0f - src.a) * dst;
 	}
 	
@@ -219,7 +221,7 @@ class BlendFunctionsSourceAtop
 public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst.rv() = dst.aV() * src.v() + (PixelVec(1) - src.aV()) + dst.v();
+		dst.rv() = dst.aV() * src.v() + (pixelVecOne - src.aV()) + dst.v();
 		//dst = dst.a * src + (1.0f - src.a) * dst;
 	}
 	
@@ -244,7 +246,7 @@ class BlendFunctionsDestinationAtop
 public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst.rv() = src.aV() * dst.v() + (PixelVec(1) - dst.v()) * src.v();
+		dst.rv() = src.aV() * dst.v() + (pixelVecOne - dst.v()) * src.v();
 		//dst = src.a * dst + (1.0f - dst.a) * src;
 	}
 	
@@ -269,7 +271,7 @@ class BlendFunctionsXor
 public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst.rv() = (Pixel(1).v() - dst.aV()) * src.v() + (PixelVec(1) - src.aV()) * dst.v();
+		dst.rv() = (pixelVecOne - dst.aV()) * src.v() + (pixelVecOne - src.aV()) * dst.v();
 		//dst = (1.0f - dst.a) * src + (1.0f - src.a) * dst;
 	}
 	
