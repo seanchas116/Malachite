@@ -105,22 +105,6 @@ public:
 	ImageU8 toImageU8() const;
 	
 	/**
-	 * Converts the image into a QByteArray.
-	 * 
-	 * @return The result
-	 */
-	QByteArray toByteArray() const;
-	
-	/**
-	 * Creates an image from a QByteArray.
-	 * 
-	 * @param data The original QByteArray
-	 * @param size The size of the image
-	 * @return The result (An empty image if failed)
-	 */
-	static Image fromByteArray(const QByteArray &data, const QSize &size);
-	
-	/**
 	 * Multiplies each component an value.
 	 * @param factor The factor
 	 * @return 
@@ -134,6 +118,9 @@ inline Image operator*(const Image &image, float factor)
 	result *= factor;
 	return result;
 }
+
+QDataStream &operator<<(QDataStream &out, const Image &image);
+QDataStream &operator>>(QDataStream &in, Image &image);
 
 }
 

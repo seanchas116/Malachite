@@ -77,6 +77,9 @@ private:
 	QSet<QPoint> _editedKeys;
 };
 
+QDataStream &operator<<(QDataStream &out, const Surface &surface);
+QDataStream &operator>>(QDataStream &in, Surface &surfaceOut);
+
 
 }
 

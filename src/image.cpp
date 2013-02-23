@@ -111,6 +111,7 @@ ImageU8 Image::toImageU8() const
 	return result;
 }
 
+/*
 QByteArray Image::toByteArray() const
 {
 	QByteArray data;
@@ -155,7 +156,7 @@ Image Image::fromByteArray(const QByteArray &data, const QSize &size)
 	}
 	
 	return image;
-}
+}*/
 
 Image &Image::operator*=(float factor)
 {
@@ -175,6 +176,51 @@ Image &Image::operator*=(float factor)
 	}
 	
 	return *this;
+}
+
+QDataStream &operator<<(QDataStream &out, const Image &image)
+{
+	out << image.size();
+	
+	int count = image.width() * image.height();
+	
+	Pointer<const Pixel> p = image.constBits();
+	
+	for (int i = 0; i < count; ++i)
+	{
+		out << p->a();
+		out << p->r();
+		out << p->g();
+		out << p->b();
+		p++;
+	}
+	
+	return out;
+}
+
+QDataStream &operator>>(QDataStream &in, Image &image)
+{
+	QSize size;
+	in >> size;
+	
+	Image result(size);
+	
+	int count = size.width() * size.height();
+	
+	Pointer<Pixel> p = result.bits();
+	
+	for (int i = 0; i < count; ++i)
+	{
+		in >> p->ra();
+		in >> p->rr();
+		in >> p->rg();
+		in >> p->rb();
+		p++;
+	}
+	
+	image = result;
+	
+	return in;
 }
 
 }

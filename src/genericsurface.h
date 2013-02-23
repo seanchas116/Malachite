@@ -55,6 +55,17 @@ public:
 	
 	ImageType &tileRef(int x, int y) { return tileRef(QPoint(x, y)); }
 	
+	void setTile(const QPoint &key, const ImageType &image)
+	{
+		if (image.size() == tileSize())
+			_hash[key] = image;
+	}
+	
+	void setTile(int x, int y, const ImageType &image) { setTile(QPoint(x, y), image); }
+	
+	ConstIterator begin() const { return _hash.begin(); }
+	ConstIterator end() const { return _hash.end(); }
+	
 	PixelType pixel(const QPoint &pos) const
 	{
 		QPoint key, rem;
@@ -238,6 +249,9 @@ public:
 	
 	static QSet<QPoint> rectToKeys(const QRect &rect)
 	{
+		if (rect.isEmpty())
+			return QSet<QPoint>();
+		
 		QSet<QPoint> set;
 		
 		QPoint topLeftKey = keyForPixel(rect.topLeft());
