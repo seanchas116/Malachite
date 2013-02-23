@@ -27,13 +27,13 @@ void Viewport::paintEvent(QPaintEvent *)
 		default:
 		case ModeImage:
 		{
-			painter.drawImage(QPoint(),  _image.toQImage());
+			painter.drawImage(QPoint(),  _image.toImageU8().wrapInQImage());
 			break;
 		}
 		case ModeSurface:
 		{
 			for (const QPoint &key : _surface.keys())
-				painter.drawImage(key * Surface::tileWidth(), _surface.tile(key).toQImage());
+				painter.drawImage(key * Surface::tileWidth(), _surface.tile(key).toImageU8().wrapInQImage());
 			break;
 		}
 	}
