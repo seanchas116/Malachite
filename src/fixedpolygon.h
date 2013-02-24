@@ -67,8 +67,12 @@ struct MALACHITESHARED_EXPORT FixedPoint
 class MALACHITESHARED_EXPORT FixedPolygon : public QVector<FixedPoint>
 {
 public:
-	FixedPolygon() : QVector<FixedPoint>() {}
-	FixedPolygon(int size) : QVector<FixedPoint>(size) {}
+	
+	typedef QVector<FixedPoint> super;
+	
+	FixedPolygon() : super() {}
+	FixedPolygon(int size) : super(size) {}
+	FixedPolygon(const super &other) : super(other) {}
 	FixedPolygon(const Polygon &polygon);
 	
 	void translate(const FixedPoint &delta);
@@ -80,8 +84,12 @@ public:
 class MALACHITESHARED_EXPORT FixedMultiPolygon : public QVector<FixedPolygon>
 {
 public:
-	FixedMultiPolygon() : QVector<FixedPolygon>() {}
-	FixedMultiPolygon(int size) : QVector<FixedPolygon>(size) {}
+	
+	typedef QVector<FixedPolygon> super;
+	
+	FixedMultiPolygon() : super() {}
+	FixedMultiPolygon(int size) : super(size) {}
+	FixedMultiPolygon(const super &other) : super(other) {}
 	FixedMultiPolygon(const FixedPolygon &polygon) : FixedMultiPolygon(1) { operator[](0) = polygon; }
 	
 	void translate(const FixedPoint &delta)

@@ -82,7 +82,31 @@ QRectF FixedMultiPolygon::boundingRect() const
 	return QRectF(xy.x(), xy.y(), wh.x(), wh.y());
 }
 
-using namespace ClipperLib;
+
+static void addPolygonsToClipper(ClipperLib::Clipper &clipper, ClipperLib::PolyType type, const FixedMultiPolygon &polygons)
+{
+	ClipperLib::Polygons clipperPolygons;
+	clipperPolygons.reserve(polygons.size());
+	
+	for (const FixedPolygon &polygon : polygons)
+		clipperPolygons.push_back(blindCast<ClipperLib::Polygon>(polygon.toStdVector()));
+	
+	clipper.AddPolygons(clipperPolygons, type);
+}
+
+static FixedMultiPolygon executeClipper(ClipperLib::Clipper &clipper, ClipperLib::ClipType type)
+{
+	ClipperLib::Polygons clipperPolygons;
+	clipper.Execute(type, clipperPolygons);
+	
+	FixedMultiPolygon polygons;
+	polygons.reserve(clipperPolygons.size());
+	
+	for (const ClipperLib::Polygon &clipperPolygon : clipperPolygons)
+		polygons << FixedPolygon(QVector<FixedPoint>::fromStdVector(blindCast<std::vector<FixedPoint> >(clipperPolygon)));
+	
+	return polygons;
+}
 
 FixedMultiPolygon operator|(const FixedMultiPolygon &polygons1, const FixedMultiPolygon &polygons2)
 {
@@ -92,14 +116,15 @@ FixedMultiPolygon operator|(const FixedMultiPolygon &polygons1, const FixedMulti
 	if (polygons2.size() == 0)
 		return polygons1;
 	
-	FixedMultiPolygon result;
-	
-	Clipper clipper;
+	ClipperLib::Clipper clipper;
+	addPolygonsToClipper(clipper, ClipperLib::ptSubject, polygons1);
+	addPolygonsToClipper(clipper, ClipperLib::ptClip, polygons2);
+	return executeClipper(clipper, ClipperLib::ctUnion);
+	/*
 	clipper.AddPolygons(blindCast<const Polygons>(polygons1), ptSubject);
 	clipper.AddPolygons(blindCast<const Polygons>(polygons2), ptClip);
 	clipper.Execute(ctUnion, blindCast<Polygons>(result));
-	
-	return result;
+	*/
 }
 
 FixedMultiPolygon operator&(const FixedMultiPolygon &polygons1, const FixedMultiPolygon &polygons2)
@@ -107,14 +132,10 @@ FixedMultiPolygon operator&(const FixedMultiPolygon &polygons1, const FixedMulti
 	if (polygons1.size() == 0 || polygons2.size() == 0)
 		return FixedMultiPolygon();
 	
-	FixedMultiPolygon result;
-	
-	Clipper clipper;
-	clipper.AddPolygons(blindCast<const Polygons>(polygons1), ptSubject);
-	clipper.AddPolygons(blindCast<const Polygons>(polygons2), ptClip);
-	clipper.Execute(ctIntersection, blindCast<Polygons>(result));
-	
-	return result;
+	ClipperLib::Clipper clipper;
+	addPolygonsToClipper(clipper, ClipperLib::ptSubject, polygons1);
+	addPolygonsToClipper(clipper, ClipperLib::ptClip, polygons2);
+	return executeClipper(clipper, ClipperLib::ctIntersection);
 }
 
 FixedMultiPolygon operator^(const FixedMultiPolygon &polygons1, const FixedMultiPolygon &polygons2)
@@ -125,14 +146,10 @@ FixedMultiPolygon operator^(const FixedMultiPolygon &polygons1, const FixedMulti
 	if (polygons2.size() == 0)
 		return polygons1;
 	
-	FixedMultiPolygon result;
-	
-	Clipper clipper;
-	clipper.AddPolygons(blindCast<const Polygons>(polygons1), ptSubject);
-	clipper.AddPolygons(blindCast<const Polygons>(polygons2), ptClip);
-	clipper.Execute(ctXor, blindCast<Polygons>(result));
-	
-	return result;
+	ClipperLib::Clipper clipper;
+	addPolygonsToClipper(clipper, ClipperLib::ptSubject, polygons1);
+	addPolygonsToClipper(clipper, ClipperLib::ptClip, polygons2);
+	return executeClipper(clipper, ClipperLib::ctXor);
 }
 
 FixedMultiPolygon operator-(const FixedMultiPolygon &polygons1, const FixedMultiPolygon &polygons2)
@@ -143,14 +160,10 @@ FixedMultiPolygon operator-(const FixedMultiPolygon &polygons1, const FixedMulti
 	if (polygons2.size() == 0)
 		return polygons1;
 	
-	FixedMultiPolygon result;
-	
-	Clipper clipper;
-	clipper.AddPolygons(blindCast<const Polygons>(polygons1), ptSubject);
-	clipper.AddPolygons(blindCast<const Polygons>(polygons2), ptClip);
-	clipper.Execute(ctDifference, blindCast<Polygons>(result));
-	
-	return result;
+	ClipperLib::Clipper clipper;
+	addPolygonsToClipper(clipper, ClipperLib::ptSubject, polygons1);
+	addPolygonsToClipper(clipper, ClipperLib::ptClip, polygons2);
+	return executeClipper(clipper, ClipperLib::ctDifference);
 }
 
 }
