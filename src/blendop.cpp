@@ -351,7 +351,7 @@ public:
 		Pixel f1, f2, f;
 		f1.rv() = PixelVec(2) * src.v() * dst.v();
 		f2.rv() = PixelVec(src.a() * dst.a()) - PixelVec(2) * (dst.aV() - dst.v()) * (src.aV() - src.v());
-		f.rv() == PixelVec::choose( PixelVec::lessThanEqual(dst.v(), PixelVec(dst.a() * 0.5f)), f1.v(), f2.v() );
+		f.rv() = PixelVec::choose( PixelVec::lessThanEqual(dst.v(), PixelVec(dst.a() * 0.5f)), f1.v(), f2.v() );
 		
 		dst = compose(dst, src, f, 1, 1, 1);
 	}

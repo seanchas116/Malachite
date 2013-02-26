@@ -1,4 +1,4 @@
-#include <QtGui>
+#include <QFile>
 #include "imageio.h"
 
 #include <FreeImage.h>

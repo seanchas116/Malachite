@@ -5,6 +5,7 @@
 #include <QPointF>
 #include <QSizeF>
 #include <QTransform>
+#include <cmath>
 #include "global.h"
 #include "vector_sse.h"
 
@@ -30,9 +31,6 @@ public:
 	Vec2D(const QSizeF &s) : Vec2D(s.width(), s.height()) {}
 	Vec2D(const QSize &s) : Vec2D(s.width(), s.height()) {}
 	
-	operator super&() { return *this; }
-	operator const super&() const { return *this; }
-	
 	operator QPointF&() { return *reinterpret_cast<QPointF *>(this); }
 	operator const QPointF&() const { return *reinterpret_cast<const QPointF *>(this); }
 	operator QSizeF&() { return *reinterpret_cast<QSizeF *>(this); }
@@ -50,8 +48,8 @@ public:
 	Vec2D extractX() const { return extract(0); }
 	Vec2D extractY() const { return extract(1); }
 	
-	Vec2D floor() const { return Vec2D(std::floor(x()), std::floor(y())); }
-	Vec2D ceil() const { return Vec2D(std::ceil(x()), std::ceil(y())); }
+	Vec2D floor() const { return Vec2D(::floor(x()), ::floor(y())); }
+	Vec2D ceil() const { return Vec2D(::ceil(x()), ::ceil(y())); }
 	
 	static double dot(const Vec2D &v1, const Vec2D &v2)
 	{
@@ -61,7 +59,7 @@ public:
 	
 	double length() const
 	{
-		return std::hypot(x(), y());
+		return ::hypot(x(), y());
 	}
 	
 	double lengthSquare() const
@@ -71,7 +69,7 @@ public:
 	
 	double arg() const
 	{
-		return std::atan2(y(), x());
+		return ::atan2(y(), x());
 	}
 	
 	Vec2D &operator*=(const QTransform &transform);

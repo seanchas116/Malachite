@@ -1,5 +1,4 @@
-#include <QtGui>
-
+#include <QDebug>
 #include "curves.h"
 
 namespace Malachite

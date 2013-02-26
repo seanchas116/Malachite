@@ -1,4 +1,4 @@
-#include <QtGui>
+
 #include <float.h>
 
 #include "./misc.h"

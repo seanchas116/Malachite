@@ -39,7 +39,7 @@ public:
 	
 private:
 	
-	class Data;
+	struct Data;
 	Data *d;
 };
 
@@ -63,7 +63,7 @@ public:
 	
 private:
 	
-	class Data;
+	struct Data;
 	Data *d;
 };
 

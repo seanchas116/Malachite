@@ -17,7 +17,7 @@ public:
 	
 	List() : super() {}
 	List(const super &other) : super(other) {}
-	List(std::initializer_list<T> args) : super(args) {}
+	List(::std::initializer_list<T> args) : super(args) {}
 	
 	T max() const
 	{
@@ -101,9 +101,9 @@ public:
 	}
 	
 	template <typename Func>
-	List<typename std::result_of<Func>::type> map(Func func)
+	List<typename ::std::result_of<Func>::type> map(Func func)
 	{
-		List<typename std::result_of<Func>::type> result;
+		List<typename ::std::result_of<Func>::type> result;
 		result.reserve(this->size());
 		
 		for (const T &item : *this)

@@ -6,6 +6,7 @@
 #include "global.h"
 #include <QPoint>
 #include <cmath>
+#include <cstdlib>
 
 namespace Malachite
 {
@@ -73,7 +74,7 @@ private:
 
 inline double align(double x, double unit)
 {
-	return std::round(x / unit) * unit;
+	return ::round(x / unit) * unit;
 }
 
 

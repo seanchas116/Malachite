@@ -1,4 +1,5 @@
-#include <QtGui>
+#include <QDebug>
+
 #include "polygon.h"
 #include "painter.h"
 
