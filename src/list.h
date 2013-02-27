@@ -87,6 +87,21 @@ public:
 	}
 	
 	template <typename Predicate>
+	void removeIf(Predicate pred)
+	{
+		int count = this->size();
+		for (int i = 0; i < count; ++i)
+		{
+			if (pred(this->at(i)))
+			{
+				this->removeAt(i);
+				i--;
+				count--;
+			}
+		}
+	}
+	
+	template <typename Predicate>
 	List select(Predicate pred) const
 	{
 		List ret;
@@ -133,11 +148,6 @@ public:
 		}
 		
 		return List();
-	}
-	
-	operator super () const
-	{
-		return *static_cast<super *>(this);
 	}
 };
 
