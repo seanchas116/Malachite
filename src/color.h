@@ -160,7 +160,13 @@ public:
 		return Color::fromRgbValue(qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF());
 	}
 	
-	static Color fromWebColor(const QString &webColor, bool *ok = 0);
+	/**
+	 * Creates a Color from a web color string like "#c0ffee" or "#abc".
+	 * Throws a std::exception if failed.
+	 * @param webColor
+	 * @return 
+	 */
+	static Color fromWebColor(const QString &webColor);
 	
 	bool operator==(const Color &other)
 	{
@@ -178,6 +184,9 @@ public:
 		return !operator==(other);
 	}
 	
+	friend QDataStream &operator<<(QDataStream &out, const Color &color);
+	friend QDataStream &operator>>(QDataStream &in, Color &color);
+	
 private:
 	
 	void rgbChanged();
@@ -185,6 +194,9 @@ private:
 	
 	double _a, _r, _g, _b, _h, _s, _v;
 };
+
+QDataStream &operator<<(QDataStream &out, const Color &color);
+QDataStream &operator>>(QDataStream &in, Color &color);
 
 }
 

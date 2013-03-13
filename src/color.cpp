@@ -1,5 +1,9 @@
+#include <stdexcept>
+
 #include "misc.h"
 #include "color.h"
+
+using namespace std;
 
 namespace Malachite
 {
@@ -145,48 +149,55 @@ QString Color::toWebColor() const
 	return "#" + rText + gText + bText;
 }
 
-Color Color::fromWebColor(const QString &webColor, bool *ok)
+Color Color::fromWebColor(const QString &webColor)
 {
-	if (webColor.size() != 7 || webColor.at(0) != '#')
-	{
-		if (ok)
-			*ok = false;
-		return Color();
-	}
+	int size = webColor.size();
+	if (size != 4 && size != 7)
+		throw runtime_error("wrong string length");
+	
+	if (webColor.at(0) != '#')
+		throw runtime_error("no #");
 	
 	BgraU8 pix8;
 	bool textOk;
 	
+	uint32_t value = webColor.mid(1).toULong(&textOk, 16);
+	if (!textOk)
+		throw runtime_error("cannot convert to hex");
+	
 	pix8.ra() = 0xFF;
 	
-	pix8.rr() = webColor.mid(1, 2).toInt(&textOk, 16);
-	if (!textOk)
+	if (size == 7)
 	{
-		if (ok)
-			*ok = false;
-		return Color();
+		pix8.rr() = (value >> 16) & 0xFF;
+		pix8.rg() = (value >> 8) & 0xFF;
+		pix8.rb() = value & 0xFF;
 	}
-	
-	pix8.rg() = webColor.mid(3, 2).toInt(&textOk, 16);
-	if (!textOk)
+	else if (size == 4)
 	{
-		if (ok)
-			*ok = false;
-		return Color();
+		int r = (value >> 8) & 0xF;
+		pix8.rr() = r | (r << 4);
+		
+		int g = (value >> 4) & 0xF;
+		pix8.rg() = g | (g << 4);
+		
+		int b = value & 0xF;
+		pix8.rb() = b | (b << 4);
 	}
-	
-	pix8.rb() = webColor.mid(5, 2).toInt(&textOk, 16);
-	if (!textOk)
-	{
-		if (ok)
-			*ok = false;
-		return Color();
-	}
-	
-	if (ok)
-		*ok = true;
 	
 	return Color::fromPixel(pix8);
+}
+
+QDataStream &operator<<(QDataStream &out, const Color &color)
+{
+	out << color._a << color._r << color._g << color._b << color._h << color._s << color._v;
+	return out;
+}
+
+QDataStream &operator>>(QDataStream &in, Color &color)
+{
+	in >> color._a >> color._r >> color._g >> color._b >> color._h >> color._s >> color._v;
+	return in;
 }
 
 }
