@@ -80,7 +80,6 @@ private:
 QDataStream &operator<<(QDataStream &out, const Surface &surface);
 QDataStream &operator>>(QDataStream &in, Surface &surfaceOut);
 
-
 }
 
 Q_DECLARE_METATYPE(Malachite::Surface)

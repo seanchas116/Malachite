@@ -182,7 +182,7 @@ Image &Image::operator*=(float factor)
 
 QDataStream &operator<<(QDataStream &out, const Image &image)
 {
-	out << image.size();
+	out << int32_t(image.width()) << int32_t(image.height());
 	
 	int count = image.width() * image.height();
 	
@@ -202,12 +202,11 @@ QDataStream &operator<<(QDataStream &out, const Image &image)
 
 QDataStream &operator>>(QDataStream &in, Image &image)
 {
-	QSize size;
-	in >> size;
+	int32_t w, h;
+	in >> w >> h;
 	
-	Image result(size);
-	
-	int count = size.width() * size.height();
+	Image result(w, h);
+	int count = w * h;
 	
 	Pointer<Pixel> p = result.bits();
 	

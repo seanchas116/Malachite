@@ -33,7 +33,6 @@ QDataStream &operator<<(QDataStream &out, const Surface &surface)
 
 QDataStream &operator>>(QDataStream &in, Surface &surfaceOut)
 {
-	
 	int64_t tileWidth2x, tileCount2x;
 	in >> tileWidth2x;
 	in >> tileCount2x;
