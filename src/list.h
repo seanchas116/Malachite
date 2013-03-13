@@ -128,6 +128,20 @@ public:
 	}
 	
 	template <typename Predicate>
+	int foundIndex(Predicate pred) const
+	{
+		int count = 0;
+		for (const T &item : *this)
+		{
+			if (pred(item))
+				return count;
+			
+			count++;
+		}
+		return -1;
+	}
+	
+	template <typename Predicate>
 	T find(Predicate pred, const T &defaultValue) const
 	{
 		for (const T &item : *this)
