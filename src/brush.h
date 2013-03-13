@@ -35,17 +35,17 @@ public:
 		data(QVariant::fromValue(image))
 	{}
 	
-	BrushData(const ColorGradient &gradient, const LinearGradientInfo &info) :
+	BrushData(const ColorGradient &gradient, const LinearGradientShape &shape) :
 		type(Malachite::BrushTypeLinearGradient),
 		spreadType(Malachite::SpreadTypePad),
-		data(QVariant::fromValue(info)),
+		data(QVariant::fromValue(shape)),
 		gradient(gradient.clone())
 	{}
 	
-	BrushData(const ColorGradient &gradient, const RadialGradientInfo &info) :
+	BrushData(const ColorGradient &gradient, const RadialGradientShape &shape) :
 		type(Malachite::BrushTypeRadialGradient),
 		spreadType(Malachite::SpreadTypePad),
-		data(QVariant::fromValue(info)),
+		data(QVariant::fromValue(shape)),
 		gradient(gradient.clone())
 	{}
 	
@@ -91,14 +91,14 @@ public:
 		d = new BrushData(argb);
 	}
 	
-	Brush(const ColorGradient &gradient, const LinearGradientInfo &info)
+	Brush(const ColorGradient &gradient, const LinearGradientShape &shape)
 	{
-		d = new BrushData(gradient, info);
+		d = new BrushData(gradient, shape);
 	}
 	
-	Brush(const ColorGradient &gradient, const RadialGradientInfo &info)
+	Brush(const ColorGradient &gradient, const RadialGradientShape &shape)
 	{
-		d = new BrushData(gradient, info);
+		d = new BrushData(gradient, shape);
 	}
 	
 	Brush(const Image &image)
@@ -113,27 +113,27 @@ public:
 	
 	static Brush fromLinearGradient(const ColorGradient &gradient, const Vec2D &start, const Vec2D &end)
 	{
-		return Brush(gradient, LinearGradientInfo(start, end));
+		return Brush(gradient, LinearGradientShape(start, end));
 	}
 	
 	static Brush fromRadialGradient(const ColorGradient &gradient, const Vec2D &center, double radius, const Vec2D &focal)
 	{
-		return Brush(gradient, RadialGradientInfo(center, radius, focal));
+		return Brush(gradient, RadialGradientShape(center, radius, focal));
 	}
 	
 	static Brush fromRadialGradient(const ColorGradient &gradient, const Vec2D &center, const Vec2D &radius, const Vec2D &focal)
 	{
-		return Brush(gradient, RadialGradientInfo(center, radius, focal));
+		return Brush(gradient, RadialGradientShape(center, radius, focal));
 	}
 	
 	static Brush fromRadialGradient(const ColorGradient &gradient, const Vec2D &center, double radius)
 	{
-		return Brush(gradient, RadialGradientInfo(center, radius));
+		return Brush(gradient, RadialGradientShape(center, radius));
 	}
 	
 	static Brush fromRadialGradient(const ColorGradient &gradient, const Vec2D &center, const Vec2D &radius)
 	{
-		return Brush(gradient, RadialGradientInfo(center, radius));
+		return Brush(gradient, RadialGradientShape(center, radius));
 	}
 	
 	bool isValid() { return d; }
@@ -143,12 +143,13 @@ public:
 	void setSpreadType(Malachite::SpreadType type) { d->spreadType = type; }
 	Malachite::SpreadType spreadType() const { return d->spreadType; }
 	
+	Color color() const { return Color::fromPixel(pixel()); }
 	Pixel pixel() const { return d->type == Malachite::BrushTypeColor ? d->data.value<Pixel>() : Pixel(0); }
 	Image image() const { return d->type == Malachite::BrushTypeImage ? d->data.value<Image>() : Image(); }
 	Surface surface() const { return d->type == Malachite::BrushTypeSurface ? d->data.value<Surface>() : Surface(); }
 	
-	LinearGradientInfo linearGradientInfo() const { return d->type == Malachite::BrushTypeLinearGradient ? d->data.value<LinearGradientInfo>() : LinearGradientInfo(); }
-	RadialGradientInfo radialGradientInfo() const { return d->type == Malachite::BrushTypeRadialGradient ? d->data.value<RadialGradientInfo>() : RadialGradientInfo(); }
+	LinearGradientShape linearGradientShape() const { return d->type == Malachite::BrushTypeLinearGradient ? d->data.value<LinearGradientShape>() : LinearGradientShape(); }
+	RadialGradientShape radialGradientShape() const { return d->type == Malachite::BrushTypeRadialGradient ? d->data.value<RadialGradientShape>() : RadialGradientShape(); }
 	
 	const ColorGradient *gradient() const { return d->gradient.data(); }
 	

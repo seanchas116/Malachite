@@ -58,11 +58,11 @@ private:
 	QMap<float, Pixel> _stops;
 };
 
-struct LinearGradientInfo
+struct LinearGradientShape
 {
-	LinearGradientInfo() {}
+	LinearGradientShape() {}
 	
-	LinearGradientInfo(const Vec2D &start, const Vec2D &end) :
+	LinearGradientShape(const Vec2D &start, const Vec2D &end) :
 		start(start), end(end) {}
 	
 	bool transformable(const QTransform &transform) const
@@ -85,20 +85,20 @@ struct LinearGradientInfo
 	Vec2D start, end;
 };
 
-struct RadialGradientInfo
+struct RadialGradientShape
 {
-	RadialGradientInfo() {}
+	RadialGradientShape() {}
 	
-	RadialGradientInfo(const Vec2D &center, double radius, const Vec2D &focal) :
+	RadialGradientShape(const Vec2D &center, double radius, const Vec2D &focal) :
 		center(center), focal(focal), radius(radius) {}
 	
-	RadialGradientInfo(const Vec2D &center, const Vec2D &radius, const Vec2D &focal) :
+	RadialGradientShape(const Vec2D &center, const Vec2D &radius, const Vec2D &focal) :
 		center(center), focal(focal), radius(radius) {}
 	
-	RadialGradientInfo(const Vec2D &center, double radius) :
+	RadialGradientShape(const Vec2D &center, double radius) :
 		center(center), focal(center), radius(radius) {}
 	
-	RadialGradientInfo(const Vec2D &center, const Vec2D &radius) :
+	RadialGradientShape(const Vec2D &center, const Vec2D &radius) :
 		center(center), focal(center), radius(radius) {}
 	
 	bool transformable(const QTransform &transform) const
@@ -125,7 +125,7 @@ struct RadialGradientInfo
 
 }
 
-Q_DECLARE_METATYPE(Malachite::LinearGradientInfo)
-Q_DECLARE_METATYPE(Malachite::RadialGradientInfo)
+Q_DECLARE_METATYPE(Malachite::LinearGradientShape)
+Q_DECLARE_METATYPE(Malachite::RadialGradientShape)
 
 #endif // MLCOLORGRADIENT_H

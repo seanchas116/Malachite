@@ -105,7 +105,7 @@ void drawWithSpreadType(T_Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *blend
 	}
 	if (brush.type() == Malachite::BrushTypeLinearGradient)
 	{
-		LinearGradientInfo info = brush.linearGradientInfo();
+		LinearGradientShape info = brush.linearGradientShape();
 		
 		if (info.transformable(fillShapeTransform))
 		{
@@ -132,7 +132,7 @@ void drawWithSpreadType(T_Rasterizer *ras, Bitmap<Pixel> *bitmap, BlendOp *blend
 	}
 	if (brush.type() == Malachite::BrushTypeRadialGradient)
 	{
-		RadialGradientInfo info = brush.radialGradientInfo();
+		RadialGradientShape info = brush.radialGradientShape();
 		
 		if (info.transformable(fillShapeTransform))
 		{
