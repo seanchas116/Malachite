@@ -46,6 +46,16 @@ static long tellQIODevice(void *handle)
 	return ioDevice->pos();
 }
 
+static void outputMessage(FREE_IMAGE_FORMAT fif, const char *message)
+{
+	qWarning() << "FreeImage Output";
+	
+	if (fif != FIF_UNKNOWN)
+		qWarning() << "In Format" << FreeImage_GetFormatFromFIF(fif);
+	
+	qWarning() << message;
+}
+
 
 template <class T_Image>
 static bool pasteFIBITMAPToImage(const QPoint &pos, T_Image *dst, FIBITMAP *src)
@@ -191,6 +201,8 @@ ImageImporter::~ImageImporter()
 bool ImageImporter::load(QIODevice *device)
 {
 	d->deleteBitmap();
+	
+	FreeImage_SetOutputMessage(outputMessage);
 	
 	FreeImageIO io;
 	io.read_proc = readFromQIODevice;
@@ -345,6 +357,8 @@ bool ImageExporter::save(QIODevice *device)
 	
 	if (d->format == FIF_JPEG)
 		flags = d->quality;
+	
+	FreeImage_SetOutputMessage(outputMessage);
 	
 	FreeImageIO io;
 	io.read_proc = 0;
