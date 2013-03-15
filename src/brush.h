@@ -79,37 +79,33 @@ class MALACHITESHARED_EXPORT Brush
 {
 public:
 	
-	Brush() {}
+	Brush() :
+		d(new BrushData())
+	{}
 	
-	Brush(const Color &color)
-	{
-		d = new BrushData(color.toPixel());
-	}
+	Brush(const Color &color) :
+		d(new BrushData(color.toPixel()))
+	{}
 	
-	Brush(const Pixel &argb)
-	{
-		d = new BrushData(argb);
-	}
+	Brush(const Pixel &argb) :
+		d(new BrushData(argb))
+	{}
 	
-	Brush(const ColorGradient &gradient, const LinearGradientShape &shape)
-	{
-		d = new BrushData(gradient, shape);
-	}
+	Brush(const ColorGradient &gradient, const LinearGradientShape &shape) :
+		d(new BrushData(gradient, shape))
+	{}
 	
-	Brush(const ColorGradient &gradient, const RadialGradientShape &shape)
-	{
-		d = new BrushData(gradient, shape);
-	}
+	Brush(const ColorGradient &gradient, const RadialGradientShape &shape) :
+		d(new BrushData(gradient, shape))
+	{}
 	
-	Brush(const Image &image)
-	{
-		d = new BrushData(image);
-	}
+	Brush(const Image &image) :
+		d(new BrushData(image))
+	{}
 	
-	Brush(const Surface &surface)
-	{
-		d = new BrushData(surface);
-	}
+	Brush(const Surface &surface) :
+		d(new BrushData(surface))
+	{}
 	
 	static Brush fromLinearGradient(const ColorGradient &gradient, const Vec2D &start, const Vec2D &end)
 	{
