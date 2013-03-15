@@ -168,7 +168,7 @@ public:
 	 */
 	static Color fromWebColor(const QString &webColor);
 	
-	bool operator==(const Color &other)
+	bool operator==(const Color &other) const
 	{
 		return	_a == other._a && 
 				_r == other._r &&
@@ -179,7 +179,7 @@ public:
 				_v == other._v;
 	}
 	
-	bool operator!=(const Color &other)
+	bool operator!=(const Color &other) const
 	{
 		return !operator==(other);
 	}
