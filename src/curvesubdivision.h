@@ -5,7 +5,6 @@
 
 #include "polygon.h"
 #include "curves.h"
-#include "private/agg_array.h"
 
 namespace Malachite
 {

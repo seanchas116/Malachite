@@ -13,16 +13,16 @@
 #include <cstring>
 #include "global.h"
 
+#include <cstdlib>
+#ifdef __MINGW32__
+#include <malloc.h>
+#endif
+
 typedef QList<QPoint>	QPointList;
 typedef QSet<QPoint>	QPointSet;
 
 namespace Malachite
 {
-
-#include <cstdlib>
-#ifdef __MINGW32__
-#include <malloc.h>
-#endif
 
 #define ML_CURRENT_FUNCTION	__PRETTY_FUNCTION__
 

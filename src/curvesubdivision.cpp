@@ -1,6 +1,7 @@
 // Anti-Grain Geometry - Version 2.4
 // Copyright (C) 2002-2005 Maxim Shemanarev (http://www.antigrain.com)
 
+#include "private/agg_array.h"
 #include "private/agg_math.h"
 #include "curvesubdivision.h"
 
