@@ -5,10 +5,12 @@
 namespace Malachite
 {
 
+static Brush defaultBrush = Brush(Color::fromRgbValue(0, 0, 0));
+
 PaintEngine::PaintEngine()
 {
 	_state.blendMode = BlendMode::Normal;
-	_state.brush = Brush(Color::fromRgbValue(0, 0, 0));
+	_state.brush = defaultBrush;
 	_state.opacity = 1.0;
 	_state.imageTransformType = Malachite::ImageTransformTypeBicubic;
 }

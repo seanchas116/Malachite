@@ -91,6 +91,60 @@ void SurfacePaintEngine::drawPreTransformedSurface(const QPoint &point, const Su
 {
 	if (point == QPoint())
 	{
+		auto drawTile = [=](const QPoint &key, const QRect &rect)
+		{
+			BlendOp::TileCombination combination = BlendOp::NoTile;
+			
+			if (_surface->contains(key))
+				combination |= BlendOp::TileDestination;
+			if (surface.contains(key))
+				combination |= BlendOp::TileSource;
+			
+			switch (state()->blendMode.op()->tileRequirement(combination))
+			{
+				case BlendOp::TileSource:
+					_surface->tileRef(key) = surface.tile(key) * state()->opacity;
+					break;
+					
+				case BlendOp::NoTile:
+					_surface->remove(key);
+					break;
+					
+				default:
+				case BlendOp::TileDestination:
+					break;
+					
+				case BlendOp::TileBoth:
+					
+					Painter painter(&_surface->tileRef(key));
+					painter.setBlendMode(state()->blendMode);
+					painter.setOpacity(state()->opacity);
+					
+					if (rect.isValid())
+						painter.drawPreTransformedImage(QPoint(), surface.tile(key), rect);
+					else
+						painter.drawPreTransformedImage(QPoint(), surface.tile(key));
+					break;
+			}
+		};
+		
+		if (!_keyRectClip.isEmpty())
+		{
+			for (auto iter = _keyRectClip.begin(); iter != _keyRectClip.end(); ++iter)
+				drawTile(iter.key(), iter.value());
+		}
+		else if (!_keyClip.isEmpty())
+		{
+			for (auto &key : _keyClip)
+				drawTile(key, QRect());
+		}
+		else
+		{
+			for (auto &key : surface.keys() | _surface->keys())
+				drawTile(key, QRect());
+		}
+		
+		/*
 		QPointSet keys = surface.keys() | _surface->keys();
 		
 		if (!_keyRectClip.isEmpty())
@@ -110,7 +164,7 @@ void SurfacePaintEngine::drawPreTransformedSurface(const QPoint &point, const Su
 			if (surface.contains(key))
 				combination |= BlendOp::TileSource;
 			
-			switch (BlendMode(state()->blendMode).op()->tileRequirement(combination))
+			switch (state()->blendMode.op()->tileRequirement(combination))
 			{
 				case BlendOp::TileSource:
 					_surface->tileRef(key) = surface.tile(key) * state()->opacity;
@@ -137,6 +191,7 @@ void SurfacePaintEngine::drawPreTransformedSurface(const QPoint &point, const Su
 					break;
 			}
 		}
+		*/
 	}
 	else
 	{

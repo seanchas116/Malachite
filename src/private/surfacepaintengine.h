@@ -27,7 +27,7 @@ public:
 	void setKeyClip(const QPointSet &keys) { _keyClip = keys; }
 	QPointSet keyClip() const { return _keyClip; }
 	
-	void setKeyRectClip(const QHash<QPoint, QRect> &keyRectClip) { _keyRectClip = keyRectClip; }
+	void setKeyRectClip(const QHash<QPoint, QRect> &keyRectClip) { _keyRectClip = keyRectClip; _keyClip = keyRectClip.keys().toSet(); }
 	QHash<QPoint, QRect> keyRectClip() const { return _keyRectClip; }
 	
 private:

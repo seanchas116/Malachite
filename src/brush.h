@@ -23,10 +23,10 @@ public:
 		spreadType(Malachite::SpreadTypeRepeat)
 	{}
 	
-	BrushData(const Pixel &argb) :
+	BrushData(const Color &color) :
 		type(Malachite::BrushTypeColor),
 		spreadType(Malachite::SpreadTypeRepeat),
-		data(QVariant::fromValue(argb))
+		data(QVariant::fromValue(color))
 	{}
 	
 	BrushData(const Image &image) :
@@ -84,11 +84,11 @@ public:
 	{}
 	
 	Brush(const Color &color) :
-		d(new BrushData(color.toPixel()))
+		d(new BrushData(color))
 	{}
 	
 	Brush(const Pixel &argb) :
-		d(new BrushData(argb))
+		d(new BrushData(Color::fromPixel(argb)))
 	{}
 	
 	Brush(const ColorGradient &gradient, const LinearGradientShape &shape) :
@@ -139,8 +139,8 @@ public:
 	void setSpreadType(Malachite::SpreadType type) { d->spreadType = type; }
 	Malachite::SpreadType spreadType() const { return d->spreadType; }
 	
-	Color color() const { return Color::fromPixel(pixel()); }
-	Pixel pixel() const { return d->type == Malachite::BrushTypeColor ? d->data.value<Pixel>() : Pixel(0); }
+	Color color() const { return d->type == Malachite::BrushTypeColor ? d->data.value<Color>() : Color(); }
+	Pixel pixel() const { return color().toPixel(); }
 	Image image() const { return d->type == Malachite::BrushTypeImage ? d->data.value<Image>() : Image(); }
 	Surface surface() const { return d->type == Malachite::BrushTypeSurface ? d->data.value<Surface>() : Surface(); }
 	
