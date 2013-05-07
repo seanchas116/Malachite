@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QDebug>
 #include <QPoint>
 #include <QHash>
 #include <QSize>
@@ -120,75 +121,87 @@ public:
 		return image;
 	}
 	
-	QRect boudingRect() const
+	QRect boundingRect() const
 	{
-		List<QPoint> keys = _hash.keys();
+		auto keys = _hash.keys();
+		if (keys.isEmpty())
+			return QRect();
 		
-		auto keyXs = keys.map( []( const QPoint &p ){ return p.x(); } );
-		auto keyYs = keys.map( []( const QPoint &p ){ return p.y(); } );
+		int keyLeft = INT_MAX, keyRight = INT_MIN, keyTop = INT_MAX, keyBottom = INT_MIN;
 		
-		QPoint keyTopLeft( keyXs.min(), keyYs.min() ), keyBottomRight( keyXs.max(), keyYs.max() );
-		
-		auto keysWithX = [](const List<QPoint> &keys, int x)
+		for (auto key : keys)
 		{
-			return keys.select( [x](const QPoint &p){ return p.x() == x; } );
-		};
+			int x = key.x(), y = key.y();
+			keyLeft = std::min(keyLeft, x);
+			keyRight = std::max(keyRight, x);
+			keyTop = std::min(keyTop, y);
+			keyBottom = std::max(keyBottom, y);
+		}
 		
-		auto keysWithY = [](const List<QPoint> &keys, int y)
-		{
-			return keys.select( [y](const QPoint &p){ return p.y() == y; } );
-		};
-		
-		QPoint topLeft, bottomRight;
+		int left, right, top, bottom;
 		
 		forever
 		{
-			if (keyTopLeft.x() > keyBottomRight.x() || keyTopLeft.y() > keyBottomRight.y())
+			if (keyLeft > keyRight || keyTop > keyBottom)
 				return QRect();
 			
-			auto leftKeys = keysWithX( keyTopLeft.x() );
-			auto rightKeys = keysWithX( keyBottomRight.x() );
+			left = tileWidth();
+			right = -1;
+			top = tileWidth();
+			bottom = -1;
 			
-			auto topKeys = keysWithY( keyTopLeft.y() );
-			auto bottomKeys = keysWithY( keyBottomRight.y() );
-			
-			topLeft.rx() = leftKeys.map( [](const QPoint &key){ return minOpaqueX(key); } ).min();
-			topLeft.ry() = topKeys.map( [](const QPoint &key){ return minOpaqueY(key); } ).min();
-			
-			bottomRight.rx() = rightKeys.map( [](const QPoint &key){ return maxOpaqueX(key); } ).max();
-			bottomRight.ry() = bottomKeys.map( [](const QPoint &key){ return maxOpaqueY(key); } ).max();
-			
-			if (topLeft.x() == tileWidth())
+			for (auto key : keys)
 			{
-				keyTopLeft.rx()++;
-				continue;
+				auto tile = this->tile(key);
+				
+				if (key.x() == keyLeft)
+					left = std::min(left, leftBound(tile));
+				
+				if (key.x() == keyRight)
+					right = std::max(right, rightBound(tile));
+			
+				if (key.y() == keyTop)
+					top = std::min(top, topBound(tile));
+				
+				if (key.y() == keyBottom)
+					bottom = std::max(bottom, bottomBound(tile));
 			}
 			
-			if (topLeft.y() == tileWidth())
+			bool finished = true;
+			
+			if (left == tileWidth())
 			{
-				keyTopLeft.ry()++;
-				continue;
+				keyLeft++;
+				finished = false;
 			}
 			
-			if (bottomRight.x() == -1)
+			if (right == -1)
 			{
-				keyBottomRight.rx()--;
-				continue;
+				keyRight--;
+				finished = false;
 			}
 			
-			if (bottomRight.y() == -1)
+			if (top == tileWidth())
 			{
-				keyBottomRight.ry()--;
-				continue;
+				keyTop++;
+				finished = false;
 			}
 			
-			break;
+			if (bottom == -1)
+			{
+				keyBottom--;
+				finished = false;
+			}
+			
+			if (finished)
+				break;
 		}
 		
 		QRect rect;
-		rect.setTopLeft(topLeft);
-		rect.setBottomRight(bottomRight);
-		
+		rect.setCoords(keyLeft * tileWidth() + left,
+					   keyTop * tileWidth() + top,
+					   keyRight * tileWidth() + right,
+					   keyBottom * tileWidth() + bottom);
 		return rect;
 	}
 	
@@ -279,6 +292,14 @@ public:
 		return result;
 	}
 	
+	static QSet<QPoint> offsetKeys(const QSet<QPoint> &originalKeys, const QPoint &offset)
+	{
+		QSet<QPoint> keys;
+		for (const QPoint &key : originalKeys)
+			keys |= rectToKeys(keyToRect(key).translated(offset));
+		return keys;
+	}
+	
 private:
 	
 	static bool isHLineOpaque(const ImageType &tile, int y)
@@ -306,7 +327,7 @@ private:
 		return false;
 	}
 	
-	static int minOpaqueY(const ImageType &tile)
+	static int topBound(const ImageType &tile)
 	{
 		for (int y = 0; y < tileWidth(); ++y)
 		{
@@ -316,7 +337,7 @@ private:
 		return tileWidth();
 	}
 	
-	static int maxOpaqueY(const ImageType &tile)
+	static int bottomBound(const ImageType &tile)
 	{
 		for (int y = tileWidth() - 1; y >= 0; --y)
 		{
@@ -326,7 +347,7 @@ private:
 		return -1;
 	}
 	
-	static int minOpaqueX(const ImageType &tile)
+	static int leftBound(const ImageType &tile)
 	{
 		for (int x = 0; x < tileWidth(); ++x)
 		{
@@ -336,7 +357,7 @@ private:
 		return tileWidth();
 	}
 	
-	static int maxOpaqueX(const ImageType &tile)
+	static int rightBound(const ImageType &tile)
 	{
 		for (int x = tileWidth() - 1; x >= 0; --x)
 		{
