@@ -15,12 +15,12 @@ PaintEngine *Surface::createPaintEngine()
 
 QDataStream &operator<<(QDataStream &out, const Surface &surface)
 {
-	out << int64_t(surface.tileWidth());
-	out << int64_t(surface.tileCount());
+    out << quint64(surface.tileWidth());
+    out << quint64(surface.tileCount());
 	
 	for (auto iter = surface.begin(); iter != surface.end(); ++iter)
 	{
-		int64_t x, y;
+        quint64 x, y;
 		x = iter.key().x();
 		y = iter.key().y();
 		out << x;
@@ -33,7 +33,7 @@ QDataStream &operator<<(QDataStream &out, const Surface &surface)
 
 QDataStream &operator>>(QDataStream &in, Surface &surfaceOut)
 {
-	int64_t tileWidth2x, tileCount2x;
+    quint64 tileWidth2x, tileCount2x;
 	in >> tileWidth2x;
 	in >> tileCount2x;
 	
@@ -44,7 +44,7 @@ QDataStream &operator>>(QDataStream &in, Surface &surfaceOut)
 	
 	for (int i = 0; i < tileCount; ++i)
 	{
-		int64_t x, y;
+        quint64 x, y;
 		in >> x;
 		in >> y;
 		
