@@ -13,7 +13,7 @@ namespace Malachite
 	
 
 template<>
-class Vector<double, 2>
+class alignas(16) Vector<double, 2>
 {
 public:
 	
@@ -181,7 +181,7 @@ typedef Vector<double, 2> Vector_double_2;
 ML_IMPL_VECTOR_OPERATORS_GLOBAL(inline Vector_double_2, Vector_double_2, double)
 
 template<>
-class Vector<float, 4>
+class alignas(16) Vector<float, 4>
 {
 public:
 	

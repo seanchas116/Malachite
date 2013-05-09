@@ -9,49 +9,6 @@
 namespace Malachite
 {
 
-inline void *allocateAlignedMemory(size_t size, size_t alignment)
-{
-	void *p;
-	posix_memalign(&p, alignment, size);
-	return p;
-}
-
-inline void freeAlignedMemory(void *p)
-{
-	free(p);
-}
-
-#define ML_ALIGN_16BYTE \
-public: \
-	static void *operator new(size_t size) { \
-		return allocateAlignedMemory(size, 16); \
-	} \
-	static void operator delete(void *p) { \
-		freeAlignedMemory(p); \
-	} \
-	static void *operator new(size_t size, void *buf) { \
-		Q_UNUSED(size); \
-		return buf; \
-	} \
-	static void operator delete(void *p, void *buf) { \
-		Q_UNUSED(p); \
-		Q_UNUSED(buf); \
-	} \
-	static void *operator new[](size_t size) { \
-		return allocateAlignedMemory(size, 16); \
-	} \
-	static void operator delete[](void *p) { \
-		freeAlignedMemory(p); \
-	} \
-	static void *operator new[](size_t size, void *buf) { \
-		Q_UNUSED(size); \
-		return buf; \
-	} \
-	static void operator delete[](void *p, void *buf) { \
-		Q_UNUSED(p); \
-		Q_UNUSED(buf); \
-	}
-
 #ifdef QT_DEBUG
 #define ML_DEBUG_MEMORY
 #endif

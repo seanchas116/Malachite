@@ -22,7 +22,7 @@ public:
 		bitmap(Pointer<PixelType>(), size, bytesPerLine),
 		ownsData(true)
 	{
-		bitmap.setBits(allocateAlignedMemory(bitmap.byteCount(), 16), bitmap.byteCount());
+		bitmap.setBits(new PixelType[bitmap.byteCount()], bitmap.byteCount());
 	}
 	
 	GenericImageData(void *bits, const QSize &size, int bytesPerLine) :
@@ -37,14 +37,14 @@ public:
 		bitmap(other.bitmap),
 		ownsData(true)
 	{
-		bitmap.setBits(allocateAlignedMemory(bitmap.byteCount(), 16), bitmap.byteCount());
+		bitmap.setBits(new PixelType[bitmap.byteCount()], bitmap.byteCount());
 		bitmap.bits().pasteByte(other.bitmap.constBits(), other.bitmap.byteCount());
 	}
 	
 	~GenericImageData()
 	{
 		if (ownsData)
-			freeAlignedMemory(bitmap.bits());
+			delete[] bitmap.bits();
 	}
 	
 	Bitmap<PixelType> bitmap;
