@@ -36,8 +36,8 @@ public:
 	
 	typedef T value_type;
 	typedef size_t size_type;
-	typedef typename ::std::array<T, N>::iterator iterator;
-	typedef typename ::std::array<T, N>::const_iterator const_iterator;
+	typedef typename std::array<T, N>::iterator iterator;
+	typedef typename std::array<T, N>::const_iterator const_iterator;
 	
 	typedef value_type ValueType;
 	typedef size_type SizeType;
@@ -52,13 +52,13 @@ public:
 			*iter = s;
 	}
 	
-	Vector(::std::array<T, N> &array) { _array = array; }
+	Vector(std::array<T, N> &array) { _array = array; }
 	
-	Vector(::std::initializer_list<T> list)
+	Vector(std::initializer_list<T> list)
 	{
 		if (list.size() != size())
 			return;
-		::std::copy(list.begin(), list.end(), _array.begin());
+		std::copy(list.begin(), list.end(), _array.begin());
 	}
 	
 	Vector(const Vector &other) { _array = other._array; }
@@ -207,7 +207,7 @@ public:
 	
 private:
 	
-	::std::array<T, N> _array;
+	std::array<T, N> _array;
 };
 
 template <typename T, size_t N> inline Vector<T, N> operator+(const Vector<T, N> &v, T s) { return v + SELF_TYPE(s); }

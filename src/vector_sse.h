@@ -19,8 +19,8 @@ public:
 	
 	typedef double value_type;
 	typedef size_t size_type;
-	typedef typename ::std::array<double, 2>::iterator iterator;
-	typedef typename ::std::array<double, 2>::const_iterator const_iterator;
+	typedef typename std::array<double, 2>::iterator iterator;
+	typedef typename std::array<double, 2>::const_iterator const_iterator;
 	
 	typedef value_type ValueType;
 	typedef size_type SizeType;
@@ -35,16 +35,16 @@ public:
 		_data = _mm_unpacklo_pd(_data, _data);
 	}
 	
-	Vector(::std::array<ValueType, 2> &array)
+	Vector(std::array<ValueType, 2> &array)
 	{
 		_array = array;
 	}
 	
-	Vector(::std::initializer_list<ValueType> list)
+	Vector(std::initializer_list<ValueType> list)
 	{
 		if (list.size() != size())
 			return;
-		::std::copy(list.begin(), list.end(), _array.begin());
+		std::copy(list.begin(), list.end(), _array.begin());
 	}
 	
 	Vector(__m128d data) { _data = data; }
@@ -118,7 +118,7 @@ public:
 		union
 		{
 			__m128d _data;
-			::std::array<uint64_t, 2> _array;
+			std::array<uint64_t, 2> _array;
 		};
 	};
 	
@@ -172,7 +172,7 @@ protected:
 	{
 		__m128d _data;
 		__v2df _v;
-		::std::array<double, 2> _array;
+		std::array<double, 2> _array;
 	};
 };
 
@@ -187,8 +187,8 @@ public:
 	
 	typedef float value_type;
 	typedef size_t size_type;
-	typedef typename ::std::array<float, 4>::iterator iterator;
-	typedef typename ::std::array<float, 4>::const_iterator const_iterator;
+	typedef typename std::array<float, 4>::iterator iterator;
+	typedef typename std::array<float, 4>::const_iterator const_iterator;
 	
 	typedef value_type ValueType;
 	typedef size_type SizeType;
@@ -204,16 +204,16 @@ public:
 		_data = _mm_unpacklo_ps(_data, _data);
 	}
 	
-	Vector(::std::array<ValueType, 4> &array)
+	Vector(std::array<ValueType, 4> &array)
 	{
 		_array = array;
 	}
 	
-	Vector(::std::initializer_list<ValueType> list)
+	Vector(std::initializer_list<ValueType> list)
 	{
 		if (list.size() != size())
 			return;
-		::std::copy(list.begin(), list.end(), _array.begin());
+		std::copy(list.begin(), list.end(), _array.begin());
 	}
 	
 	Vector(__m128 data) { _data = data; }
@@ -308,7 +308,7 @@ public:
 		union
 		{
 			__m128 _data;
-			::std::array<uint32_t, 4> _array;
+			std::array<uint32_t, 4> _array;
 		};
 	};
 	
@@ -362,7 +362,7 @@ protected:
 	{
 		__m128 _data;
 		__v4sf _v;
-		::std::array<float, 4> _array;
+		std::array<float, 4> _array;
 	};
 };
 

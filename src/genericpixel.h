@@ -87,7 +87,7 @@ struct ChannelU8
 	
 	ChannelU8(ChannelFloat other)
 	{
-		value = ::std::round(other.value * float(max()));
+		value = std::round(other.value * float(max()));
 	}
 	
 	ChannelU8(ChannelU16 other);
@@ -107,7 +107,7 @@ struct ChannelU16
 	
 	ChannelU16(ChannelFloat other)
 	{
-		value = ::std::round(other.value * float(max()));
+		value = std::round(other.value * float(max()));
 	}
 	
 	ChannelU16(ChannelU8 other)

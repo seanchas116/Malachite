@@ -80,7 +80,7 @@ class ReverseContainer
 public:
 	
 	typedef typename Container::value_type value_type;
-	typedef ::std::reverse_iterator<typename Container::const_iterator> const_iterator;
+	typedef std::reverse_iterator<typename Container::const_iterator> const_iterator;
 	
 	ReverseContainer(const Container &container) : _container(container) {}
 	
