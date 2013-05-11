@@ -21,6 +21,18 @@ QList<T *> nonConstList(const QList<const T *> &list)
 	return blindCast<const QList<T* > >(list);
 }
 
+template <typename T>
+QList<std::shared_ptr<const T>> constList(const QList<std::shared_ptr<T>> &list)
+{
+	return blindCast<const QList<std::shared_ptr<const T>>>(list);
+}
+
+template <typename T>
+QList<std::shared_ptr<T>> nonConstList(const QList<std::shared_ptr<const T>> &list)
+{
+	return blindCast<const QList<std::shared_ptr<T>>>(list);
+}
+
 template <typename Container>
 void forwardShiftContainer(Container &container, int start, int end)
 {
