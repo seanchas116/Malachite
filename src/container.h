@@ -4,7 +4,7 @@
 //ExportName: Container
 
 #include "misc.h"
-//#include "list.h"
+#include <memory>
 
 namespace Malachite
 {

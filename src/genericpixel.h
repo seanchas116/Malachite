@@ -168,7 +168,7 @@ public:
 		if (other.hasAlpha())
 		{
 			typedef PixelParams::ChannelFloat DefaultChannel;
-			typedef DefaultChannel::ValueType DefaultType;
+			//typedef DefaultChannel::ValueType DefaultType;
 			
 			DefaultChannel a = Other_Channel(other.a());
 			DefaultChannel r = Other_Channel(other.r());
