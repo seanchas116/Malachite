@@ -7,7 +7,7 @@
 namespace Malachite
 {
 
-class Mat2D
+class MALACHITESHARED_EXPORT Mat2D
 {
 public:
 	

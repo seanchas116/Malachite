@@ -119,8 +119,8 @@ inline Image operator*(const Image &image, float factor)
 	return result;
 }
 
-QDataStream &operator<<(QDataStream &out, const Image &image);
-QDataStream &operator>>(QDataStream &in, Image &image);
+MALACHITESHARED_EXPORT QDataStream &operator<<(QDataStream &out, const Image &image);
+MALACHITESHARED_EXPORT QDataStream &operator>>(QDataStream &in, Image &image);
 
 }
 

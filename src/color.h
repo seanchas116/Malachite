@@ -195,8 +195,8 @@ private:
 	double _a, _r, _g, _b, _h, _s, _v;
 };
 
-QDataStream &operator<<(QDataStream &out, const Color &color);
-QDataStream &operator>>(QDataStream &in, Color &color);
+MALACHITESHARED_EXPORT QDataStream &operator<<(QDataStream &out, const Color &color);
+MALACHITESHARED_EXPORT QDataStream &operator>>(QDataStream &in, Color &color);
 
 }
 

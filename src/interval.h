@@ -5,10 +5,11 @@
 
 #include <algorithm>
 #include <array>
+#include "global.h"
 
 namespace Malachite {
 
-class Interval
+class MALACHITESHARED_EXPORT Interval
 {
 public:
 	

@@ -173,7 +173,7 @@ public:
 	}
 };
 
-class BlendOpDictionary
+class MALACHITESHARED_EXPORT BlendOpDictionary
 {
 public:
 	BlendOpDictionary();
@@ -184,7 +184,7 @@ private:
 	QHash<int, BlendOp *> _blendOps;
 };
 
-BlendOpDictionary *blendOpDictionary();
+MALACHITESHARED_EXPORT BlendOpDictionary *blendOpDictionary();
 
 }
 

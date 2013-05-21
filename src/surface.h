@@ -8,6 +8,7 @@
 #include <QSet>
 #include <QSharedData>
 
+#include "global.h"
 #include "color.h"
 #include "image.h"
 #include "misc.h"
@@ -20,9 +21,9 @@ namespace Malachite
 
 struct SurfaceDefaultTileProvider
 {
-	static ImageU8 DefaultTileU8;
-	static Image DefaultTile;
-	static Image WhiteTile;
+	MALACHITESHARED_EXPORT static ImageU8 DefaultTileU8;
+	MALACHITESHARED_EXPORT static Image DefaultTile;
+	MALACHITESHARED_EXPORT static Image WhiteTile;
 };
 
 template <>
@@ -39,7 +40,7 @@ inline Image surfaceDefaultTile<Image, 64>()
 	return SurfaceDefaultTileProvider::DefaultTile;
 }
 
-class Surface : public GenericSurface<Image, 64>, public Paintable
+class MALACHITESHARED_EXPORT Surface : public GenericSurface<Image, 64>, public Paintable
 {
 public:
 	
@@ -51,7 +52,7 @@ public:
 	PaintEngine *createPaintEngine() override;
 };
 
-class SurfaceEditTracker
+class MALACHITESHARED_EXPORT SurfaceEditTracker
 {
 public:
 	
@@ -77,8 +78,8 @@ private:
 	QSet<QPoint> _editedKeys;
 };
 
-QDataStream &operator<<(QDataStream &out, const Surface &surface);
-QDataStream &operator>>(QDataStream &in, Surface &surfaceOut);
+MALACHITESHARED_EXPORT QDataStream &operator<<(QDataStream &out, const Surface &surface);
+MALACHITESHARED_EXPORT QDataStream &operator>>(QDataStream &in, Surface &surfaceOut);
 
 }
 
