@@ -19,8 +19,6 @@
 namespace Malachite
 {
 
-typedef GenericSurface<ImageU8> SurfaceU8;
-
 class MALACHITESHARED_EXPORT Surface : public GenericSurface<Image>, public Paintable
 {
 public:

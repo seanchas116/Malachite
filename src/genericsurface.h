@@ -110,7 +110,7 @@ public:
 	OtherImage crop(const QRect &rect)
 	{
 		OtherImage image(rect.size());
-		image.clear();
+		image.fill(defaultPixel());
 		auto keys = rectToKeys(rect);
 		
 		for (auto key : keys)
