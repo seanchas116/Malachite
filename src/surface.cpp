@@ -15,12 +15,12 @@ PaintEngine *Surface::createPaintEngine()
 
 QDataStream &operator<<(QDataStream &out, const Surface &surface)
 {
-    out << quint64(surface.tileWidth());
-    out << quint64(surface.tileCount());
+	out << quint64(surface.tileWidth());
+	out << quint64(surface.tileCount());
 	
 	for (auto iter = surface.begin(); iter != surface.end(); ++iter)
 	{
-        quint64 x, y;
+		quint64 x, y;
 		x = iter.key().x();
 		y = iter.key().y();
 		out << x;
@@ -33,7 +33,7 @@ QDataStream &operator<<(QDataStream &out, const Surface &surface)
 
 QDataStream &operator>>(QDataStream &in, Surface &surfaceOut)
 {
-    quint64 tileWidth2x, tileCount2x;
+	quint64 tileWidth2x, tileCount2x;
 	in >> tileWidth2x;
 	in >> tileCount2x;
 	
@@ -44,7 +44,7 @@ QDataStream &operator>>(QDataStream &in, Surface &surfaceOut)
 	
 	for (int i = 0; i < tileCount; ++i)
 	{
-        quint64 x, y;
+		quint64 x, y;
 		in >> x;
 		in >> y;
 		
@@ -66,26 +66,6 @@ QDataStream &operator>>(QDataStream &in, Surface &surfaceOut)
 	
 	return in;
 }
-
-ImageU8 SurfaceDefaultTileProvider::DefaultTileU8;
-Image SurfaceDefaultTileProvider::DefaultTile;
-Image SurfaceDefaultTileProvider::WhiteTile;
-
-class SurfaceDefaultTileInitializer
-{
-public:
-	SurfaceDefaultTileInitializer()
-	{
-		SurfaceDefaultTileProvider::DefaultTileU8 = ImageU8(Surface::tileSize());
-		SurfaceDefaultTileProvider::DefaultTileU8.fill(0);
-		SurfaceDefaultTileProvider::DefaultTile = Image(Surface::tileSize());
-		SurfaceDefaultTileProvider::DefaultTile.fill(0);
-		SurfaceDefaultTileProvider::WhiteTile = Image(Surface::tileSize());
-		SurfaceDefaultTileProvider::WhiteTile.fill(Color::fromRgbValue(1, 1, 1, 1).toPixel());
-	}
-};
-
-static SurfaceDefaultTileInitializer defaultTileInitializer;
 
 }
 

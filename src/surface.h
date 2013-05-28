@@ -19,32 +19,13 @@
 namespace Malachite
 {
 
-struct SurfaceDefaultTileProvider
-{
-	MALACHITESHARED_EXPORT static ImageU8 DefaultTileU8;
-	MALACHITESHARED_EXPORT static Image DefaultTile;
-	MALACHITESHARED_EXPORT static Image WhiteTile;
-};
+typedef GenericSurface<ImageU8> SurfaceU8;
 
-template <>
-inline ImageU8 surfaceDefaultTile<ImageU8, 64>()
-{
-	return SurfaceDefaultTileProvider::DefaultTileU8;
-}
-
-typedef GenericSurface<ImageU8, 64> SurfaceU8;
-
-template <>
-inline Image surfaceDefaultTile<Image, 64>()
-{
-	return SurfaceDefaultTileProvider::DefaultTile;
-}
-
-class MALACHITESHARED_EXPORT Surface : public GenericSurface<Image, 64>, public Paintable
+class MALACHITESHARED_EXPORT Surface : public GenericSurface<Image>, public Paintable
 {
 public:
 	
-	typedef GenericSurface<Image, 64> super;
+	typedef GenericSurface<Image> super;
 	
 	Surface() : super() {}
 	Surface(const Surface &other) : super(other) {}

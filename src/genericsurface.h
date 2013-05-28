@@ -12,15 +12,14 @@
 namespace Malachite
 {
 
-template <typename T_Image, int T_TileWidth>
-inline T_Image surfaceDefaultTile()
+template <typename T_Image>
+struct GenericTileTraits
 {
-	T_Image result(T_TileWidth, T_TileWidth);
-	result.fill(0);
-	return result;
-}
+	static constexpr int tileWidth() { return 64; }
+	static typename T_Image::PixelType defaultPixel() { return typename T_Image::PixelType(0); }
+};
 
-template <typename T_Image, int T_TileWidth = 64>
+template <typename T_Image, typename T_TileTraits = GenericTileTraits<T_Image> >
 class GenericSurface
 {
 public:
@@ -31,13 +30,15 @@ public:
 	typedef typename HashType::ConstIterator ConstIterator;
 	typedef typename HashType::Iterator Iterator;
 	
+	typedef T_TileTraits TileTraitsType;
+	
 	typedef ConstIterator const_iterator;
 	typedef Iterator iterator;
 	
 	GenericSurface() {}
-	GenericSurface(const GenericSurface<ImageType, T_TileWidth> &other) : _hash(other._hash) {}
+	GenericSurface(const GenericSurface<ImageType, TileTraitsType> &other) : _hash(other._hash) {}
 	
-	constexpr static int tileWidth() { return T_TileWidth; }
+	constexpr static int tileWidth() { return TileTraitsType::tileWidth(); }
 	static QSize tileSize() { return QSize(tileWidth(), tileWidth()); }
 	static QPoint tileSizePoint() { return QPoint(tileWidth(), tileWidth()); }
 	
@@ -49,7 +50,7 @@ public:
 	ImageType &tileRef(const QPoint &key)
 	{
 		if (!_hash.contains(key))
-			_hash[key] = defaultTile();
+			_hash[key] = createTile();
 		
 		return _hash[key];
 	}
@@ -241,9 +242,21 @@ public:
 		return !operator==(other);
 	}
 	
+	static typename ImageType::PixelType defaultPixel()
+	{
+		return TileTraitsType::defaultPixel();
+	}
+	
 	static ImageType defaultTile()
 	{
-		return surfaceDefaultTile<ImageType, tileWidth()>();
+		return _defaultTileInitializer.tile;
+	}
+	
+	static ImageType createTile()
+	{
+		ImageType image(tileSize());
+		image.fill(defaultPixel());
+		return image;
 	}
 	
 	static QPoint keyForPixel(const QPoint &pos)
@@ -367,8 +380,22 @@ private:
 		return -1;
 	}
 	
+	struct TileInitializer
+	{
+		TileInitializer() :
+		    tile(tileSize())
+		{
+			tile.fill(defaultPixel());
+		}
+		
+		ImageType tile;
+	};
 	
+	static TileInitializer _defaultTileInitializer;
 	QHash<QPoint, ImageType> _hash;
 };
+
+template <typename T_Image, typename T_TileTraits>
+typename GenericSurface<T_Image, T_TileTraits>::TileInitializer GenericSurface<T_Image, T_TileTraits>::_defaultTileInitializer;
 
 }
