@@ -107,9 +107,29 @@ public:
 	}
 	
 	template <typename OtherImage>
-	OtherImage crop(const QRect &rect)
+	OtherImage cropInType(const QRect &rect) const
 	{
 		OtherImage image(rect.size());
+		image.fill(defaultPixel());
+		auto keys = rectToKeys(rect);
+		
+		for (auto key : keys)
+		{
+			if (contains(key))
+				image.paste(tile(key), -rect.topLeft() + key * tileWidth());
+		}
+		
+		return image;
+	}
+	
+	ImageType crop(const QRect &rect) const
+	{
+		if (rect.left() % tileWidth() == 0 && rect.top() % tileWidth() == 0 && rect.width() == tileWidth() && rect.height() == tileWidth())
+		{
+			return tile(rect.left() / tileWidth(), rect.top() / tileWidth());
+		}
+		
+		ImageType image(rect.size());
 		image.fill(defaultPixel());
 		auto keys = rectToKeys(rect);
 		
