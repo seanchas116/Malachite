@@ -51,6 +51,24 @@ PaintEngine *Image::createPaintEngine()
 	return new ImagePaintEngine;
 }
 
+void Image::pasteWithBlendMode(BlendMode mode, const Image &image, const QPoint &point)
+{
+	QRect r = rect() & QRect(point, image.size());
+	
+	auto blendOp = mode.op();
+	
+	for (int y = r.top(); y <= r.bottom(); ++y)
+	{
+		auto dp = scanline(y);
+		dp += r.left();
+		
+		auto sp = image.constScanline(y - point.y());
+		sp += (r.left() - point.x());
+		
+		blendOp->blend(r.width(), dp, sp);
+	}
+}
+
 // assumes both dst and src are 16bit aligned
 static void copyColorFast(int count, BgraPremultU8 *dst, const Pixel *src)
 {

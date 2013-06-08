@@ -7,6 +7,7 @@
 #include "color.h"
 #include "genericimage.h"
 #include "pixel.h"
+#include "blendmode.h"
 
 namespace Malachite
 {
@@ -94,6 +95,8 @@ public:
 	 * @return a PaintEngine
 	 */
 	PaintEngine *createPaintEngine();
+	
+	void pasteWithBlendMode(BlendMode mode, const Image &other, const QPoint &point = QPoint());
 	
 	/**
 	 * Fills the background with white and returns the result.

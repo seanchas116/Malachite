@@ -103,7 +103,7 @@ void SurfacePaintEngine::drawPreTransformedSurface(const QPoint &point, const Su
 			switch (state()->blendMode.op()->tileRequirement(combination))
 			{
 				case BlendOp::TileSource:
-					_surface->tileRef(key) = surface.tile(key) * state()->opacity;
+					_surface->setTile(key, surface.tile(key) * state()->opacity);
 					break;
 					
 				case BlendOp::NoTile:
@@ -116,14 +116,7 @@ void SurfacePaintEngine::drawPreTransformedSurface(const QPoint &point, const Su
 					
 				case BlendOp::TileBoth:
 					
-					Painter painter(&_surface->tileRef(key));
-					painter.setBlendMode(state()->blendMode);
-					painter.setOpacity(state()->opacity);
-					
-					if (rect.isValid())
-						painter.drawPreTransformedImage(QPoint(), surface.tile(key), rect);
-					else
-						painter.drawPreTransformedImage(QPoint(), surface.tile(key));
+					_surface->tileRef(key).pasteWithBlendMode(state()->blendMode, surface.tile(key));
 					break;
 			}
 		};
@@ -143,55 +136,6 @@ void SurfacePaintEngine::drawPreTransformedSurface(const QPoint &point, const Su
 			for (auto &key : surface.keys() | _surface->keys())
 				drawTile(key, QRect());
 		}
-		
-		/*
-		QPointSet keys = surface.keys() | _surface->keys();
-		
-		if (!_keyRectClip.isEmpty())
-			keys &= _keyRectClip.keys().toSet();
-		else
-		{
-			if (!_keyClip.isEmpty())
-				keys &= _keyClip;
-		}
-		
-		for (const QPoint &key : keys)
-		{
-			BlendOp::TileCombination combination = BlendOp::NoTile;
-			
-			if (_surface->contains(key))
-				combination |= BlendOp::TileDestination;
-			if (surface.contains(key))
-				combination |= BlendOp::TileSource;
-			
-			switch (state()->blendMode.op()->tileRequirement(combination))
-			{
-				case BlendOp::TileSource:
-					_surface->tileRef(key) = surface.tile(key) * state()->opacity;
-					break;
-					
-				case BlendOp::NoTile:
-					_surface->remove(key);
-					break;
-					
-				default:
-				case BlendOp::TileDestination:
-					break;
-					
-				case BlendOp::TileBoth:
-					
-					Painter painter(&_surface->tileRef(key));
-					painter.setBlendMode(state()->blendMode);
-					painter.setOpacity(state()->opacity);
-					
-					if (!_keyRectClip.isEmpty())
-						painter.drawPreTransformedImage(QPoint(), surface.tile(key), _keyRectClip[key]);
-					else
-						painter.drawPreTransformedImage(QPoint(), surface.tile(key));
-					break;
-			}
-		}
-		*/
 	}
 	else
 	{
