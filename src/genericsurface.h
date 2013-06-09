@@ -47,6 +47,9 @@ public:
 	ImageType tile(const QPoint &key) const {return _hash.value(key, defaultTile()); }
 	ImageType tile(int x, int y) const { return tile(QPoint(x, y)); }
 	
+	ImageType tile(const QPoint &key, const ImageType &defaultImage) const { return _hash.value(key, defaultImage); }
+	ImageType tile(int x, int y, const ImageType &defaultImage) const { return tile(QPoint(x, y), defaultImage); }
+	
 	ImageType &tileRef(const QPoint &key)
 	{
 		if (!_hash.contains(key))
@@ -96,7 +99,7 @@ public:
 	
 	void newTile(const QPoint &key)
 	{
-		_hash[key] = defaultTile();
+		_hash[key] = createTile();
 	}
 	
 	template <ImagePasteInversionMode T_InversionMode = ImagePasteNotInverted, typename OtherImage>
