@@ -51,21 +51,37 @@ PaintEngine *Image::createPaintEngine()
 	return new ImagePaintEngine;
 }
 
-void Image::pasteWithBlendMode(BlendMode mode, const Image &image, const QPoint &point)
+void Image::pasteWithBlendMode(BlendMode mode, float opacity, const Image &image, const QPoint &point)
 {
 	QRect r = rect() & QRect(point, image.size());
 	
 	auto blendOp = mode.op();
 	
-	for (int y = r.top(); y <= r.bottom(); ++y)
+	if (opacity == 1.0)
 	{
-		auto dp = scanline(y);
-		dp += r.left();
-		
-		auto sp = image.constScanline(y - point.y());
-		sp += (r.left() - point.x());
-		
-		blendOp->blend(r.width(), dp, sp);
+		for (int y = r.top(); y <= r.bottom(); ++y)
+		{
+			auto dp = scanline(y);
+			dp += r.left();
+			
+			auto sp = image.constScanline(y - point.y());
+			sp += (r.left() - point.x());
+			
+			blendOp->blend(r.width(), dp, sp);
+		}
+	}
+	else
+	{
+		for (int y = r.top(); y <= r.bottom(); ++y)
+		{
+			auto dp = scanline(y);
+			dp += r.left();
+			
+			auto sp = image.constScanline(y - point.y());
+			sp += (r.left() - point.x());
+			
+			blendOp->blend(r.width(), dp, sp, opacity);
+		}
 	}
 }
 
