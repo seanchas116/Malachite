@@ -10,6 +10,81 @@ namespace agg
 
 using namespace Malachite;
 
+//-------------------------------------------------------------curve4_inc
+class curve4_inc
+{
+public:
+    curve4_inc() :
+        m_scale(1.0) { }
+
+    curve4_inc(const Vec2D &p1, const Vec2D &p2, const Vec2D &p3, const Vec2D &p4) :
+        m_scale(1.0) 
+    { 
+		init(p1, p2, p3, p4);
+    }
+
+	void init(const Vec2D &p1, const Vec2D &p2, const Vec2D &p3, const Vec2D &p4);
+
+	void approximation_scale(double s) { m_scale = s; }
+	double approximation_scale() const { return m_scale; }
+	
+	Polygon polygon() const { return m_points; }
+	
+private:
+    
+    double   m_scale;
+	Polygon m_points;
+};
+
+//------------------------------------------------------------------------
+void curve4_inc::init(const Vec2D &p1, const Vec2D &p2, const Vec2D &p3, const Vec2D &p4)
+{
+	auto d1 = p2 - p1;
+	auto d2 = p3 - p2;
+	auto d3 = p4 - p3;
+	
+	double len = d1.length() + d2.length() + d3.length() * 0.25 * m_scale;
+
+    auto num_steps = std::round(len);
+
+    if(num_steps < 4)
+    {
+        num_steps = 4;
+    }
+
+    double subdivide_step  = 1.0 / num_steps;
+    double subdivide_step2 = subdivide_step * subdivide_step;
+    double subdivide_step3 = subdivide_step2 * subdivide_step;
+
+    double pre1 = 3.0 * subdivide_step;
+    double pre2 = 3.0 * subdivide_step2;
+    double pre4 = 6.0 * subdivide_step2;
+    double pre5 = 6.0 * subdivide_step3;
+	
+	auto tmp1 = p1 - p2 * 2.0 + p3;
+	auto tmp2 = (p2 - p3) * 3.0 - p1 + p4;
+
+	auto f = p1;
+	auto df = (p2 - p1) * pre1 + tmp1 * pre2 + tmp2 * subdivide_step3;
+	auto ddf = tmp1 * pre4 + tmp2 * pre5;
+	
+	auto dddf = tmp2 * pre5;
+	
+	m_points.resize(num_steps);
+	
+	m_points[0] = p1;
+	
+	for (int i = 1; i < num_steps - 1; ++i)
+	{
+		f += df;
+		df += ddf;
+		ddf += dddf;
+		m_points[i] = f;
+	}
+	
+	m_points[num_steps - 1] = p4;
+}
+
 //-------------------------------------------------------------curve4_div
 class curve4_div
 {
@@ -331,16 +406,22 @@ void curve4_div::bezier(const Vec2D &p1,
 namespace Malachite
 {
 
-CurveSubdivision::CurveSubdivision(const Curve4 &curve)
-{
-	agg::curve4_div curveSub(curve.start, curve.control1, curve.control2, curve.end);
-	_polygon = curveSub.polygon();
-}
+CurveSubdivision::CurveSubdivision(const Curve4 &curve, Type type) :
+    CurveSubdivision(curve.start, curve.control1, curve.control2, curve.end, type)
+{}
 
-CurveSubdivision::CurveSubdivision(const Vec2D &start, const Vec2D &control1, const Vec2D &control2, const Vec2D &end)
+CurveSubdivision::CurveSubdivision(const Vec2D &start, const Vec2D &control1, const Vec2D &control2, const Vec2D &end, Type type)
 {
-	agg::curve4_div curveSub(start, control1, control2, end);
-	_polygon = curveSub.polygon();
+	if (type == TypeAdaptive)
+	{
+		agg::curve4_div curveSub(start, control1, control2, end);
+		_polygon = curveSub.polygon();
+	}
+	else
+	{
+		agg::curve4_inc curveSub(start, control1, control2, end);
+		_polygon = curveSub.polygon();
+	}
 }
 
 }

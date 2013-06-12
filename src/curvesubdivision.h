@@ -12,8 +12,21 @@ namespace Malachite
 class MALACHITESHARED_EXPORT CurveSubdivision
 {
 public:
-	CurveSubdivision(const Curve4 &curve);
-	CurveSubdivision(const Vec2D &start, const Vec2D &control1, const Vec2D &control2, const Vec2D &end);
+	
+	enum Type
+	{
+		/**
+		 * Incremental, normal curve subdivision way
+		 */
+		TypeIncremental,
+		/**
+		 * Adaptive, see http://antigrain.com/research/adaptive_bezier/
+		 */
+		TypeAdaptive
+	};
+	
+	CurveSubdivision(const Curve4 &curve, Type type = TypeAdaptive);
+	CurveSubdivision(const Vec2D &start, const Vec2D &control1, const Vec2D &control2, const Vec2D &end, Type type = TypeAdaptive);
 	
 	Polygon polygon() const { return _polygon; }
 	
