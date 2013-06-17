@@ -96,7 +96,7 @@ public:
 	 */
 	PaintEngine *createPaintEngine();
 	
-	void pasteWithBlendMode(BlendMode mode, float opacity, const Image &other, const QPoint &point = QPoint());
+	void pasteWithBlendMode(BlendMode mode, float opacity, const Image &other, const QPoint &offset, const QRect &imageRect);
 	
 	/**
 	 * Fills the background with white and returns the result.

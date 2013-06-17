@@ -116,7 +116,7 @@ void SurfacePaintEngine::drawPreTransformedSurface(const QPoint &point, const Su
 					
 				case BlendOp::TileBoth:
 					
-					_surface->tileRef(key).pasteWithBlendMode(state()->blendMode, state()->opacity, surface.tile(key));
+					_surface->tileRef(key).pasteWithBlendMode(state()->blendMode, state()->opacity, surface.tile(key), QPoint(), rect);
 					break;
 			}
 		};
