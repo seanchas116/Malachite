@@ -129,12 +129,12 @@ void SurfacePaintEngine::drawPreTransformedSurface(const QPoint &point, const Su
 		else if (!_keyClip.isEmpty())
 		{
 			for (auto &key : _keyClip)
-				drawTile(key, QRect());
+				drawTile(key, QRect(QPoint(), Surface::tileSize()));
 		}
 		else
 		{
 			for (auto &key : surface.keys() | _surface->keys())
-				drawTile(key, QRect());
+				drawTile(key, QRect(QPoint(), Surface::tileSize()));
 		}
 	}
 	else
