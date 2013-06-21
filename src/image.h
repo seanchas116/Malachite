@@ -47,6 +47,35 @@ public:
 	 * @return 
 	 */
 	static ImageU8 wrapQImage(const QImage &image);
+	
+	template <ImagePasteInversionMode InversionMode = ImagePasteNotInverted>
+	void paste(const ImageU8 &image, const QPoint &point = QPoint())
+	{
+		QRect r = rect() & QRect(point, image.size());
+		
+		for (int y = r.top(); y <= r.bottom(); ++y)
+		{
+			PixelType *dp;
+			
+			if (InversionMode & ImagePasteDestinationInverted)
+				dp = invertedScanline(y);
+			else
+				dp = scanline(y);
+			
+			dp += r.left();
+			
+			const PixelType *sp;
+			
+			if (InversionMode & ImagePasteSourceInverted)
+				sp = image.invertedConstScanline(y - point.y());
+			else
+				sp = image.constScanline(y - point.y());
+			
+			sp += (r.left() - point.x());
+			
+			memcpy(dp, sp, r.width() * sizeof(PixelType));
+		}
+	}
 };
 
 /**

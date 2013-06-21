@@ -69,6 +69,8 @@ public:
 	 */
 	typedef T_Pixel PixelType;
 	
+	typedef GenericImage<PixelType> SelfType;
+	
 	/**
 	 * Constructs an empty image.
 	 */
