@@ -47,10 +47,12 @@ class MALACHITESHARED_EXPORT ImageExporter
 {
 public:
 	
-	ImageExporter(const QString &format);
+	ImageExporter(const QString &format, bool alphaEnabled);
 	~ImageExporter();
 	
 	void setQuality(int quality);
+	int quality() const;
+	bool isAlphaEnabled() const;
 	
 	bool setImage(const Image &image);
 	bool setSurface(const Surface &surface, const QRect &rect);

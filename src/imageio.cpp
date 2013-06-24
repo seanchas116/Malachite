@@ -316,7 +316,10 @@ struct ImageExporter::Data
 		switch (format)
 		{
 			case FIF_PNG:
-				bitmap = FreeImage_AllocateT(FIT_RGBA16, size.width(), size.height());
+				if (alphaEnabled)
+					bitmap = FreeImage_AllocateT(FIT_RGBA16, size.width(), size.height());
+				else
+					bitmap = FreeImage_AllocateT(FIT_RGB16, size.width(), size.height());
 				break;
 			default:
 				bitmap = FreeImage_Allocate(size.width(), size.height(), 24);
@@ -327,11 +330,13 @@ struct ImageExporter::Data
 	FIBITMAP *bitmap = 0;
 	FREE_IMAGE_FORMAT format;
 	int quality = 80;
+	bool alphaEnabled = true;
 };
 
-ImageExporter::ImageExporter(const QString &format) :
+ImageExporter::ImageExporter(const QString &format, bool alphaEnabled) :
     d(new Data)
 {
+	d->alphaEnabled = alphaEnabled;
 	d->setFormatString(format);
 }
 
@@ -343,6 +348,16 @@ ImageExporter::~ImageExporter()
 void ImageExporter::setQuality(int quality)
 {
 	d->quality = quality;
+}
+
+int ImageExporter::quality() const
+{
+	return d->quality;
+}
+
+bool ImageExporter::isAlphaEnabled() const
+{
+	return d->alphaEnabled;
 }
 
 bool ImageExporter::save(QIODevice *device)
