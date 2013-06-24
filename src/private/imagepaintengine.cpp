@@ -209,18 +209,17 @@ void ImagePaintEngine::drawPreTransformedPolygons(const FixedMultiPolygon &polyg
 {
 	agg::rasterizer_scanline_aa<> ras;
 	
-	foreach (const FixedPolygon &polygon, polygons)
+	for (const FixedPolygon &polygon : polygons)
 	{
-		if (polygon.size() < 3) continue;
+		if (polygon.size() < 3)
+			continue;
 		
-		FixedPoint p = polygon.at(0);
-		ras.move_to(p.x, p.y);
+		auto i = polygon.begin();
+		ras.move_to(i->x, i->y);
+		++i;
 		
-		for (int i = 1; i < polygon.size(); ++i)
-		{
-			p = polygon.at(i);
-			ras.line_to(p.x, p.y);
-		}
+		for (; i != polygon.end(); ++i)
+			ras.line_to(i->x, i->y);
 	}
 	
 	BlendOp *op = BlendMode(state()->blendMode).op();
