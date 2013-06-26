@@ -4,16 +4,71 @@
 
 #include <stdint.h>
 #include <emmintrin.h>
+#include <new>
 #include "vector_generic.h"
+
+#if !__x86_64__
+
+__attribute__((__weak__))
+void *operator new(std::size_t size) throw(std::bad_alloc)
+{
+	if (size == 0)
+		size = 1;
+	
+	void *p;
+	while (posix_memalign(&p, 16, size))
+	{
+		auto nh = std::set_new_handler(nullptr);
+		std::set_new_handler(nh);
+		if (nh)
+			nh();
+		else
+			throw std::bad_alloc();
+	}
+	return p;
+}
+
+__attribute__((__weak__))
+void *operator new(std::size_t size, const std::nothrow_t &) noexcept
+{
+	void *p = 0;
+	try
+	{
+		p = ::operator new(size);
+	}
+	catch (...)
+	{
+	}
+	return p;
+}
+
+__attribute__((__weak__))
+void *operator new[](std::size_t size) throw(std::bad_alloc)
+{
+	return ::operator new(size);
+}
+
+__attribute__((__weak__))
+void *operator new[](std::size_t size, const std::nothrow_t&) noexcept
+{
+	void *p = 0;
+	try
+	{
+		p = ::operator new[](size);
+	}
+	catch (...)
+	{
+	}
+	return p;
+}
+
+#endif
 
 namespace Malachite
 {
 
-#define ML_INHERIT_OPERATORS \
-	
-
 template<>
-class alignas(16) Vector<double, 2>
+class Vector<double, 2>
 {
 public:
 	
@@ -181,7 +236,7 @@ typedef Vector<double, 2> Vector_double_2;
 ML_IMPL_VECTOR_OPERATORS_GLOBAL(inline Vector_double_2, Vector_double_2, double)
 
 template<>
-class alignas(16) Vector<float, 4>
+class Vector<float, 4>
 {
 public:
 	

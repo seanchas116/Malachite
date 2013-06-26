@@ -26,7 +26,7 @@ mac {
 }
 
 LIBS += -lfreeimage
-QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=c++11 -msse2
 QMAKE_LFLAGS += -std=c++11
 
 contains(QMAKE_CXX, clang++) {
@@ -38,7 +38,6 @@ contains(QMAKE_CXX, clang++) {
 }
 
 CONFIG += sse2
-
 
 # Input
 HEADERS += bitmap.h \

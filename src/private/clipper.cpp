@@ -149,6 +149,17 @@ bool PolyNode::IsHole() const
   return result;
 }  
 
+#if __x86_64__
+
+typedef __int128_t Int128;
+
+inline Int128 Int128Mul (long64 lhs, long64 rhs)
+{
+	return lhs * rhs;
+}
+
+#else
+
 //------------------------------------------------------------------------------
 // Int128 class (enables safe math on signed 64bit integers)
 // eg Int128 val1((long64)9223372036854775807); //ie 2^63 -1
@@ -157,7 +168,6 @@ bool PolyNode::IsHole() const
 //    val3.AsString => "85070591730234615847396907784232501249" (8.5e+37)
 //------------------------------------------------------------------------------
 
-/*
 class Int128
 {
   public:
@@ -309,7 +319,7 @@ class Int128
           return Int128(0);
     }
 
-    double AsDouble() const
+    operator double() const
     {
       const double shift64 = 18446744073709551616.0; //2^64
       if (hi < 0)
@@ -346,15 +356,9 @@ Int128 Int128Mul (long64 lhs, long64 rhs)
   if (tmp.lo < b) tmp.hi++;
   if (negate) tmp = -tmp;
   return tmp;
-}*/
-
-typedef __int128_t Int128;
-
-inline Int128 Int128Mul (long64 lhs, long64 rhs)
-{
-	return lhs + rhs;
 }
 
+#endif
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
