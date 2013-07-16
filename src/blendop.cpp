@@ -9,19 +9,6 @@ namespace Malachite
 static const PixelVec pixelVecZero(0.f);
 static const PixelVec pixelVecOne(1.f);
 
-inline static Pixel compose(const Pixel &dst, const Pixel &src, const Pixel &f_sa_da, float x, float y, float z)
-{
-	Pixel fx = f_sa_da;
-	fx.ra() = x;
-	
-	float da = dst.a();
-	float sa = src.a();
-	
-	Pixel r;
-	r.rv() = fx.v() + PixelVec(y * (1.f - da)) * src.v() + PixelVec(z * (1.f - sa)) * dst.v();
-	return r;
-}
-
 struct BlendTraitsClear
 {
 	static void blend(Pixel &dst, const Pixel &src)
