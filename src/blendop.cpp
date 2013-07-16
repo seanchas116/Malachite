@@ -22,9 +22,8 @@ inline static Pixel compose(const Pixel &dst, const Pixel &src, const Pixel &f_s
 	return r;
 }
 
-class BlendFunctionsClear
+struct BlendTraitsClear
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
 		Q_UNUSED(src);
@@ -38,9 +37,8 @@ public:
 	}
 };
 
-class BlendFunctionsSource
+struct BlendTraitsSource
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
 		dst = src;
@@ -62,9 +60,8 @@ public:
 	}
 };
 
-class BlendFunctionsDestination
+struct BlendTraitsDestination
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
 		Q_UNUSED(dst); Q_UNUSED(src);
@@ -86,9 +83,8 @@ public:
 	}
 };
 
-class BlendFunctionsSourceOver
+struct BlendTraitsSourceOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
 		dst.rv() = src.v() + (pixelVecOne - src.aV()) * dst.v();
@@ -101,9 +97,8 @@ public:
 	}
 };
 
-class BlendFunctionsDestinationOver
+struct BlendTraitsDestinationOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
 		dst.rv() = dst.v() + (pixelVecOne - dst.aV()) * src.v();
@@ -116,9 +111,8 @@ public:
 	}
 };
 
-class BlendFunctionsSourceIn
+struct BlendTraitsSourceIn
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
 		dst.rv() = dst.aV() * src.v();
@@ -141,9 +135,8 @@ public:
 	}
 };
 
-class BlendFunctionsDestinationIn
+struct BlendTraitsDestinationIn
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
 		dst.rv() = src.aV() * dst.v();
@@ -166,9 +159,8 @@ public:
 	}
 };
 
-class BlendFunctionsSourceOut
+struct BlendTraitsSourceOut
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
 		dst.rv() = (pixelVecOne - dst.aV()) * src.v();
@@ -191,9 +183,8 @@ public:
 	}
 };
 
-class BlendFunctionsDestinationOut
+struct BlendTraitsDestinationOut
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
 		dst.rv() = (pixelVecOne - src.aV()) * dst.v();
@@ -216,9 +207,8 @@ public:
 	}
 };
 
-class BlendFunctionsSourceAtop
+struct BlendTraitsSourceAtop
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
 		dst.rv() = dst.aV() * src.v() + (pixelVecOne - src.aV()) + dst.v();
@@ -241,9 +231,8 @@ public:
 	}
 };
 
-class BlendFunctionsDestinationAtop
+struct BlendTraitsDestinationAtop
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
 		dst.rv() = src.aV() * dst.v() + (pixelVecOne - dst.v()) * src.v();
@@ -266,9 +255,8 @@ public:
 	}
 };
 
-class BlendFunctionsXor
+struct BlendTraitsXor
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
 		dst.rv() = (pixelVecOne - dst.aV()) * src.v() + (pixelVecOne - src.aV()) * dst.v();
@@ -291,24 +279,20 @@ public:
 	}
 };
 
-class BlendFunctionsPlus
+struct BlendTraitsPlus : public BlendTraitsSourceOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst.rv() = (dst.v() + src.v()).bound(PixelVec(0), PixelVec(1));
+		dst.rv() = (dst.v() + src.v()).bound(0.f, 1.f);
 		//dst = vecBound(0, dst + src , 1);
 	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
-class BlendFunctionsMultiply
+struct BlendTraitsMultiply
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst.rv() = src.v() * dst.v() + src.v() * (PixelVec(1) - dst.aV()) + dst.v() * (PixelVec(1) - src.aV());
+		dst.rv() = src.v() * dst.v() + src.v() * (1.f - dst.aV()) + dst.v() * (1.f - src.aV());
 		//dst = src * dst + src * (1.0f - dst.a) + dst * (1.0f - src.a);
 	}
 	
@@ -326,216 +310,192 @@ public:
 	}
 };
 
-
-
-class BlendFunctionsScreen
+struct BlendTraitsScreen : public BlendTraitsSourceOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		dst.rv() = src.v() * dst.v() - src.v() * dst.v();
+		dst.rv() = src.v() + dst.v() - src.v() * dst.v();
 		//dst = src + dst - src * dst;
 	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
-class BlendFunctionsOverlay
+struct BlendTraitsOverlay : public BlendTraitsSourceOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
-		
-		Pixel f1, f2, f;
-		f1.rv() = PixelVec(2) * src.v() * dst.v();
-		f2.rv() = PixelVec(src.a() * dst.a()) - PixelVec(2) * (dst.aV() - dst.v()) * (src.aV() - src.v());
-		f.rv() = PixelVec::choose( PixelVec::lessThanEqual(dst.v(), PixelVec(dst.a() * 0.5f)), f1.v(), f2.v() );
-		
-		dst = compose(dst, src, f, 1, 1, 1);
+		Pixel c1, c2;
+		c1.rv() = src.v() * ( 2.f * dst.v() + ( 1.f - dst.a() ) ) + dst.v() * ( 1.f - src.a() );
+		c2.rv() = src.v() * ( 1.f + dst.a()) + dst.v() * ( 1.f + src.a() ) - 2.f * dst.v() * src.v() - dst.a() * src.a();
+		dst.rv() = PixelVec::choose( PixelVec::lessThanEqual( dst.v(), dst.a() * 0.5f ), c1.v(), c2.v() );
 	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
-class BlendFunctionsDarken
+struct BlendTraitsDarken : public BlendTraitsSourceOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
+		Pixel srcOver, dstOver;
 		
-		Pixel f;
-		f.rv() = PixelVec::minimum(src.v() * dst.aV(), dst.v() * src.aV());
-		dst = compose(dst, src, f, 1, 1, 1);
+		srcOver.rv() = src.v() + ( 1.f - src.a() ) * dst.v();
+		dstOver.rv() = dst.v() + ( 1.f - dst.a() ) * src.v();
+		
+		dst.rv() = PixelVec::choose( PixelVec::lessThan( src.v() * dst.aV(), dst.v() * src.aV() ), srcOver.v(), dstOver.v() );
 	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
-class BlendFunctionsLighten
+struct BlendTraitsLighten : public BlendTraitsSourceOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
+		Pixel srcOver, dstOver;
 		
-		Pixel f;
-		f.rv() = PixelVec::maximum(src.v() * dst.aV(), dst.v() * src.aV());
-		dst = compose(dst, src, f, 1, 1, 1);
+		srcOver.rv() = src.v() + ( 1.f - src.a() ) * dst.v();
+		dstOver.rv() = dst.v() + ( 1.f - dst.a() ) * src.v();
+		
+		dst.rv() = PixelVec::choose( PixelVec::greaterThan( src.v() * dst.aV(), dst.v() * src.aV() ), srcOver.v(), dstOver.v() );
 	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
-class BlendFunctionsColorDodge
+struct BlendTraitsColorDodge : public BlendTraitsSourceOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
+		if (dst.a() == 0.f)
+		{
+			dst = src;
+			return;
+		}
 		
-		Pixel f;
+		Pixel c1, c2, c3;
+		c1.rv() = src.v() * (1.f - dst.a());
+		c2.rv() = c1.v() + src.a() * dst.a() + dst.v() * ( 1.f - src.a() );
+		c3.rv() = src.a() * dst.a() * PixelVec::minimum( 1.f, dst.v() * src.a() / ( dst.a() * ( src.a() - src.v() ) ) )
+				+ c1.v()
+				+ dst.v() * (1.f - src.a());
 		
-		f.rv() = PixelVec::minimum( PixelVec(dst.a() * src.a()), dst.v() * (src.a() * src.a()) / (src.aV() - src.v()) );
-		f.rv() = PixelVec::choose(PixelVec::equal(src.v(), src.aV()), PixelVec(1), f.v());
-		
-		dst = compose(dst, src, f, 1, 1, 1);
+		Pixel c4;
+		c4.rv() = PixelVec::choose( PixelVec::equal( dst.v(), 0.f ), c1.v(), c2.v() );
+		dst.rv() = PixelVec::choose( PixelVec::equal( src.v(), src.a() ), c4.v(), c3.v() );
 	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
-class BlendFunctionsColorBurn
+struct BlendTraitsColorBurn : public BlendTraitsSourceOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
+		if (dst.a() == 0.f)
+		{
+			dst = src;
+			return;
+		}
 		
-		Pixel f;
-		PixelVec sada(src.a() * dst.a());
-		f.rv() = sada - PixelVec::minimum( sada, (dst.aV() - dst.v()) * (src.a() * src.a()) / src.v() );
-		f.rv() = PixelVec::choose( PixelVec::equal(src.v(), PixelVec(0)), PixelVec(0), f.v());
+		Pixel c1, c2, c3;
+		c2.rv() = dst.v() * (1.f - src.a());
+		c1.rv() = src.a() * dst.a() + c2.v();
+		c3.rv() = src.a() * dst.a() * ( 1.f - PixelVec::minimum( 1.f, ( dst.a() - dst.v() ) * src.a() / ( dst.a() * src.v() ) ) )
+				+ src.v() * (1.f - dst.a())
+				+ c2.v();
 		
-		dst = compose(dst, src, f, 1, 1, 1);
+		Pixel c4;
+		c4.rv() = PixelVec::choose( PixelVec::equal( dst.v(), dst.a() ), c1.v(), c2.v() );
+		dst.rv() = PixelVec::choose( PixelVec::equal( src.v(), 0.f ), c4.v(), c3.v() );
 	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
-class BlendFunctionsHardLight
+struct BlendTraitsHardLight : public BlendTraitsSourceOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
+		Pixel c1, c2;
 		
-		Pixel f1, f2, f;
-		f1.rv() = 2.f * src.v() * dst.v();
-		f2.rv() = PixelVec(src.a() * dst.a()) - 2.f * (dst.aV() - dst.v()) * (src.aV() - src.v());
-		f.rv() = PixelVec::choose( PixelVec::lessThan(src.v(), PixelVec(src.a() * 0.5)), f1.v(), f2.v() );
+		c1.rv() = 2.f * src.v() * dst.v() + src.v() * (1.f - dst.a()) + dst.v() * (1.f - src.a());
+		c2.rv() = src.v() * (1.f + dst.a()) + dst.v() * (1.f + src.a()) - src.a() * dst.a() - 2 * src.v() * dst.v();
 		
-		dst = compose(dst, src, f, 1, 1, 1);
+		dst.rv() = PixelVec::choose( PixelVec::lessThanEqual(src.v(), src.a() * 0.5f), c1.v(), c2.v() );
 	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
-class BlendFunctionsSoftLight
+struct BlendTraitsSoftLight : public BlendTraitsSourceOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
+		if (dst.a() == 0.f)
+		{
+			dst = src;
+			return;
+		}
 		
-		Pixel dc, f1, f2, f3, f;
+		Pixel m;
+		m.rv() = dst.v() / dst.a();
 		
-		dc.rv() = dst.v() / dst.aV();
+		Pixel c1, c2, c3;
+		c1.rv() = dst.v() * ( src.a() + ( 2.f * src.v() - src.a() ) * (1.f - m.v()) )
+				+ src.v() * ( 1.f - dst.a() )
+				+ dst.v() * ( 1.f - src.a() );
+		c2.rv() = dst.a() * ( 2.f * src.v() - src.a() ) * ( 16.f * m.v() * m.v() *m.v() - 12.f * m.v() *m.v() - 3.f * m.v() )
+				+ src.v() * ( 1.f - dst.a() )
+				+ dst.v();
+		c3.rv() = dst.a() * ( 2.f * src.v() - src.a() ) * ( sseSqrt( m.v() ) - m.v() )
+				+ src.v() * ( 1.f - dst.a() )
+				+ dst.v();
 		
-		f1.rv() = dc.v() * ((dst.a() * src.a()) - (src.aV() - 2.f * src.v() * (dst.aV() - dst.v())));
-		f2.rv() = dst.v() * src.aV() + ( 2.f * src.v() - src.aV() );
-		f3.rv() = dst.v() * (2.f * src.v() - PixelVec(1)) * ( sseSqrt(dc.v()) - dc.v());
-		
-		f.rv() = PixelVec::choose( PixelVec::lessThan(src.v(), PixelVec(0.5f * src.a())),
-		                           f1.v(),
-		                           PixelVec::choose ( PixelVec::lessThan(dst.v(), PixelVec(0.25f * dst.a())), f2.v(), f3.v() ));
-		
-		dst = compose(dst, src, f, 1, 1, 1);
+		Pixel c4;
+		c4.rv() = PixelVec::choose( PixelVec::lessThanEqual( dst.v(), 0.25f * dst.a() ), c2.v(), c3.v() );
+		dst.rv() = PixelVec::choose( PixelVec::lessThanEqual( src.v(), 0.5f * src.a() ), c1.v(), c4.v() );
 	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
-class BlendFunctionsDifference
+struct BlendTraitsDifference : public BlendTraitsSourceOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
-		
 		Pixel d;
 		d.rv() = src.v() + dst.v() - 2.f * PixelVec::minimum(src.v() * dst.aV(), dst.v() * src.aV());
 		d.ra() += src.a() * dst.a();
 		dst = d;
 	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
-class BlendFunctionsExclusion
+struct BlendTraitsExclusion : public BlendTraitsSourceOver
 {
-public:
 	static void blend(Pixel &dst, const Pixel &src)
 	{
-		if (src.a() == 0) return;
-		if (dst.a() == 0) { dst = src; return; }
-		
-		Pixel f;
-		f.rv() = src.v() * dst.aV() + dst.v() * src.aV() - 2.f * src.v() * dst.v();
-		dst = compose(dst, src, f, 1, 1, 1);
+		Pixel d;
+		d.rv() = src.v() + dst.v() - 2.f * src.v() * dst.v();
+		d.ra() += src.a() * dst.a();
+		dst = d;
 	}
-	
-	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states) { return states; }
 };
 
 
 BlendOpDictionary::BlendOpDictionary()
 {
-	_blendOps[BlendMode::Clear] = new TemplateBlendOp<BlendFunctionsClear>;
-	_blendOps[BlendMode::Source] = new TemplateBlendOp<BlendFunctionsSource>;
-	_blendOps[BlendMode::Destination] = new TemplateBlendOp<BlendFunctionsDestination>;
-	_blendOps[BlendMode::SourceOver] = new TemplateBlendOp<BlendFunctionsSourceOver>;
-	_blendOps[BlendMode::DestinationOver] = new TemplateBlendOp<BlendFunctionsDestinationOver>;
-	_blendOps[BlendMode::SourceIn] = new TemplateBlendOp<BlendFunctionsSourceIn>;
-	_blendOps[BlendMode::DestinationIn] = new TemplateBlendOp<BlendFunctionsDestinationIn>;
-	_blendOps[BlendMode::SourceOut] = new TemplateBlendOp<BlendFunctionsSourceOut>;
-	_blendOps[BlendMode::DestinationOut] = new TemplateBlendOp<BlendFunctionsDestinationOut>;
-	_blendOps[BlendMode::SourceAtop] = new TemplateBlendOp<BlendFunctionsSourceAtop>;
-	_blendOps[BlendMode::DestinationAtop] = new TemplateBlendOp<BlendFunctionsDestinationAtop>;
-	_blendOps[BlendMode::Xor] = new TemplateBlendOp<BlendFunctionsXor>;
+	_blendOps[BlendMode::Clear] = new TemplateBlendOp<BlendTraitsClear>;
+	_blendOps[BlendMode::Source] = new TemplateBlendOp<BlendTraitsSource>;
+	_blendOps[BlendMode::Destination] = new TemplateBlendOp<BlendTraitsDestination>;
+	_blendOps[BlendMode::SourceOver] = new TemplateBlendOp<BlendTraitsSourceOver>;
+	_blendOps[BlendMode::DestinationOver] = new TemplateBlendOp<BlendTraitsDestinationOver>;
+	_blendOps[BlendMode::SourceIn] = new TemplateBlendOp<BlendTraitsSourceIn>;
+	_blendOps[BlendMode::DestinationIn] = new TemplateBlendOp<BlendTraitsDestinationIn>;
+	_blendOps[BlendMode::SourceOut] = new TemplateBlendOp<BlendTraitsSourceOut>;
+	_blendOps[BlendMode::DestinationOut] = new TemplateBlendOp<BlendTraitsDestinationOut>;
+	_blendOps[BlendMode::SourceAtop] = new TemplateBlendOp<BlendTraitsSourceAtop>;
+	_blendOps[BlendMode::DestinationAtop] = new TemplateBlendOp<BlendTraitsDestinationAtop>;
+	_blendOps[BlendMode::Xor] = new TemplateBlendOp<BlendTraitsXor>;
 	
 	_blendOps[BlendMode::Normal] = _blendOps[BlendMode::SourceOver];
-	_blendOps[BlendMode::Plus] = new TemplateBlendOp<BlendFunctionsPlus>;
-	_blendOps[BlendMode::Multiply] = new TemplateBlendOp<BlendFunctionsMultiply>;
-	_blendOps[BlendMode::Screen] = new TemplateBlendOp<BlendFunctionsScreen>;
-	_blendOps[BlendMode::Overlay] = new TemplateBlendOp<BlendFunctionsOverlay>;
-	_blendOps[BlendMode::Darken] = new TemplateBlendOp<BlendFunctionsDarken>;
-	_blendOps[BlendMode::Lighten] = new TemplateBlendOp<BlendFunctionsLighten>;
-	_blendOps[BlendMode::ColorDodge] = new TemplateBlendOp<BlendFunctionsColorDodge>;
-	_blendOps[BlendMode::ColorBurn] = new TemplateBlendOp<BlendFunctionsColorBurn>;
-	_blendOps[BlendMode::HardLight] = new TemplateBlendOp<BlendFunctionsHardLight>;
-	_blendOps[BlendMode::SoftLight] = new TemplateBlendOp<BlendFunctionsSoftLight>;
-	_blendOps[BlendMode::Difference] = new TemplateBlendOp<BlendFunctionsDifference>;
-	_blendOps[BlendMode::Exclusion] = new TemplateBlendOp<BlendFunctionsExclusion>;
+	_blendOps[BlendMode::Plus] = new TemplateBlendOp<BlendTraitsPlus>;
+	_blendOps[BlendMode::Multiply] = new TemplateBlendOp<BlendTraitsMultiply>;
+	_blendOps[BlendMode::Screen] = new TemplateBlendOp<BlendTraitsScreen>;
+	_blendOps[BlendMode::Overlay] = new TemplateBlendOp<BlendTraitsOverlay>;
+	_blendOps[BlendMode::Darken] = new TemplateBlendOp<BlendTraitsDarken>;
+	_blendOps[BlendMode::Lighten] = new TemplateBlendOp<BlendTraitsLighten>;
+	_blendOps[BlendMode::ColorDodge] = new TemplateBlendOp<BlendTraitsColorDodge>;
+	_blendOps[BlendMode::ColorBurn] = new TemplateBlendOp<BlendTraitsColorBurn>;
+	_blendOps[BlendMode::HardLight] = new TemplateBlendOp<BlendTraitsHardLight>;
+	_blendOps[BlendMode::SoftLight] = new TemplateBlendOp<BlendTraitsSoftLight>;
+	_blendOps[BlendMode::Difference] = new TemplateBlendOp<BlendTraitsDifference>;
+	_blendOps[BlendMode::Exclusion] = new TemplateBlendOp<BlendTraitsExclusion>;
 }
 
 BlendOpDictionary _BlendOpDictionary;

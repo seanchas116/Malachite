@@ -358,6 +358,16 @@ public:
 		__m128 &data() { return _data; }
 		const __m128 &data() const { return _data; }
 		
+		static ComparisonResult vectorAnd(const ComparisonResult &lhs, const ComparisonResult &rhs)
+		{
+			return _mm_and_ps(lhs.data(), rhs.data());
+		}
+		
+		static ComparisonResult vectorOr(const ComparisonResult &lhs, const ComparisonResult &rhs)
+		{
+			return _mm_or_ps(lhs.data(), rhs.data());
+		}
+		
 	private:
 		
 		union
@@ -399,7 +409,7 @@ public:
 	
 	static Vector choose(const ComparisonResult &selector, const Vector &vTrue, const Vector &vFalse)
 	{
-		return _mm_and_ps( _mm_and_ps(selector.data(), vTrue.data()), _mm_andnot_ps(selector.data(), vFalse.data()) );
+		return _mm_or_ps( _mm_and_ps(selector.data(), vTrue.data()), _mm_andnot_ps(selector.data(), vFalse.data()) );
 	}
 	
 	bool operator==(const Vector &other) const { return _array == other._array; }
