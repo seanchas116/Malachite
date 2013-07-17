@@ -137,7 +137,7 @@ public:
 	const Vector operator*(const Vector &other) const { Vector r; r._v = _v * other._v; return r; }
 	const Vector operator/(const Vector &other) const { Vector r; r._v = _v / other._v; return r; }
 	
-	Vector sqrt() const { return _mm_sqrt_pd(data()); }
+	Vector sqrt() const { return _mm_sqrt_pd(*this); }
 	
 	Vector bound(const Vector &lower, const Vector &upper) const
 	{
@@ -146,12 +146,12 @@ public:
 	
 	static Vector minimum(const Vector &v1, const Vector &v2)
 	{
-		return _mm_min_pd(v1.data(), v2.data());
+		return _mm_min_pd(v1, v2);
 	}
 	
 	static Vector maximum(const Vector &v1, const Vector &v2)
 	{
-		return _mm_max_pd(v1.data(), v2.data());
+		return _mm_max_pd(v1, v2);
 	}
 	
 	// comparison
@@ -165,8 +165,7 @@ public:
 		uint64_t &operator[](size_t index) { return _array[index]; }
 		const uint64_t &operator[](size_t index) const { return  _array[index]; }
 		
-		__m128d &data() { return _data; }
-		const __m128d &data() const { return _data; }
+		operator __m128d() const { return _data; }
 		
 	private:
 		
@@ -179,45 +178,44 @@ public:
 	
 	static ComparisonResult lessThan(const Vector &v1, const Vector &v2)
 	{
-		return _mm_cmplt_pd(v1.data(), v2.data());
+		return _mm_cmplt_pd(v1, v2);
 	}
 	
 	static ComparisonResult lessThanEqual(const Vector &v1, const Vector &v2)
 	{
-		return _mm_cmple_pd(v1.data(), v2.data());
+		return _mm_cmple_pd(v1, v2);
 	}
 	
 	static ComparisonResult greaterThan(const Vector &v1, const Vector &v2)
 	{
-		return _mm_cmpgt_pd(v1.data(), v2.data());
+		return _mm_cmpgt_pd(v1, v2);
 	}
 	
 	static ComparisonResult greaterThanEqual(const Vector &v1, const Vector &v2)
 	{
-		return _mm_cmpge_pd(v1.data(), v2.data());
+		return _mm_cmpge_pd(v1, v2);
 	}
 	
 	static ComparisonResult equal(const Vector &v1, const Vector &v2)
 	{
-		return _mm_cmpeq_pd(v1.data(), v2.data());
+		return _mm_cmpeq_pd(v1, v2);
 	}
 	
 	static ComparisonResult notEqual(const Vector &v1, const Vector &v2)
 	{
-		return _mm_cmpneq_pd(v1.data(), v2.data());
+		return _mm_cmpneq_pd(v1, v2);
 	}
 	
 	static Vector choose(const ComparisonResult &selector, const Vector &vTrue, const Vector &vFalse)
 	{
-		return _mm_and_pd( _mm_and_pd(selector.data(), vTrue.data()), _mm_andnot_pd(selector.data(), vFalse.data()) );
+		return _mm_and_pd( _mm_and_pd(selector, vTrue), _mm_andnot_pd(selector, vFalse) );
 	}
 	
 	bool operator==(const Vector &other) const { return _array == other._array; }
 	
 	// original
 	
-	__m128d &data() { return _data; }
-	const __m128d &data() const { return _data; }
+	operator __m128d() const { return _data; }
 	
 	ML_IMPL_VECTOR_OPERATORS(Vector, ValueType)
 	
@@ -333,12 +331,22 @@ public:
 	
 	static Vector minimum(const Vector &v1, const Vector &v2)
 	{
-		return _mm_min_ps(v1.data(), v2.data());
+		return _mm_min_ps(v1, v2);
 	}
 	
 	static Vector maximum(const Vector &v1, const Vector &v2)
 	{
-		return _mm_max_ps(v1.data(), v2.data());
+		return _mm_max_ps(v1, v2);
+	}
+	
+	Vector sqrt() const
+	{
+		return _mm_sqrt_ps(*this);
+	}
+	
+	Vector rsqrt() const
+	{
+		return _mm_rsqrt_ps(*this);
 	}
 	
 	// comparison
@@ -355,17 +363,16 @@ public:
 		uint32_t &operator[](size_t index) { return _array[index]; }
 		const uint32_t &operator[](size_t index) const { return  _array[index]; }
 		
-		__m128 &data() { return _data; }
-		const __m128 &data() const { return _data; }
+		operator __m128() const { return _data; }
 		
 		static ComparisonResult vectorAnd(const ComparisonResult &lhs, const ComparisonResult &rhs)
 		{
-			return _mm_and_ps(lhs.data(), rhs.data());
+			return _mm_and_ps(lhs, rhs);
 		}
 		
 		static ComparisonResult vectorOr(const ComparisonResult &lhs, const ComparisonResult &rhs)
 		{
-			return _mm_or_ps(lhs.data(), rhs.data());
+			return _mm_or_ps(lhs, rhs);
 		}
 		
 	private:
@@ -379,45 +386,44 @@ public:
 	
 	static ComparisonResult lessThan(const Vector &v1, const Vector &v2)
 	{
-		return _mm_cmplt_ps(v1.data(), v2.data());
+		return _mm_cmplt_ps(v1, v2);
 	}
 	
 	static ComparisonResult lessThanEqual(const Vector &v1, const Vector &v2)
 	{
-		return _mm_cmple_ps(v1.data(), v2.data());
+		return _mm_cmple_ps(v1, v2);
 	}
 	
 	static ComparisonResult greaterThan(const Vector &v1, const Vector &v2)
 	{
-		return _mm_cmpgt_ps(v1.data(), v2.data());
+		return _mm_cmpgt_ps(v1, v2);
 	}
 	
 	static ComparisonResult greaterThanEqual(const Vector &v1, const Vector &v2)
 	{
-		return _mm_cmpge_ps(v1.data(), v2.data());
+		return _mm_cmpge_ps(v1, v2);
 	}
 	
 	static ComparisonResult equal(const Vector &v1, const Vector &v2)
 	{
-		return _mm_cmpeq_ps(v1.data(), v2.data());
+		return _mm_cmpeq_ps(v1, v2);
 	}
 	
 	static ComparisonResult notEqual(const Vector &v1, const Vector &v2)
 	{
-		return _mm_cmpneq_ps(v1.data(), v2.data());
+		return _mm_cmpneq_ps(v1, v2);
 	}
 	
 	static Vector choose(const ComparisonResult &selector, const Vector &vTrue, const Vector &vFalse)
 	{
-		return _mm_or_ps( _mm_and_ps(selector.data(), vTrue.data()), _mm_andnot_ps(selector.data(), vFalse.data()) );
+		return _mm_or_ps( _mm_and_ps(selector, vTrue), _mm_andnot_ps(selector, vFalse) );
 	}
 	
 	bool operator==(const Vector &other) const { return _array == other._array; }
 	
 	// original
 	
-	__m128 &data() { return _data; }
-	const __m128 &data() const { return _data; }
+	operator __m128() const { return _data; }
 	
 	ML_IMPL_VECTOR_OPERATORS(Vector, ValueType)
 	
@@ -434,20 +440,5 @@ protected:
 typedef Vector<float, 4> Vector_float_4;
 
 ML_IMPL_VECTOR_OPERATORS_GLOBAL(inline Vector_float_4, Vector_float_4, float)
-
-inline Vector<double, 2> sseSqrt(const Vector<double, 2> &v)
-{
-	return _mm_sqrt_pd(v.data());
-}
-
-inline Vector<float, 4> sseSqrt(const Vector<float, 4> &v)
-{
-	return _mm_sqrt_ps(v.data());
-}
-
-inline Vector<float, 4> sseRsqrt(const Vector<float, 4> &v)
-{
-	return _mm_rsqrt_ps(v.data());
-}
 
 }

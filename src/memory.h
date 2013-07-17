@@ -153,6 +153,8 @@ class MALACHITESHARED_EXPORT Pointer
 {
 public:
 	
+	using value_type = T;
+	
 #ifdef ML_DEBUG_MEMORY
 	
 	Pointer() :

@@ -153,6 +153,8 @@ public:
 	
 	RgbPixel() {}
 	
+	RgbPixel(const VectorType &v) : _v(v) {}
+	
 	RgbPixel(ValueType r, ValueType g, ValueType b, ValueType a)
 	{
 		setA(a); setR(r); setG(g); setB(b);

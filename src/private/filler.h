@@ -129,8 +129,7 @@ public:
 			(
 				intervalLeft.length(),
 				dst,
-				_srcBitmap.pixel(0, srcY),
-				cover
+				_srcBitmap.pixel(0, srcY) * cover
 			);
 			
 			i += intervalLeft.length();
@@ -155,8 +154,7 @@ public:
 			(
 				intervalRight.length(),
 				dst + i,
-				_srcBitmap.pixel(_srcBitmap.width() - 1, srcY),
-				cover
+				_srcBitmap.pixel(_srcBitmap.width() - 1, srcY) * cover
 			);
 		}
 	}

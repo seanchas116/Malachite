@@ -9,6 +9,385 @@ namespace Malachite
 static const PixelVec pixelVecZero(0.f);
 static const PixelVec pixelVecOne(1.f);
 
+inline static void loadPixels
+(
+	PixelVec &da, PixelVec &dr, PixelVec &dg, PixelVec &db, 
+	const PixelVec &s0, const PixelVec &s1, const PixelVec &s2, const PixelVec &s3
+)
+{
+	PixelVec v0 = _mm_unpackhi_ps(s0, s1);	// a1 a0 r1 r0
+	PixelVec v1 = _mm_unpackhi_ps(s2, s3);	// a3 a2 r3 r2
+	PixelVec v2 = _mm_unpacklo_ps(s0, s1); // g1 g0 b1 b0
+	PixelVec v3 = _mm_unpacklo_ps(s2, s3); // g3 g2 b3 b2
+	
+	da = _mm_movehl_ps(v1, v0);
+	dr = _mm_movelh_ps(v0, v1);
+	dg = _mm_movehl_ps(v3, v2);
+	db = _mm_movelh_ps(v2, v3);
+}
+
+inline static void loadAlphas
+(
+	PixelVec &da,
+	const PixelVec &s0, const PixelVec &s1, const PixelVec &s2, const PixelVec &s3
+)
+{
+	PixelVec v0 = _mm_unpackhi_ps(s0, s1);	// a1 a0 r1 r0
+	PixelVec v1 = _mm_unpackhi_ps(s2, s3);	// a3 a2 r3 r2
+	da = _mm_movehl_ps(v1, v0);
+}
+
+inline static void savePixels
+(
+	PixelVec &d0, PixelVec &d1, PixelVec &d2, PixelVec &d3,
+	const PixelVec &sa, const PixelVec &sr, const PixelVec &sg, const PixelVec &sb
+)
+{
+	PixelVec v0 = _mm_unpacklo_ps(sr, sa);	// a1 r1 a0 r0
+	PixelVec v1 = _mm_unpackhi_ps(sr, sa); // a3 r3 a2 r2
+	PixelVec v2 = _mm_unpacklo_ps(sb, sg); // g1 b1 g0 b0
+	PixelVec v3 = _mm_unpackhi_ps(sb, sg); // g3 b3 g2 b2
+	
+	d0 = _mm_movelh_ps(v2, v0);
+	d1 = _mm_movehl_ps(v0, v2);
+	d2 = _mm_movelh_ps(v3, v1);
+	d3 = _mm_movehl_ps(v1, v3);
+}
+
+struct EmptyCoverIter
+{
+	EmptyCoverIter &operator+=(int) { return *this; }
+};
+
+template <typename T>
+struct FixedBlendIter
+{
+	using value_type = T;
+	
+	FixedBlendIter(const T &value) : value(value) {}
+	
+	FixedBlendIter &operator+=(int) { return *this; }
+	T operator[](int) const { return value; }
+	
+	T value;
+};
+
+template <typename T>
+inline static FixedBlendIter<T> makeFixedBlendIter(const T &value)
+{
+	return FixedBlendIter<T>(value);
+}
+
+template <typename TIter>
+struct ReverseBlendIter
+{
+	using value_type = typename TIter::value_type;
+	
+	ReverseBlendIter(const TIter &i) : iter(i) {}
+	
+	ReverseBlendIter &operator+=(int diff)
+	{
+		iter -= diff;
+		return *this;
+	}
+	
+	value_type operator[](int index) const { return iter[index]; }
+	
+	TIter iter;
+};
+
+template <typename TIter>
+inline static ReverseBlendIter<TIter> makeReverseBlendIter(const TIter &iter)
+{
+	return ReverseBlendIter<TIter>(iter);
+}
+
+template <typename TCoverIter>
+struct BlendCoverTraits;
+
+template <>
+struct BlendCoverTraits<Pointer<const Pixel> >
+{
+	using Iterator = Pointer<const Pixel>;
+	
+	static void initializeOpacities(PixelVec &, const Iterator &) {}
+	
+	static void updateOpacities(PixelVec &opacities, const Iterator &iter)
+	{
+		loadAlphas(opacities, iter[0].v(), iter[1].v(), iter[2].v(), iter[3].v());
+	}
+	
+	static void updateOpacitiesRemaining(PixelVec &opacities, const Iterator &iter, int count)
+	{
+		int i1 = std::min(1, count+1);
+		int i2 = std::min(2, count+1);
+		int i3 = std::min(3, count+1);
+		loadAlphas(opacities, iter[0].v(), iter[i1].v(), iter[i2].v(), iter[i3].v());
+	}
+	
+	static void applyOpacities(PixelVec &colors, const PixelVec &opacities)
+	{
+		colors *= opacities;
+	}
+};
+
+template <>
+struct BlendCoverTraits<Pointer<const float> >
+{
+	using Iterator = Pointer<const float>;
+	
+	static void initializeOpacities(PixelVec &, const Iterator &) {}
+	
+	static void updateOpacities(PixelVec &opacities, const Iterator &iter)
+	{
+		opacities = _mm_setr_ps(iter[0], iter[1], iter[2], iter[3]);
+	}
+	
+	static void updateOpacitiesRemaining(PixelVec &opacities, const Iterator &iter, int count)
+	{
+		int i1 = std::min(1, count+1);
+		int i2 = std::min(2, count+1);
+		int i3 = std::min(3, count+1);
+		opacities = _mm_setr_ps(iter[0], iter[i1], iter[i2], iter[i3]);
+	}
+	
+	static void applyOpacities(PixelVec &colors, const PixelVec &opacities)
+	{
+		colors *= opacities;
+	}
+};
+
+template <>
+struct BlendCoverTraits<FixedBlendIter<Pixel> >
+{
+	using Iterator = FixedBlendIter<Pixel>;
+	
+	static void initializeOpacities(PixelVec &opacities, const Iterator &iter)
+	{
+		loadAlphas(opacities, iter[0].v(), iter[0].v(), iter[0].v(), iter[0].v());
+	}
+	
+	static void updateOpacities(PixelVec &, const Iterator &) {}
+	static void updateOpacitiesRemaining(PixelVec &, const Iterator &, int) {}
+	
+	static void applyOpacities(PixelVec &colors, const PixelVec &opacities)
+	{
+		colors *= opacities;
+	}
+};
+
+template <>
+struct BlendCoverTraits<FixedBlendIter<float> >
+{
+	using Iterator = FixedBlendIter<float>;
+	
+	static void initializeOpacities(PixelVec &opacities, const Iterator &iter)
+	{
+		opacities = _mm_setr_ps(iter[0], iter[0], iter[0], iter[0]);
+	}
+	
+	static void updateOpacities(PixelVec &, const Iterator &) {}
+	static void updateOpacitiesRemaining(PixelVec &, const Iterator &, int) {}
+	
+	static void applyOpacities(PixelVec &colors, const PixelVec &opacities)
+	{
+		colors *= opacities;
+	}
+};
+
+template <>
+struct BlendCoverTraits<EmptyCoverIter>
+{
+	using Iterator = EmptyCoverIter;
+	
+	static void initializeOpacities(PixelVec &, const Iterator &) {}
+	static void updateOpacities(PixelVec &, const Iterator &) {}
+	static void updateOpacitiesRemaining(PixelVec &, const Iterator &, int) {}
+	static void applyOpacities(PixelVec &, const PixelVec &) {}
+};
+
+template <typename TBlendTraits, bool TIsSeparable = TBlendTraits::isSeparable()>
+struct ColorBlendCall;
+
+template <typename TBlendTraits>
+struct ColorBlendCall<TBlendTraits, true>
+{
+	static PixelVec blendAlpha(const PixelVec &da, const PixelVec &sa)
+	{
+		return TBlendTraits::blendAlpha(da, sa);
+	}
+	
+	static void blendColor
+	(
+		const PixelVec &da, const PixelVec &dr, const PixelVec &dg, const PixelVec &db,
+		const PixelVec &sa, const PixelVec &sr, const PixelVec &sg, const PixelVec &sb,
+		PixelVec &rr, PixelVec &rg, PixelVec &rb
+	)
+	{
+		rr = TBlendTraits::blendComponent(da, dr, sa, sr);
+		rg = TBlendTraits::blendComponent(da, dg, sa, sg);
+		rb = TBlendTraits::blendComponent(da, db, sa, sb);
+	}
+};
+
+template <typename TBlendTraits>
+struct ColorBlendCall<TBlendTraits, false>
+{
+	static PixelVec blendAlpha(const PixelVec &da, const PixelVec &sa)
+	{
+		return TBlendTraits::blendAlpha(da, sa);
+	}
+	
+	static void blendColor
+	(
+		const PixelVec &da, const PixelVec &dr, const PixelVec &dg, const PixelVec &db,
+		const PixelVec &sa, const PixelVec &sr, const PixelVec &sg, const PixelVec &sb,
+		PixelVec &rr, PixelVec &rg, PixelVec &rb
+	)
+	{
+		TBlendTraits::blendColor(da, dr, dg, db, sa, sr, sg, sb, rr, rg, rb);
+	}
+};
+
+template <typename TBlendTraits, typename TDstIter, typename TSrcIter, typename TCoverIter>
+void blendMain(int count, TDstIter dst, TSrcIter src, TCoverIter covers)
+{
+	using CoverTraits = BlendCoverTraits<TCoverIter>;
+	
+	PixelVec o;
+	CoverTraits::initializeOpacities(o, covers);
+	
+	while (count >= 4)
+	{
+		PixelVec da, dr, dg, db;
+		loadPixels(da, dr, dg, db, dst[0], dst[1], dst[2], dst[3]);
+		
+		PixelVec sa, sr, sg, sb;
+		loadPixels(sa, sr, sg, sb, src[0], src[1], src[2], src[3]);
+		
+		CoverTraits::updateOpacities(o, covers);
+		CoverTraits::applyOpacities(sa, o);
+		CoverTraits::applyOpacities(sr, o);
+		CoverTraits::applyOpacities(sg, o);
+		CoverTraits::applyOpacities(sb, o);
+		
+		PixelVec ra = TBlendTraits::blendAlpha(da, sa);
+		PixelVec rr, rg, rb;
+		ColorBlendCall<TBlendTraits>::blendColor(da, dr, dg, db, sa, sr, sg, sb, rr, rg, rb);
+		
+		savePixels(ra, rr, rg, rb, dst[0], dst[1], dst[2], dst[3]);
+		
+		count -= 4;
+		dst += 4;
+		src += 4;
+		covers += 4;
+	}
+	if (count)
+	{
+		int i1 = std::min(1, count+1);
+		int i2 = std::min(2, count+1);
+		int i3 = std::min(3, count+1);
+		
+		PixelVec da, dr, dg, db;
+		loadPixels(da, dr, dg, db, dst[0], dst[i1], dst[i2], dst[i3]);
+		
+		PixelVec sa, sr, sg, sb;
+		loadPixels(sa, sr, sg, sb, src[0], src[i1], src[i2], src[i3]);
+		
+		CoverTraits::updateOpacitiesRemaining(o, covers, count);
+		CoverTraits::applyOpacities(sa, o);
+		CoverTraits::applyOpacities(sr, o);
+		CoverTraits::applyOpacities(sg, o);
+		CoverTraits::applyOpacities(sb, o);
+		
+		PixelVec ra = TBlendTraits::blendAlpha(da, sa);
+		PixelVec rr, rg, rb;
+		ColorBlendCall<TBlendTraits>::blendColor(da, dr, dg, db, sa, sr, sg, sb, rr, rg, rb);
+		
+		savePixels(ra, rr, rg, rb, dst[0], dst[i1], dst[i2], dst[i3]);
+	}
+}
+
+template <typename TBlendTraits>
+class TemplateBlendOp : public BlendOp
+{
+public:
+	void blend(int count, Pointer<Pixel> dst, Pointer<const Pixel> src)
+	{
+		blendMain<TBlendTraits>(count, dst, src, EmptyCoverIter());
+	}
+	
+	void blend(int count, Pointer<Pixel> dst, Pointer<const Pixel> src, Pointer<const Pixel> masks)
+	{
+		blendMain<TBlendTraits>(count, dst, src, masks);
+	}
+
+	void blend(int count, Pointer<Pixel> dst, Pointer<const Pixel> src, Pointer<const float> opacities)
+	{
+		blendMain<TBlendTraits>(count, dst, src, opacities);
+	}
+
+	void blend(int count, Pointer<Pixel> dst, Pointer<const Pixel> src, const Pixel &mask)
+	{
+		blendMain<TBlendTraits>(count, dst, src, makeFixedBlendIter(mask));
+	}
+
+	void blend(int count, Pointer<Pixel> dst, Pointer<const Pixel> src, float opacity)
+	{
+		blendMain<TBlendTraits>(count, dst, src, makeFixedBlendIter(opacity));
+	}
+	
+	void blend(int count, Pointer<Pixel> dst, const Pixel &src)
+	{
+		blendMain<TBlendTraits>(count, dst, makeFixedBlendIter(src), EmptyCoverIter());
+	}
+	
+	void blend(int count, Pointer<Pixel> dst, const Pixel &src, Pointer<const Pixel> masks)
+	{
+		blendMain<TBlendTraits>(count, dst, makeFixedBlendIter(src), masks);
+	}
+	
+	void blend(int count, Pointer<Pixel> dst, const Pixel &src, Pointer<const float> opacities)
+	{
+		blendMain<TBlendTraits>(count, dst, makeFixedBlendIter(src), opacities);
+	}
+	
+	void blendReversed(int count, Pointer<Pixel> dst, Pointer<const Pixel> src)
+	{
+		src += count - 1;
+		blendMain<TBlendTraits>(count, dst, makeReverseBlendIter(src), EmptyCoverIter());
+	}
+	
+	void blendReversed(int count, Pointer<Pixel> dst, Pointer<const Pixel> src, Pointer<const Pixel> masks)
+	{
+		src += count - 1;
+		blendMain<TBlendTraits>(count, dst, makeReverseBlendIter(src), masks);
+	}
+	
+	void blendReversed(int count, Pointer<Pixel> dst, Pointer<const Pixel> src, Pointer<const float> opacities)
+	{
+		src += count - 1;
+		blendMain<TBlendTraits>(count, dst, makeReverseBlendIter(src), opacities);
+	}
+
+	void blendReversed(int count, Pointer<Pixel> dst, Pointer<const Pixel> src, const Pixel &mask)
+	{
+		src += count - 1;
+		blendMain<TBlendTraits>(count, dst, makeReverseBlendIter(src), makeFixedBlendIter(mask));
+	}
+	
+	void blendReversed(int count, Pointer<Pixel> dst, Pointer<const Pixel> src, float opacity)
+	{
+		src += count - 1;
+		blendMain<TBlendTraits>(count, dst, makeReverseBlendIter(src), makeFixedBlendIter(opacity));
+	}
+	
+	TileCombination tileRequirement(TileCombination combination)
+	{
+		return TBlendTraits::tileRequirement(combination);
+	}
+};
+
 struct BlendTraitsClear
 {
 	static void blend(Pixel &dst, const Pixel &src)
@@ -49,19 +428,13 @@ struct BlendTraitsSource
 
 struct BlendTraitsDestination
 {
-	static void blend(Pixel &dst, const Pixel &src)
-	{
-		Q_UNUSED(dst); Q_UNUSED(src);
-	}
+	static void blend(Pixel &dst, const Pixel &src) { Q_UNUSED(dst); Q_UNUSED(src); }
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
 	{
 		switch (states)
 		{
 		case BlendOp::TileBoth:
-			return BlendOp::TileDestination;
-		case BlendOp::TileSource:
-			return BlendOp::NoTile;
 		case BlendOp::TileDestination:
 			return BlendOp::TileDestination;
 		default:
@@ -76,6 +449,21 @@ struct BlendTraitsSourceOver
 	{
 		dst.rv() = src.v() + (pixelVecOne - src.aV()) * dst.v();
 		//dst = src + (1.0f - src.a) * dst;
+	}
+	
+	static constexpr bool isSeparable()
+	{
+		return true;
+	}
+	
+	static PixelVec blendAlpha(const PixelVec &da, const PixelVec &sa)
+	{
+		return da + sa - da * sa;
+	}
+	
+	static PixelVec blendComponent(const PixelVec &da, const PixelVec &dc, const PixelVec &sa, const PixelVec &sc)
+	{
+		return sc + (pixelVecOne - sa) * dc;
 	}
 	
 	static BlendOp::TileCombination tileRequirement(BlendOp::TileCombination states)
@@ -422,7 +810,7 @@ struct BlendTraitsSoftLight : public BlendTraitsSourceOver
 		c2.rv() = dst.a() * ( 2.f * src.v() - src.a() ) * ( 16.f * m.v() * m.v() *m.v() - 12.f * m.v() *m.v() - 3.f * m.v() )
 				+ src.v() * ( 1.f - dst.a() )
 				+ dst.v();
-		c3.rv() = dst.a() * ( 2.f * src.v() - src.a() ) * ( sseSqrt( m.v() ) - m.v() )
+		c3.rv() = dst.a() * ( 2.f * src.v() - src.a() ) * ( m.v().sqrt() - m.v() )
 				+ src.v() * ( 1.f - dst.a() )
 				+ dst.v();
 		
@@ -454,9 +842,11 @@ struct BlendTraitsExclusion : public BlendTraitsSourceOver
 	}
 };
 
-
 BlendOpDictionary::BlendOpDictionary()
 {
+	_blendOps[BlendMode::SourceOver] = new TemplateBlendOp<BlendTraitsSourceOver>;
+	
+	/*
 	_blendOps[BlendMode::Clear] = new TemplateBlendOp<BlendTraitsClear>;
 	_blendOps[BlendMode::Source] = new TemplateBlendOp<BlendTraitsSource>;
 	_blendOps[BlendMode::Destination] = new TemplateBlendOp<BlendTraitsDestination>;
@@ -483,6 +873,8 @@ BlendOpDictionary::BlendOpDictionary()
 	_blendOps[BlendMode::SoftLight] = new TemplateBlendOp<BlendTraitsSoftLight>;
 	_blendOps[BlendMode::Difference] = new TemplateBlendOp<BlendTraitsDifference>;
 	_blendOps[BlendMode::Exclusion] = new TemplateBlendOp<BlendTraitsExclusion>;
+	*/
+	_defaultBlendOp = _blendOps[BlendMode::SourceOver];
 }
 
 BlendOpDictionary _BlendOpDictionary;

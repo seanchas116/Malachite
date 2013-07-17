@@ -95,16 +95,16 @@ static void copyColorFast(int count, BgraPremultU8 *dst, const Pixel *src)
 	
 	while (countPer4--)
 	{
-		__m128i d0 = _mm_cvtps_epi32((src->v() * vec255).data());
+		__m128i d0 = _mm_cvtps_epi32(src->v() * vec255);
 		src++;
-		__m128i d1 = _mm_cvtps_epi32((src->v() * vec255).data());
+		__m128i d1 = _mm_cvtps_epi32(src->v() * vec255);
 		src++;
 		
 		__m128i w0 = _mm_packs_epi32(d0, d1);
 		
-		__m128i d2 = _mm_cvtps_epi32((src->v() * vec255).data());
+		__m128i d2 = _mm_cvtps_epi32(src->v() * vec255);
 		src++;
-		__m128i d3 = _mm_cvtps_epi32((src->v() * vec255).data());
+		__m128i d3 = _mm_cvtps_epi32(src->v() * vec255);
 		src++;
 		
 		__m128i w1 = _mm_packs_epi32(d2, d3);
@@ -128,7 +128,7 @@ static void copyColorFast(int count, BgraPremultU8 *dst, const Pixel *src)
 				__m128i d;
 			} u;
 			
-			u.d = _mm_cvtps_epi32((p.v() * vec255).data());
+			u.d = _mm_cvtps_epi32(p.v() * vec255);
 			u.d = _mm_packs_epi32(u.d, u.d);
 			u.d = _mm_packus_epi16(u.d, u.d);
 			
