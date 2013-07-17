@@ -4,6 +4,7 @@
 //ExportName: Pixel
 
 #include <QtGlobal>
+#include <QDebug>
 #include "global.h"
 #include "genericpixel.h"
 
@@ -16,7 +17,7 @@ public:
 	
 	Pixel() : BgraPremultF() {}
 	Pixel(float x) : BgraPremultF(x) {}
-	Pixel(float a, float r, float g, float b) : BgraPremultF(a, r, g, b) {}
+	Pixel(float a, float r, float g, float b) : BgraPremultF(r, g, b, a) {}
 	Pixel(const VectorType &v) : BgraPremultF(v) {}
 	
 	template <PixelParams::Premult Other_Premult, PixelParams::Alpha Other_Alpha, typename Other_Index, typename Other_Channel>
@@ -37,10 +38,17 @@ public:
 		return *this;
 	}
 	
-	operator VectorType() const { return _v; }
+	operator VectorType&() { return _v; }
+	operator const VectorType&() const { return _v; }
 };
 
 typedef Pixel::VectorType PixelVec;
+
+inline QDebug &operator<<(QDebug debug, const Pixel &p)
+{
+	debug.nospace() << "(a:" << p.a() << " r:" << p.r() << " g:" << p.g() << " b:" << p.b() << ")";
+	return debug.space();
+}
 
 }
 

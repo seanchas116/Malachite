@@ -14,8 +14,8 @@ struct Form::Data
 {
 	Color color;
 	QScopedPointer<ArgbGradient> gradient;
-	LinearGradientInfo linearGradientInfo;
-	RadialGradientInfo radialGradientInfo;
+	LinearGradientShape linearGradientInfo;
+	RadialGradientShape radialGradientInfo;
 	Image image;
 	Surface surface;
 	
@@ -37,8 +37,8 @@ Form::Form(QWidget *parent) :
 	d->gradient->addStop(0.5, Color::fromRgbValue(0.5, 1.0, 0.0, 1.0));
 	d->gradient->addStop(1.0, Color::fromRgbValue(1.0, 1.0, 1.0, 1.0));
 	
-	d->linearGradientInfo = LinearGradientInfo(Vec2D(100, 100), Vec2D(200, 300));
-	d->radialGradientInfo = RadialGradientInfo(Vec2D(200, 200), 50, Vec2D(200, 210));
+	d->linearGradientInfo = LinearGradientShape(Vec2D(100, 100), Vec2D(200, 300));
+	d->radialGradientInfo = RadialGradientShape(Vec2D(200, 200), 50, Vec2D(200, 210));
 	
 	{
 		ImageImporter importer;

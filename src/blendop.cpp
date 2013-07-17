@@ -15,15 +15,15 @@ inline static void loadPixels
 	const PixelVec &s0, const PixelVec &s1, const PixelVec &s2, const PixelVec &s3
 )
 {
-	PixelVec v0 = _mm_unpackhi_ps(s0, s1);	// a1 a0 r1 r0
-	PixelVec v1 = _mm_unpackhi_ps(s2, s3);	// a3 a2 r3 r2
-	PixelVec v2 = _mm_unpacklo_ps(s0, s1); // g1 g0 b1 b0
-	PixelVec v3 = _mm_unpacklo_ps(s2, s3); // g3 g2 b3 b2
+	PixelVec v0 = _mm_unpackhi_ps(s0, s1); // (a0 r0 g0 b0), (a1 r1 g1 b1) => (a1 a0 r1 r0)
+	PixelVec v1 = _mm_unpackhi_ps(s2, s3); // (a2 r2 g2 b2), (a3 r3 g3 b3) => (a3 a2 r3 r2)
+	PixelVec v2 = _mm_unpacklo_ps(s0, s1); // (a0 r0 g0 b0), (a1 r1 g1 b1) => (g1 g0 b1 b0)
+	PixelVec v3 = _mm_unpacklo_ps(s2, s3); // (a2 r2 g2 b2), (a3 r3 g3 b3) => (g3 g2 b3 b2)
 	
-	da = _mm_movehl_ps(v1, v0);
-	dr = _mm_movelh_ps(v0, v1);
-	dg = _mm_movehl_ps(v3, v2);
-	db = _mm_movelh_ps(v2, v3);
+	da = _mm_movehl_ps(v1, v0); // (a3 a2 a1 a0)
+	dr = _mm_movelh_ps(v0, v1); // (r3 r2 r1 r0)
+	dg = _mm_movehl_ps(v3, v2); // (g3 g2 g1 g0)
+	db = _mm_movelh_ps(v2, v3); // (b3 b2 b1 b0)
 }
 
 inline static void loadAlphas
@@ -119,9 +119,9 @@ struct BlendCoverTraits<Pointer<const Pixel> >
 	
 	static void updateOpacitiesRemaining(PixelVec &opacities, const Iterator &iter, int count)
 	{
-		int i1 = std::min(1, count+1);
-		int i2 = std::min(2, count+1);
-		int i3 = std::min(3, count+1);
+		int i1 = std::min(1, count-1);
+		int i2 = std::min(2, count-1);
+		int i3 = std::min(3, count-1);
 		loadAlphas(opacities, iter[0].v(), iter[i1].v(), iter[i2].v(), iter[i3].v());
 	}
 	
@@ -145,9 +145,9 @@ struct BlendCoverTraits<Pointer<const float> >
 	
 	static void updateOpacitiesRemaining(PixelVec &opacities, const Iterator &iter, int count)
 	{
-		int i1 = std::min(1, count+1);
-		int i2 = std::min(2, count+1);
-		int i3 = std::min(3, count+1);
+		int i1 = std::min(1, count-1);
+		int i2 = std::min(2, count-1);
+		int i3 = std::min(3, count-1);
 		opacities = _mm_setr_ps(iter[0], iter[i1], iter[i2], iter[i3]);
 	}
 	
@@ -219,9 +219,9 @@ struct ColorBlendCall<TBlendTraits, true>
 	
 	static void blendColor
 	(
+		PixelVec &rr, PixelVec &rg, PixelVec &rb,
 		const PixelVec &da, const PixelVec &dr, const PixelVec &dg, const PixelVec &db,
-		const PixelVec &sa, const PixelVec &sr, const PixelVec &sg, const PixelVec &sb,
-		PixelVec &rr, PixelVec &rg, PixelVec &rb
+		const PixelVec &sa, const PixelVec &sr, const PixelVec &sg, const PixelVec &sb
 	)
 	{
 		rr = TBlendTraits::blendComponent(da, dr, sa, sr);
@@ -240,12 +240,12 @@ struct ColorBlendCall<TBlendTraits, false>
 	
 	static void blendColor
 	(
+		PixelVec &rr, PixelVec &rg, PixelVec &rb,
 		const PixelVec &da, const PixelVec &dr, const PixelVec &dg, const PixelVec &db,
-		const PixelVec &sa, const PixelVec &sr, const PixelVec &sg, const PixelVec &sb,
-		PixelVec &rr, PixelVec &rg, PixelVec &rb
+		const PixelVec &sa, const PixelVec &sr, const PixelVec &sg, const PixelVec &sb
 	)
 	{
-		TBlendTraits::blendColor(da, dr, dg, db, sa, sr, sg, sb, rr, rg, rb);
+		TBlendTraits::blendColor(rr, rg, rb, da, dr, dg, db, sa, sr, sg, sb);
 	}
 };
 
@@ -273,9 +273,9 @@ void blendMain(int count, TDstIter dst, TSrcIter src, TCoverIter covers)
 		
 		PixelVec ra = TBlendTraits::blendAlpha(da, sa);
 		PixelVec rr, rg, rb;
-		ColorBlendCall<TBlendTraits>::blendColor(da, dr, dg, db, sa, sr, sg, sb, rr, rg, rb);
+		ColorBlendCall<TBlendTraits>::blendColor(rr, rg, rb, da, dr, dg, db, sa, sr, sg, sb);
 		
-		savePixels(ra, rr, rg, rb, dst[0], dst[1], dst[2], dst[3]);
+		savePixels(dst[0], dst[1], dst[2], dst[3], ra, rr, rg, rb);
 		
 		count -= 4;
 		dst += 4;
@@ -284,9 +284,9 @@ void blendMain(int count, TDstIter dst, TSrcIter src, TCoverIter covers)
 	}
 	if (count)
 	{
-		int i1 = std::min(1, count+1);
-		int i2 = std::min(2, count+1);
-		int i3 = std::min(3, count+1);
+		int i1 = std::min(1, count-1);
+		int i2 = std::min(2, count-1);
+		int i3 = std::min(3, count-1);
 		
 		PixelVec da, dr, dg, db;
 		loadPixels(da, dr, dg, db, dst[0], dst[i1], dst[i2], dst[i3]);
@@ -302,9 +302,9 @@ void blendMain(int count, TDstIter dst, TSrcIter src, TCoverIter covers)
 		
 		PixelVec ra = TBlendTraits::blendAlpha(da, sa);
 		PixelVec rr, rg, rb;
-		ColorBlendCall<TBlendTraits>::blendColor(da, dr, dg, db, sa, sr, sg, sb, rr, rg, rb);
+		ColorBlendCall<TBlendTraits>::blendColor(rr, rg, rb, da, dr, dg, db, sa, sr, sg, sb);
 		
-		savePixels(ra, rr, rg, rb, dst[0], dst[i1], dst[i2], dst[i3]);
+		savePixels(dst[0], dst[i1], dst[i2], dst[i3], ra, rr, rg, rb);
 	}
 }
 
@@ -463,6 +463,7 @@ struct BlendTraitsSourceOver
 	
 	static PixelVec blendComponent(const PixelVec &da, const PixelVec &dc, const PixelVec &sa, const PixelVec &sc)
 	{
+		Q_UNUSED(da);
 		return sc + (pixelVecOne - sa) * dc;
 	}
 	
