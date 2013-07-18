@@ -75,8 +75,9 @@ void Test::test_blend()
 			qDebug() << correct;
 			qDebug() << "result:";
 			qDebug() << result;
-			QVERIFY(false);
 		}
+		
+		return compare;
 	};
 	
 	auto correctBlend = [](const Pixel &dst, const Pixel &src)
@@ -105,9 +106,9 @@ void Test::test_blend()
 		auto dst = wrapPointer(resultPixels.data(), pixelCount);
 		auto src = wrapPointer(srcPixels.data(), pixelCount);
 		
-		blendOp->blend(srcPixels.size(), dst, src);
+		blendOp->blend(pixelCount, dst, src);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 	
 	// blending with pixel masks
@@ -129,7 +130,7 @@ void Test::test_blend()
 		
 		blendOp->blend(srcPixels.size(), dst, src, mask);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 	
 	// blending with float masks
@@ -151,7 +152,7 @@ void Test::test_blend()
 		
 		blendOp->blend(srcPixels.size(), dst, src, mask);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 	
 	// blending with one pixel mask
@@ -172,7 +173,7 @@ void Test::test_blend()
 		
 		blendOp->blend(srcPixels.size(), dst, src, mask);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 	
 	// blending with one float mask
@@ -193,7 +194,7 @@ void Test::test_blend()
 		
 		blendOp->blend(srcPixels.size(), dst, src, opacity);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 	
 	// blending one pixel
@@ -211,7 +212,7 @@ void Test::test_blend()
 		
 		blendOp->blend(srcPixels.size(), dst, src[0]);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 	
 	// blending one pixel with pixel masks
@@ -233,7 +234,7 @@ void Test::test_blend()
 		
 		blendOp->blend(srcPixels.size(), dst, src[0], mask);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 	
 	// blending one pixel with float masks
@@ -255,7 +256,7 @@ void Test::test_blend()
 		
 		blendOp->blend(srcPixels.size(), dst, src[0], mask);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 	
 	// reverse blending
@@ -273,7 +274,7 @@ void Test::test_blend()
 		
 		blendOp->blendReversed(srcPixels.size(), dst, src);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 	
 	// blending with pixel masks
@@ -295,7 +296,7 @@ void Test::test_blend()
 		
 		blendOp->blendReversed(srcPixels.size(), dst, src, mask);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 	
 	// blending with float masks
@@ -317,7 +318,7 @@ void Test::test_blend()
 		
 		blendOp->blendReversed(srcPixels.size(), dst, src, mask);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 	
 	// blending with one pixel mask
@@ -338,7 +339,7 @@ void Test::test_blend()
 		
 		blendOp->blendReversed(srcPixels.size(), dst, src, mask);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 	
 	// blending with one float mask
@@ -359,7 +360,7 @@ void Test::test_blend()
 		
 		blendOp->blendReversed(srcPixels.size(), dst, src, opacity);
 		
-		verifyPixels(correctResultPixels, resultPixels);
+		QVERIFY(verifyPixels(correctResultPixels, resultPixels));
 	}
 }
 
