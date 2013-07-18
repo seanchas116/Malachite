@@ -416,6 +416,159 @@ struct BlendTraitsExclusion : public BlendTraitsSourceOver
 	}
 };
 
+inline static float lum(const Pixel &c)
+{
+	return 0.3f * c.r() + 0.59f * c.g() + 0.11f * c.b();
+}
+
+inline static Pixel clipColor(const Pixel &c)
+{
+	auto l = lum(c);
+	auto n = min3(c.r(), c.g(), c.b());
+	auto x = max3(c.r(), c.g(), c.b());
+	if (n < 0.f)
+		return l + (c - l) * l / (l - n);
+	if (x > 1.f)
+		return l + (c - l) * (1.f - l) / (x - l);
+	return c;
+}
+
+inline static Pixel setLum(const Pixel &c, float l)
+{
+	auto d = l - lum(c);
+	return clipColor(c + d);
+}
+
+inline static float sat(const Pixel &c)
+{
+	return max3(c.r(), c.g(), c.b()) - min3(c.r(), c.g(), c.b());
+}
+
+inline static Pixel setSat(const Pixel &c, float s)
+{
+	if (c.r() == c.g() && c.g() == c.b())
+		return Pixel(0.f);
+	
+	auto cv = c.v();
+	
+	float max = cv[0];
+	int imax = 0;
+	
+	for (int i = 1; i < 3; ++i)
+	{
+		if (max < cv[i])
+		{
+			max = cv[i];
+			imax = i;
+		}
+	}
+	
+	float min = cv[0];
+	int imin = 0;
+	
+	for (int i = 1; i < 3; ++i)
+	{
+		if (cv[i] < min)
+		{
+			min = cv[i];
+			imin = i;
+		}
+	}
+	
+	int imid = 0;
+	for (int i = 0; i < 3; ++i)
+	{
+		if (i != imax && i != imin)
+			imid = i;
+	}
+	
+	float mid = cv[imid];
+	
+	cv[imid] = (mid - min) * s / (max - min);
+	cv[imax] = s;
+	cv[imin] = 0.f;
+	return cv;
+}
+
+struct BlendTraitsHue : public BlendTraitsSourceOver
+{
+	static Pixel blend(const Pixel &dst, const Pixel &src)
+	{
+		if (dst.a() == 0.f)
+			return src;
+		if (src.a() == 0.f)
+			return dst;
+		
+		Pixel dstUnmul = dst.v() / dst.a();
+		Pixel srcUnmul = src.v() / src.a();
+		
+		Pixel ret = (1.f - dst.a()) * src.v()
+			+ (1.f - src.a()) * dst.v()
+			+ src.a() * dst.a() * setLum(setSat(srcUnmul, sat(dstUnmul)), lum(dstUnmul));
+		ret.ra() = src.a() + dst.a() - src.a() * dst.a();
+		return ret;
+	}
+};
+
+struct BlendTraitsSaturation : public BlendTraitsSourceOver
+{
+	static Pixel blend(const Pixel &dst, const Pixel &src)
+	{
+		if (dst.a() == 0.f)
+			return src;
+		if (src.a() == 0.f)
+			return dst;
+		
+		Pixel dstUnmul = dst.v() / dst.a();
+		Pixel srcUnmul = src.v() / src.a();
+		
+		Pixel ret = (1.f - dst.a()) * src.v()
+			+ (1.f - src.a()) * dst.v()
+			+ src.a() * dst.a() * setLum(setSat(dstUnmul, sat(srcUnmul)), lum(dstUnmul));
+		ret.ra() = src.a() + dst.a() - src.a() * dst.a();
+		return ret;
+	}
+};
+
+struct BlendTraitsColor : public BlendTraitsSourceOver
+{
+	static Pixel blend(const Pixel &dst, const Pixel &src)
+	{
+		if (dst.a() == 0.f)
+			return src;
+		if (src.a() == 0.f)
+			return dst;
+		
+		Pixel dstUnmul = dst.v() / dst.a();
+		Pixel srcUnmul = src.v() / src.a();
+		
+		Pixel ret = (1.f - dst.a()) * src.v()
+			+ (1.f - src.a()) * dst.v()
+			+ src.a() * dst.a() * setLum(srcUnmul, lum(dstUnmul));
+		ret.ra() = src.a() + dst.a() - src.a() * dst.a();
+		return ret;
+	}
+};
+
+struct BlendTraitsLuminosity : public BlendTraitsSourceOver
+{
+	static Pixel blend(const Pixel &dst, const Pixel &src)
+	{
+		if (dst.a() == 0.f)
+			return src;
+		if (src.a() == 0.f)
+			return dst;
+		
+		Pixel dstUnmul = dst.v() / dst.a();
+		Pixel srcUnmul = src.v() / src.a();
+		
+		Pixel ret = (1.f - dst.a()) * src.v()
+			+ (1.f - src.a()) * dst.v()
+			+ src.a() * dst.a() * setLum(dstUnmul, lum(srcUnmul));
+		ret.ra() = src.a() + dst.a() - src.a() * dst.a();
+		return ret;
+	}
+};
 
 BlendOpDictionary::BlendOpDictionary()
 {
@@ -445,6 +598,10 @@ BlendOpDictionary::BlendOpDictionary()
 	_blendOps[BlendMode::SoftLight] = new TemplateBlendOp<BlendTraitsSoftLight>;
 	_blendOps[BlendMode::Difference] = new TemplateBlendOp<BlendTraitsDifference>;
 	_blendOps[BlendMode::Exclusion] = new TemplateBlendOp<BlendTraitsExclusion>;
+	_blendOps[BlendMode::Hue] = new TemplateBlendOp<BlendTraitsHue>;
+	_blendOps[BlendMode::Saturation] = new TemplateBlendOp<BlendTraitsSaturation>;
+	_blendOps[BlendMode::Color] = new TemplateBlendOp<BlendTraitsColor>;
+	_blendOps[BlendMode::Luminosity] = new TemplateBlendOp<BlendTraitsLuminosity>;
 	
 	_defaultBlendOp = _blendOps[BlendMode::SourceOver];
 }

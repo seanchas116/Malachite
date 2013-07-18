@@ -90,6 +90,11 @@ public:
 		*/
 		Exclusion,
 		
+		Hue,
+		Saturation,
+		Color,
+		Luminosity,
+		
 		Clear = 128,
 		Source,
 		Destination,
