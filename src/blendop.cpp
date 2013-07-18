@@ -445,6 +445,8 @@ BlendOpDictionary::BlendOpDictionary()
 	_blendOps[BlendMode::SoftLight] = new TemplateBlendOp<BlendTraitsSoftLight>;
 	_blendOps[BlendMode::Difference] = new TemplateBlendOp<BlendTraitsDifference>;
 	_blendOps[BlendMode::Exclusion] = new TemplateBlendOp<BlendTraitsExclusion>;
+	
+	_defaultBlendOp = _blendOps[BlendMode::SourceOver];
 }
 
 BlendOpDictionary _BlendOpDictionary;

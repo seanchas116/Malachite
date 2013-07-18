@@ -208,10 +208,11 @@ class MALACHITESHARED_EXPORT BlendOpDictionary
 public:
 	BlendOpDictionary();
 	
-	BlendOp *blendOp(int index) { return _blendOps.value(index); }
+	BlendOp *blendOp(int index) { return _blendOps.value(index, _defaultBlendOp); }
 	
 private:
 	QHash<int, BlendOp *> _blendOps;
+	BlendOp *_defaultBlendOp = 0;
 };
 
 MALACHITESHARED_EXPORT BlendOpDictionary *blendOpDictionary();
