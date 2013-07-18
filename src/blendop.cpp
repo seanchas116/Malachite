@@ -91,7 +91,7 @@ struct ReverseBlendIter
 		return *this;
 	}
 	
-	value_type operator[](int index) const { return iter[index]; }
+	value_type operator[](int index) const { return iter[-index]; }
 	
 	TIter iter;
 };

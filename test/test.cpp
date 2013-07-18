@@ -13,14 +13,9 @@ Test::Test(QObject *parent) :
 {
 }
 
-static Pixel correctBlend(const Pixel &dst, const Pixel &src)
-{
-	return src.v() + (1.0f - src.a()) * dst.v();
-}
-
 void Test::test_blend()
 {
-	constexpr int pixelVectorSize = 10;
+	constexpr int pixelCount = 10;
 	
 	std::random_device randomDevice;
 	std::mt19937 randomEngine(randomDevice());
@@ -42,9 +37,9 @@ void Test::test_blend()
 	
 	auto makeRandomOpacities = [&]()
 	{
-		QVector<float> vec(pixelVectorSize);
+		QVector<float> vec(pixelCount);
 		
-		for (int i = 0; i < pixelVectorSize; ++i)
+		for (int i = 0; i < pixelCount; ++i)
 			vec[i] = makeRandomOpacity();
 		
 		return vec;
@@ -52,9 +47,9 @@ void Test::test_blend()
 	
 	auto makeRandomPixels = [&]()
 	{
-		QVector<Pixel> vec(pixelVectorSize);
+		QVector<Pixel> vec(pixelCount);
 		
-		for (int i = 0; i < pixelVectorSize; ++i)
+		for (int i = 0; i < pixelCount; ++i)
 			vec[i] = makeRandomPixel();
 		
 		return vec;
@@ -72,12 +67,16 @@ void Test::test_blend()
 	
 	auto verifyPixels = [&](const QVector<Pixel> &correct, const QVector<Pixel> &result)
 	{
-		qDebug() << "correct:";
-		qDebug() << correct;
-		qDebug() << "result:";
-		qDebug() << result;
+		auto compare = comparePixelVectors(correct, result);
 		
-		QVERIFY(comparePixelVectors(correct, result));
+		if (!compare)
+		{
+			qDebug() << "correct:";
+			qDebug() << correct;
+			qDebug() << "result:";
+			qDebug() << result;
+			QVERIFY(false);
+		}
 	};
 	
 	auto correctBlend = [](const Pixel &dst, const Pixel &src)
@@ -99,12 +98,12 @@ void Test::test_blend()
 	{
 		auto correctResultPixels = dstPixels;
 		
-		for (int i = 0; i < pixelVectorSize; ++i)
+		for (int i = 0; i < pixelCount; ++i)
 			correctResultPixels[i] = correctBlend(correctResultPixels[i], srcPixels[i]);
 		
 		auto resultPixels = dstPixels;
-		auto dst = wrapPointer(resultPixels.data(), pixelVectorSize);
-		auto src = wrapPointer(srcPixels.data(), pixelVectorSize);
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
 		
 		blendOp->blend(srcPixels.size(), dst, src);
 		
@@ -117,16 +116,16 @@ void Test::test_blend()
 		
 		auto correctResultPixels = dstPixels;
 		
-		for (int i = 0; i < pixelVectorSize; ++i)
+		for (int i = 0; i < pixelCount; ++i)
 		{
 			PixelVec src = srcPixels[i].v() * maskPixels[i].aV();
 			correctResultPixels[i] = correctBlend(correctResultPixels[i], src);
 		}
 		
 		auto resultPixels = dstPixels;
-		auto dst = wrapPointer(resultPixels.data(), pixelVectorSize);
-		auto src = wrapPointer(srcPixels.data(), pixelVectorSize);
-		auto mask = wrapPointer(maskPixels.data(), pixelVectorSize);
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
+		auto mask = wrapPointer(maskPixels.data(), pixelCount);
 		
 		blendOp->blend(srcPixels.size(), dst, src, mask);
 		
@@ -139,16 +138,16 @@ void Test::test_blend()
 		
 		auto correctResultPixels = dstPixels;
 		
-		for (int i = 0; i < pixelVectorSize; ++i)
+		for (int i = 0; i < pixelCount; ++i)
 		{
 			PixelVec src = srcPixels[i].v() * masks[i];
 			correctResultPixels[i] = correctBlend(correctResultPixels[i], src);
 		}
 		
 		auto resultPixels = dstPixels;
-		auto dst = wrapPointer(resultPixels.data(), pixelVectorSize);
-		auto src = wrapPointer(srcPixels.data(), pixelVectorSize);
-		auto mask = wrapPointer(masks.data(), pixelVectorSize);
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
+		auto mask = wrapPointer(masks.data(), pixelCount);
 		
 		blendOp->blend(srcPixels.size(), dst, src, mask);
 		
@@ -161,21 +160,207 @@ void Test::test_blend()
 		
 		auto correctResultPixels = dstPixels;
 		
-		for (int i = 0; i < pixelVectorSize; ++i)
+		for (int i = 0; i < pixelCount; ++i)
 		{
 			PixelVec src = srcPixels[i].v() * mask.aV();
 			correctResultPixels[i] = correctBlend(correctResultPixels[i], src);
 		}
 		
 		auto resultPixels = dstPixels;
-		auto dst = wrapPointer(resultPixels.data(), pixelVectorSize);
-		auto src = wrapPointer(srcPixels.data(), pixelVectorSize);
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
 		
 		blendOp->blend(srcPixels.size(), dst, src, mask);
 		
 		verifyPixels(correctResultPixels, resultPixels);
 	}
 	
+	// blending with one float mask
+	{
+		const auto opacity = makeRandomOpacity();
+		
+		auto correctResultPixels = dstPixels;
+		
+		for (int i = 0; i < pixelCount; ++i)
+		{
+			PixelVec src = srcPixels[i].v() * opacity;
+			correctResultPixels[i] = correctBlend(correctResultPixels[i], src);
+		}
+		
+		auto resultPixels = dstPixels;
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
+		
+		blendOp->blend(srcPixels.size(), dst, src, opacity);
+		
+		verifyPixels(correctResultPixels, resultPixels);
+	}
+	
+	// blending one pixel
+	{
+		auto correctResultPixels = dstPixels;
+		
+		for (int i = 0; i < pixelCount; ++i)
+		{
+			correctResultPixels[i] = correctBlend(correctResultPixels[i], srcPixels[0]);
+		}
+		
+		auto resultPixels = dstPixels;
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
+		
+		blendOp->blend(srcPixels.size(), dst, src[0]);
+		
+		verifyPixels(correctResultPixels, resultPixels);
+	}
+	
+	// blending one pixel with pixel masks
+	{
+		const auto maskPixels = makeRandomPixels();
+		
+		auto correctResultPixels = dstPixels;
+		
+		for (int i = 0; i < pixelCount; ++i)
+		{
+			PixelVec src = srcPixels[0].v() * maskPixels[i].aV();
+			correctResultPixels[i] = correctBlend(correctResultPixels[i], src);
+		}
+		
+		auto resultPixels = dstPixels;
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
+		auto mask = wrapPointer(maskPixels.data(), pixelCount);
+		
+		blendOp->blend(srcPixels.size(), dst, src[0], mask);
+		
+		verifyPixels(correctResultPixels, resultPixels);
+	}
+	
+	// blending one pixel with float masks
+	{
+		const auto masks = makeRandomOpacities();
+		
+		auto correctResultPixels = dstPixels;
+		
+		for (int i = 0; i < pixelCount; ++i)
+		{
+			PixelVec src = srcPixels[0].v() * masks[i];
+			correctResultPixels[i] = correctBlend(correctResultPixels[i], src);
+		}
+		
+		auto resultPixels = dstPixels;
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
+		auto mask = wrapPointer(masks.data(), pixelCount);
+		
+		blendOp->blend(srcPixels.size(), dst, src[0], mask);
+		
+		verifyPixels(correctResultPixels, resultPixels);
+	}
+	
+	// reverse blending
+	
+	// simple blending
+	{
+		auto correctResultPixels = dstPixels;
+		
+		for (int i = 0; i < pixelCount; ++i)
+			correctResultPixels[i] = correctBlend(correctResultPixels[i], srcPixels[pixelCount - 1 - i]);
+		
+		auto resultPixels = dstPixels;
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
+		
+		blendOp->blendReversed(srcPixels.size(), dst, src);
+		
+		verifyPixels(correctResultPixels, resultPixels);
+	}
+	
+	// blending with pixel masks
+	{
+		const auto maskPixels = makeRandomPixels();
+		
+		auto correctResultPixels = dstPixels;
+		
+		for (int i = 0; i < pixelCount; ++i)
+		{
+			PixelVec src = srcPixels[pixelCount - 1 - i].v() * maskPixels[i].aV();
+			correctResultPixels[i] = correctBlend(correctResultPixels[i], src);
+		}
+		
+		auto resultPixels = dstPixels;
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
+		auto mask = wrapPointer(maskPixels.data(), pixelCount);
+		
+		blendOp->blendReversed(srcPixels.size(), dst, src, mask);
+		
+		verifyPixels(correctResultPixels, resultPixels);
+	}
+	
+	// blending with float masks
+	{
+		const auto masks = makeRandomOpacities();
+		
+		auto correctResultPixels = dstPixels;
+		
+		for (int i = 0; i < pixelCount; ++i)
+		{
+			PixelVec src = srcPixels[pixelCount - 1 - i].v() * masks[i];
+			correctResultPixels[i] = correctBlend(correctResultPixels[i], src);
+		}
+		
+		auto resultPixels = dstPixels;
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
+		auto mask = wrapPointer(masks.data(), pixelCount);
+		
+		blendOp->blendReversed(srcPixels.size(), dst, src, mask);
+		
+		verifyPixels(correctResultPixels, resultPixels);
+	}
+	
+	// blending with one pixel mask
+	{
+		const auto mask = makeRandomPixel();
+		
+		auto correctResultPixels = dstPixels;
+		
+		for (int i = 0; i < pixelCount; ++i)
+		{
+			PixelVec src = srcPixels[pixelCount - 1 - i].v() * mask.aV();
+			correctResultPixels[i] = correctBlend(correctResultPixels[i], src);
+		}
+		
+		auto resultPixels = dstPixels;
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
+		
+		blendOp->blendReversed(srcPixels.size(), dst, src, mask);
+		
+		verifyPixels(correctResultPixels, resultPixels);
+	}
+	
+	// blending with one float mask
+	{
+		const auto opacity = makeRandomOpacity();
+		
+		auto correctResultPixels = dstPixels;
+		
+		for (int i = 0; i < pixelCount; ++i)
+		{
+			PixelVec src = srcPixels[pixelCount - 1 - i].v() * opacity;
+			correctResultPixels[i] = correctBlend(correctResultPixels[i], src);
+		}
+		
+		auto resultPixels = dstPixels;
+		auto dst = wrapPointer(resultPixels.data(), pixelCount);
+		auto src = wrapPointer(srcPixels.data(), pixelCount);
+		
+		blendOp->blendReversed(srcPixels.size(), dst, src, opacity);
+		
+		verifyPixels(correctResultPixels, resultPixels);
+	}
 }
 
 QTEST_MAIN(Test)
