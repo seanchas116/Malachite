@@ -352,7 +352,17 @@ inline Pointer<const T> wrapPointer(const void *rangeStart, int rangeByteSize, c
 	return Pointer<const T>(rangeStart, rangeByteSize, p);
 }
 
+template <class T>
+inline Pointer<T> wrapPointer(T *p, int valueCount)
+{
+	return Pointer<T>(p, valueCount * sizeof(T), p);
+}
 
+template <class T>
+inline Pointer<const T> wrapPointer(const T *p, int valueCount)
+{
+	return Pointer<const T>(p, valueCount * sizeof(T), p);
+}
 
 template <class T>
 class MALACHITESHARED_EXPORT Array
